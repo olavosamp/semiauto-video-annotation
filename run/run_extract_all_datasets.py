@@ -13,8 +13,11 @@ ind1  = IndexManager(path=mainIndexPath)
 ind2  = IndexManager(path=newIndexPath)
 
 # Get video paths in Main Index (labeled videos)
-labeledVideos = list(ind1.index.VideoName.unique())
-print(len(labeledVideos))
+labeledVideos = list(ind1.index.VideoPath.unique())
+for video in labeledVideos:
+    print(video)
+print("Labeled videos: ", len(labeledVideos))
+print("\n")
 
 # Get video paths in dataset folder (all videos)
 datasetPath = dirs.base_videos
@@ -22,6 +25,9 @@ allVideos = []
 for format in commons.videoFormats:
     globList = glob(datasetPath + "/**" + "/*."+format, recursive=True)
     allVideos.extend(globList)
+
+for i in range(len(allVideos)):
+    allVideos[i] = Path(allVideos[i]).relative_to(datasetPath)
 
 for video in allVideos:
     print(video)
