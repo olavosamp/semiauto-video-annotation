@@ -4,7 +4,7 @@ sep     = "/"       # Foward dash for Windows/Linux compatibility
 # sep = "\\"        # Backwards dash for Windows specific applications
 
 root                = "."+sep
-index               = root+"index"+sep
+index               = root+"index"+sep+"main_index.csv"
 images              = root+".."+sep+"images"+sep
 base_videos         = root+".."+sep+"20170724_FTP83G_Petrobras"+sep
 dataset             = root+sep+".."+sep+"datasets"+sep

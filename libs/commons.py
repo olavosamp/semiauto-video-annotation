@@ -16,3 +16,5 @@ indexEntryColumns = [
             'FrameName',
             'OriginalDataset',
 ]
+
+unlabeledDatasetName = "unlabeled_images"

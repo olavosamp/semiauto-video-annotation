@@ -3,6 +3,7 @@ import pandas       as pd
 import numpy        as np
 import datetime
 import os.path
+from pathlib        import Path
 
 import libs.dirs    as dirs
 import libs.commons as commons
@@ -13,7 +14,7 @@ class GetFrames:
         Base frame extractor class
     '''
     def __init__(self, destPath, verbose=True, errorLog=True):
-        self.destPath   = destPath
+        self.destPath   = Path(destPath)
         self.verbose    = verbose
         self.errorLog   = errorLog
 
@@ -22,7 +23,8 @@ class GetFrames:
             self.errorCounter = {'read': 0,     'set': 0,     'write': 0}
             self.errorList = []
 
-        self.frameCount = 0
+        self.frameCount  = 0
+        self.datasetName = commons.unlabeledDatasetName
 
         if self.verbose:
             print("\nUsing opencv version: ", cv2.__version__)
@@ -35,11 +37,15 @@ class GetFrames:
         '''
             videoPath: source video path
         '''
+        # Get relative video path from full video path
+        self.videoName      = self.videoPath.relative_to(dirs.base_videos)
+        self.frameBaseName  = str(self.videoName).replace("/", "--")
+
         try:
-        	self.video = cv2.VideoCapture(dirs.base_videos+self.videoName)
+        	self.video = cv2.VideoCapture(str(self.videoPath))
         except:
             print("\nError opening video:\n")
-            cv2.VideoCapture(dirs.base_videos+self.videoName)
+            cv2.VideoCapture(str(self.videoPath))
 
         self.frameRate = self.video.get(cv2.CAP_PROP_FPS)
         if self.frameRate == 0:
@@ -49,12 +55,14 @@ class GetFrames:
 
         # self.videoFolderPath = "/".join(videoPath.split("/")[3:-1])+"/"
 
-        self.videoFolderPath = self.destPath + self.videoName[:-4]+"/"
+        # self.videoFolderPath = self.destPath + self.videoName[:-4]+"/"
+        self.videoFolderPath = self.destPath / self.videoName.stem
         dirs.create_folder(self.videoFolderPath)
         return self.video
 
 
     def get_frames(self):
+        self.frameEntryList = []
         self.totalFrames = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
         self.videoTime   = self.totalFrames/self.frameRate
         if self.verbose:
@@ -69,6 +77,7 @@ class GetFrames:
 
         print(self.videoError)
         print("{} frames captured.".format(self.frameCount))
+        return self.frameEntryList
 
 
     def reset_error_flags(self):
@@ -241,32 +250,40 @@ class GetFramesCsv(GetFrames):
 class GetFramesFull(GetFrames):
     def __init__(self, videoPath, destPath='./images/', interval=5, interMin=0.8, interMax=20, verbose=True):
         super().__init__(destPath, verbose=verbose)
-        self.videoPath  = videoPath
+        self.videoPath  = Path(videoPath)
         self.interval   = interval
         self.interMin   = interMin
         self.interMax   = interMax
 
+
         # Validate video path and file
-        self.video = self.get_video_data(self.videoPath)
+        self.video = self.get_video_data()
+
+        # Get Report field
+        self.videoReport = self.videoPath.relative_to(dirs.base_videos).parts[0]
+        # Get DVD field
+        dvdIndex = str(self.videoPath).find("DVD-")
+        if dvdIndex == -1:
+            self.dvd = None
+        else:
+            self.dvd = str(self.videoPath)[dvdIndex+4]
 
         self.validate_interval()
 
 
     def validate_interval(self):
-        self.interval = np.clip(self.interval, self.frameRate, None)
-        self.interMin = np.clip(self.interMin, self.frameRate, None)
-        self.interMax = np.clip(self.interMax, self.frameRate, None)
+        self.interval = np.clip(self.interval, 1/self.frameRate, None)
+        self.interMin = np.clip(self.interMin, 1/self.frameRate, None)
+        self.interMax = np.clip(self.interMax, 1/self.frameRate, None)
 
 
     def get_filename(self):
-        # Get relative video path from full video path
-        self.videoName = self.videoPath.split(dirs.base_videos)[1]
-        self.videoName = self.videoName.replace("/", "--")
+        self.fileName = self.frameBaseName+ " FRAME {}.jpg".format(self.frameNum)
+        self.filePath = self.destPath / self.fileName
 
-        self.fileName = self.videoName+ " FRAME {}.jpg".format(self.frameCount)
-        self.filePath = self.destPath+self.fileName
+        # newFramePath = "--".join([self.newEntryDf.loc[0, 'Report'], 'DVD-'+str(self.newEntryDf.loc[0, 'DVD']), self.newEntryDf.loc[0, 'FrameName']])
 
-        return self.filePath
+        return str(self.filePath)
 
 
     def _routine_get_frames(self):
@@ -277,12 +294,52 @@ class GetFramesFull(GetFrames):
         while self.timePos < self.timeLimit:
             if self.verbose:
                 print("Frame ", self.frameCount)
+
+            # self.frameEntry = dict()
             self.videoError['set'] = self.video.set(cv2.CAP_PROP_POS_MSEC, self.timePos*1000)
 
-            self.frameNum = self.video.get(cv2.CAP_PROP_POS_FRAMES)
+            self.frameNum = int(self.video.get(cv2.CAP_PROP_POS_FRAMES))
             self.videoError['read'], self.frame = self.video.read()
 
+            print(self.get_filename())
+            input()
             self.videoError['write'] = cv2.imwrite(self.get_filename(), self.frame)
+
+            # if self.verbose:
+            #     print("Frame number: ", int(self.frameNum), "  Frame time: ", self.timePos)
+
+
+            self.frameEntry = {
+            'VideoPath':            [self.videoPath],
+            'Report':               [self.videoReport],
+            'DVD':                  [self.dvd],
+            'VideoName':            [self.videoName],
+            'EventId':              [None],
+            'FrameTime':            [self.timePos],
+            'AbsoluteFrameNumber':  [self.frameNum],
+            'RelativeFrameNumber':  [None],
+            'Tags':                 ["unlabeled"],
+            'FramePath':            [self.filePath],
+            'FrameName':            [self.filePath.name],
+            'OriginalDataset':      [self.datasetName]
+            }
+
+            # print("\n")
+            # print('VideoPath ', self.videoPath)
+            # print('Report ', self.videoReport)
+            # print("dvd: ", self.dvd)
+            # print("videoname: ", self.videoName)
+            # # print('EventId: ', self.eventId)
+            # print('FrameTime: ', self.timePos)
+            # print('AbsoluteFrameNumber: ', self.frameNum)
+            # # print('RelativeFrameNumber: ', self.relFrame)
+            # # print('Tags: ', self.tags)
+            # print('FramePath: ',       self.filePath)
+            # print('FrameName: ',       self.filePath.name)
+            # print("OriginalDataset: ", self.datasetName)
+            # input()
+
+            self.frameEntryList.append(self.frameEntry)
 
             self.timePos    += self.interval
             self.frameCount += 1
