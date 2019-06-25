@@ -1,10 +1,11 @@
-import pandas       as pd
-from pathlib        import Path
-from glob           import glob
+import pandas               as pd
+from pathlib                import Path
+from glob                   import glob
 
-import libs.dirs    as dirs
-import libs.commons as commons
-from libs.index     import IndexManager
+import libs.dirs            as dirs
+import libs.commons         as commons
+from libs.index             import IndexManager
+from libs.get_frames_class  import GetFramesFull
 
 datasetPath = dirs.base_videos
 
@@ -24,8 +25,25 @@ for format in commons.videoFormats:
     allVideos.extend(globList)
 
 allVideos = list(map(f, allVideos))
-allVideos = list(map(h, allVideos))
-for video in allVideos:
-    print(video)
+# allVideos = list(map(h, allVideos))
+
+for videoPath in allVideos:
+    print(videoPath)
 print("Total videos: ", len(allVideos))
 print("\n")
+
+frameEntryList = []
+numVideos = len(allVideos)
+for i in range(numVideos):
+    videoPath = allVideos[i]
+    print("Processing video {}/{}".format(i+1, numVideos))
+    gff = GetFramesFull(videoPath, destPath="../images/all_datasets_1s/", interval=1, verbose=False)
+    newEntries = gff.get_frames()
+    frameEntryList.extend(newEntries)
+
+
+for entry in frameEntryList:
+    ind2.add_entry(entry)
+
+ind2.write_index()
+ind2.report_changes()

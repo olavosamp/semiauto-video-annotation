@@ -31,9 +31,9 @@ print(allVideos[0])
 gff = GetFramesFull(allVideos[0], destPath="../images/test_get_frames/", interval=1)
 frameEntryList = gff.get_frames()
 
-print(len(frameEntryList))
 
 for entry in frameEntryList:
     ind2.add_entry(entry)
+
 ind2.write_index()
 ind2.report_changes()

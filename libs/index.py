@@ -19,11 +19,12 @@ def move_files_routine(source, destination):
 
 
 class IndexManager:
-    def __init__(self, path=dirs.index, destFolder='auto'):
+    def __init__(self, path=dirs.index, destFolder='auto', verbose=True):
         self.path               = Path(path)
         self.indexExists        = False
         self.bkpFolderName      = "index_backup"
         self.destFolder         = destFolder
+        self.verbose            = verbose
 
         self.duplicates_count   = 0
         self.new_entries_count  = 0
@@ -95,7 +96,9 @@ class IndexManager:
         mask            = np.equal(self.index['FramePath'], self.newEntryDf['FramePath']).values
         dupNamesIndex   = np.squeeze(np.argwhere(mask == True)).tolist()
 
-        print("Duplicate names: ", dupNamesIndex)
+        if self.verbose:
+            if np.size(dupNamesIndex) > 0:
+                print("Duplicate names: ", dupNamesIndex)
 
         if np.size(dupNamesIndex) >= 1:
             # There are duplicate entries (there should be only 1)
@@ -203,8 +206,6 @@ class IndexManager:
 
 
     def report_changes(self):
-        print(self.originalLen)
-        print(self.index.shape[0])
         print("Original Index had {} entries.\nNew Index has {} entries.".format(self.originalLen, self.index.shape[0]))
 
         print("\nProcessed {} entries. Added {} and merged {} duplicates.\nSaved index to \n{}\

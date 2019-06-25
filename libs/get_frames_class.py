@@ -4,6 +4,7 @@ import numpy        as np
 import datetime
 import os.path
 from pathlib        import Path
+from tqdm           import tqdm
 
 import libs.dirs    as dirs
 import libs.commons as commons
@@ -14,9 +15,10 @@ class GetFrames:
         Base frame extractor class
     '''
     def __init__(self, destPath, verbose=True, errorLog=True):
-        self.destPath   = Path(destPath)
-        self.verbose    = verbose
-        self.errorLog   = errorLog
+        self.destPath       = Path(destPath)
+        self.verbose        = verbose
+        self.errorLog       = errorLog
+        self.estimatedFPS   = False
 
         self.videoError   = {'read': False, 'set': False, 'write': False}
         if self.errorLog:
@@ -38,8 +40,16 @@ class GetFrames:
             videoPath: source video path
         '''
         # Get relative video path from full video path
-        self.videoName      = self.videoPath.relative_to(dirs.base_videos)
-        self.frameBaseName  = str(self.videoName).replace("/", "--")
+        self.videoName      = Path(self.videoPath.name)
+
+        # Get Report field
+        self.videoReport = self.videoPath.relative_to(dirs.base_videos).parts[0]
+        # Get DVD field
+        dvdIndex = str(self.videoPath).find("DVD-")
+        if dvdIndex == -1:
+            self.dvd = None
+        else:
+            self.dvd = str(self.videoPath)[dvdIndex+4]
 
         try:
         	self.video = cv2.VideoCapture(str(self.videoPath))
@@ -50,13 +60,14 @@ class GetFrames:
         self.frameRate = self.video.get(cv2.CAP_PROP_FPS)
         if self.frameRate == 0:
             self.frameRate = 25  # Default frame rate is 30 or 25 fps
+            self.estimatedFPS = True
 
         self.totalFrames = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
 
-        # self.videoFolderPath = "/".join(videoPath.split("/")[3:-1])+"/"
-
-        # self.videoFolderPath = self.destPath + self.videoName[:-4]+"/"
-        self.videoFolderPath = self.destPath / self.videoName.stem
+        if self.dvd != None:
+            self.videoFolderPath = self.destPath / self.videoReport / ("DVD-" + self.dvd) / Path(self.videoName.stem)
+        else:
+            self.videoFolderPath = self.destPath / self.videoReport / Path(self.videoName.stem)
         dirs.create_folder(self.videoFolderPath)
         return self.video
 
@@ -65,9 +76,9 @@ class GetFrames:
         self.frameEntryList = []
         self.totalFrames = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
         self.videoTime   = self.totalFrames/self.frameRate
-        if self.verbose:
-            print("Total video time:")
-        print(str(datetime.timedelta(seconds=self.videoTime)))
+        # if self.verbose:
+        #     print("Total video time:")
+        print("Total video time: ", str(datetime.timedelta(seconds=self.videoTime)))
 
         self.timePos    = 0
         self.frameCount = 0
@@ -144,10 +155,10 @@ class GetFramesCsv(GetFrames):
 
     def get_filename(self):
         videoNameClean = self.videoName.replace("/", "--")[:-1][:-4]
-        self.fileName = videoNameClean+" ID{} FRAME{} {}.jpg".format(self.eventId,
+        self.frameName = videoNameClean+" ID{} FRAME{} {}.jpg".format(self.eventId,
                         self.eventFrames, self.eventClass)
 
-        self.framePath = self.videoFolderPath+self.fileName
+        self.framePath = self.videoFolderPath+self.frameName
 
 
     def get_frames(self):
@@ -259,15 +270,6 @@ class GetFramesFull(GetFrames):
         # Validate video path and file
         self.video = self.get_video_data()
 
-        # Get Report field
-        self.videoReport = self.videoPath.relative_to(dirs.base_videos).parts[0]
-        # Get DVD field
-        dvdIndex = str(self.videoPath).find("DVD-")
-        if dvdIndex == -1:
-            self.dvd = None
-        else:
-            self.dvd = str(self.videoPath)[dvdIndex+4]
-
         self.validate_interval()
 
 
@@ -278,10 +280,9 @@ class GetFramesFull(GetFrames):
 
 
     def get_filename(self):
-        self.fileName = self.frameBaseName+ " FRAME {}.jpg".format(self.frameNum)
-        self.filePath = self.destPath / self.fileName
-
-        # newFramePath = "--".join([self.newEntryDf.loc[0, 'Report'], 'DVD-'+str(self.newEntryDf.loc[0, 'DVD']), self.newEntryDf.loc[0, 'FrameName']])
+        self.frameName = str(self.videoName)+ " FRAME {}.jpg".format(self.frameNum)
+        # self.frameName = "--".join([self.videoReport, 'DVD-'+str(self.dvd), str(self.videoName)+ " FRAME {}.jpg".format(self.frameNum))
+        self.filePath = self.videoFolderPath / self.frameName
 
         return str(self.filePath)
 
@@ -301,8 +302,6 @@ class GetFramesFull(GetFrames):
             self.frameNum = int(self.video.get(cv2.CAP_PROP_POS_FRAMES))
             self.videoError['read'], self.frame = self.video.read()
 
-            print(self.get_filename())
-            input()
             self.videoError['write'] = cv2.imwrite(self.get_filename(), self.frame)
 
             # if self.verbose:

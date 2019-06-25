@@ -11,8 +11,8 @@ datasetPath = dirs.base_videos
 f = lambda x: Path(x)
 h = lambda x: x.relative_to(datasetPath)
 
-mainIndexPath = Path(dirs.index) / "main_index.csv"
-newIndexPath  = Path(dirs.index) / "unlabeled_index.csv"
+mainIndexPath = Path(dirs.index)
+newIndexPath  = Path(dirs.root) / "index" / "unlabeled_index.csv"
 
 ind1  = IndexManager(path=mainIndexPath)
 ind2  = IndexManager(path=newIndexPath)
@@ -53,3 +53,6 @@ print(labeledVideos[28])
 print(allVideos[0] == labeledVideos[28])
 
 print(str(labeledVideos[28]).replace("GHmls16-263", "GHmls16-263_OK"))
+
+print("Unique reports")
+print(ind1.index.Report.unique())
