@@ -9,6 +9,9 @@ images              = root+".."+sep+"images"+sep
 base_videos         = root+".."+sep+"20170724_FTP83G_Petrobras"+sep
 dataset             = root+sep+".."+sep+"datasets"+sep
 
+febe_base_videos    = root+".."+sep+"common"+sep+"flexiveis"+sep+"videos"+sep
+febe_images         = root+sep+"images"+sep
+
 def create_folder(path, verbose=False):
     try:
         os.makedirs(path)

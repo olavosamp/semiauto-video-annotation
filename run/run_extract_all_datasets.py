@@ -7,7 +7,10 @@ import libs.commons         as commons
 from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
-datasetPath = dirs.base_videos
+# datasetPath = dirs.base_videos
+# destPath    = dirs.images+"/all_datasets_1s/"
+datasetPath = dirs.febe_base_videos
+destPath    = dirs.febe_images+"/all_datasets_1s/"
 
 f = lambda x: Path(x)
 h = lambda x: x.relative_to(datasetPath)
@@ -37,7 +40,7 @@ numVideos = len(allVideos)
 for i in range(numVideos):
     videoPath = allVideos[i]
     print("Processing video {}/{}".format(i+1, numVideos))
-    gff = GetFramesFull(videoPath, destPath="../images/all_datasets_1s/", interval=1, verbose=False)
+    gff = GetFramesFull(videoPath, destPath=destPath, interval=1, verbose=False)
     newEntries = gff.get_frames()
     frameEntryList.extend(newEntries)
 
