@@ -55,7 +55,7 @@ frameEntryList = []
 for i in range(numVideos):
     videoPath = allVideos[i]
     print("Processing video {}/{}".format(i+1, numVideos))
-    gff = GetFramesFull(videoPath, destPath=destPath, interval=1, verbose=False)
+    gff = GetFramesFull(videoPath, videoFolder=datasetPath, destPath=destPath, interval=1, verbose=False)
     newEntries = gff.get_frames()
     frameEntryList.extend(newEntries)
 

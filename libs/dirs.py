@@ -10,7 +10,7 @@ base_videos         = root+".."+sep+"20170724_FTP83G_Petrobras"+sep
 dataset             = root+sep+".."+sep+"datasets"+sep
 
 febe_base_videos    = "/"+"home"+sep+"common"+sep+"flexiveis"+sep+"videos"+sep
-febe_images         = root+sep+"images"+sep
+febe_images         = root+sep+".."+sep+"images"+sep
 
 def create_folder(path, verbose=False):
     try:

@@ -14,11 +14,12 @@ class GetFrames:
     '''
         Base frame extractor class
     '''
-    def __init__(self, destPath, verbose=True, errorLog=True):
+    def __init__(self, destPath, videoFolder=dirs.base_videos, verbose=True, errorLog=True):
         self.destPath       = Path(destPath)
         self.verbose        = verbose
         self.errorLog       = errorLog
         self.estimatedFPS   = False
+        self.videoFolder    = videoFolder
 
         self.videoError   = {'read': False, 'set': False, 'write': False}
         if self.errorLog:
@@ -43,7 +44,7 @@ class GetFrames:
         self.videoName      = Path(self.videoPath.name)
 
         # Get Report field
-        self.videoReport = self.videoPath.relative_to(dirs.base_videos).parts[0]
+        self.videoReport = self.videoPath.relative_to(self.videoFolder).parts[0]
         # Get DVD field
         dvdIndex = str(self.videoPath).find("DVD-")
         if dvdIndex == -1:
@@ -106,9 +107,9 @@ class GetFramesCsv(GetFrames):
         interMin: minimum frame capture interval, in seconds
         interMax: maximum frame capture interval, in seconds
     '''
-    def __init__(self, csvPath, destPath='./images/', interMin=0.8, interMax=20,
+    def __init__(self, csvPath, destPath='./images/', videoFolder=dirs.base_videos, interMin=0.8, interMax=20,
      verbose=True, errorLog=True, ignorePathError=False):
-        super().__init__(destPath, verbose=verbose)
+        super().__init__(destPath, videoFolder=videoFolder, verbose=verbose)
         self.ignorePathError = ignorePathError
         self.csvPath         = csvPath
         self.interMin        = interMin
@@ -134,14 +135,14 @@ class GetFramesCsv(GetFrames):
         # note: iterrows does not preserve dtypes;
         #       don't modify dataframe while iterating.
         for index, row in self.csvData.iterrows():
-            checkPath = dirs.base_videos+row['VideoName']
+            checkPath = self.videoFolder+row['VideoName']
             if os.path.isfile(checkPath) == False:
                 print("\n", checkPath, "\n")
                 raise FileNotFoundError("Csv points to a video that doesn't exist.")
                 # TODO: Check if video path has extension; try to add an extension
 
         # Assumes there can be only one videopath in the entire csv
-        # self.videoPath    = dirs.base_videos+self.csvData.loc[0, 'VideoName']
+        # self.videoPath    = self.videoFolder+self.csvData.loc[0, 'VideoName']
         self.videoName    = self.csvData.loc[0, 'VideoName']
         return self.csvData
 
@@ -259,8 +260,8 @@ class GetFramesCsv(GetFrames):
 
 
 class GetFramesFull(GetFrames):
-    def __init__(self, videoPath, destPath='./images/', interval=5, interMin=0.8, interMax=20, verbose=True):
-        super().__init__(destPath, verbose=verbose)
+    def __init__(self, videoPath, videoFolder=dirs.base_videos, destPath='./images/', interval=5, interMin=0.8, interMax=20, verbose=True):
+        super().__init__(destPath, videoFolder=videoFolder, verbose=verbose)
         self.videoPath  = Path(videoPath)
         self.interval   = interval
         self.interMin   = interMin
