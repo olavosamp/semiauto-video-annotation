@@ -1,5 +1,5 @@
 # Index backups
-csv/index_backup/
+index/index_backup/
 
 # Frame totals files
 *.tot

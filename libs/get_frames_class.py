@@ -79,7 +79,7 @@ class GetFrames:
         self.videoTime   = self.totalFrames/self.frameRate
         # if self.verbose:
         #     print("Total video time:")
-        print("Total video time: ", str(datetime.timedelta(seconds=self.videoTime)))
+        print("Video time: ", str(datetime.timedelta(seconds=self.videoTime)))
 
         self.timePos    = 0
         self.frameCount = 0
