@@ -15,11 +15,12 @@ class GetFrames:
         Base frame extractor class
     '''
     def __init__(self, destPath, videoFolder=dirs.base_videos, verbose=True, errorLog=True):
-        self.destPath       = Path(destPath)
-        self.verbose        = verbose
-        self.errorLog       = errorLog
-        self.estimatedFPS   = False
-        self.videoFolder    = videoFolder
+        self.destPath           = Path(destPath)
+        self.verbose            = verbose
+        self.errorLog           = errorLog
+        self.estimatedFPS       = False
+        self.videoFolder        = videoFolder
+        self.criticalReadError  = False
 
         self.videoError   = {'read': False, 'set': False, 'write': False}
         if self.errorLog:
@@ -76,6 +77,12 @@ class GetFrames:
     def get_frames(self):
         self.frameEntryList = []
         self.totalFrames = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
+
+        # Check for correct metadata capture
+        if self.totalFrames <= 0:
+            print("\nRead error: Could not read video frame count. Video not processed.")
+            return self.frameEntryList
+
         self.videoTime   = self.totalFrames/self.frameRate
         # if self.verbose:
         #     print("Total video time:")
@@ -306,6 +313,7 @@ class GetFramesFull(GetFrames):
             try: # Escape video read errors
                 self.videoError['read'], self.frame = self.video.read()
             except _ as e:
+                self.criticalReadError = True
                 self.videoError['read'] = False
                 print("\nVideo read error. Message:\n", e, "\nProgram will ignore and continue.")
 
