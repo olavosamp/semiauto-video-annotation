@@ -296,15 +296,20 @@ class GetFramesFull(GetFrames):
         while self.timePos < self.timeLimit:
             if self.verbose:
                 print("Frame ", self.frameCount)
+            self.frame = None   # Initialize self.frame
 
             # self.frameEntry = dict()
             self.videoError['set'] = self.video.set(cv2.CAP_PROP_POS_MSEC, self.timePos*1000)
 
             self.frameNum = int(self.video.get(cv2.CAP_PROP_POS_FRAMES))
-            self.videoError['read'], self.frame = self.video.read()
+
+            try: # Escape video read errors
+                self.videoError['read'], self.frame = self.video.read()
+            except _ as e:
+                self.videoError['read'] = False
+                print("\nVideo read error. Message:\n", e, "\nProgram will ignore and continue.")
 
             self.videoError['write'] = cv2.imwrite(self.get_filename(), self.frame)
-
             # if self.verbose:
             #     print("Frame number: ", int(self.frameNum), "  Frame time: ", self.timePos)
 
