@@ -86,12 +86,15 @@ for i in range(numVideos):
 
 dateEnd = datetime.now()
 
-for entry in frameEntryList:
+numFrames = len(frameEntryList)
+for i in range(numFrames):
+    entry = frameEntryList[i]
+    print("Adding frame {}/{}".format(i, numFrames))
     ind2.add_entry(entry)
-
-ind2.write_index()
 
 with open(logPath, mode='a') as log:
     log.write("Extraction finished on {}.\nElapsed time {}.\n".format(dateEnd, dateEnd-dateStart))
+
+ind2.write_index()
 
 input("\nExtraction finished. Press any key to end.")
