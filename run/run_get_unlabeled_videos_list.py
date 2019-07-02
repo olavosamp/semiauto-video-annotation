@@ -22,8 +22,8 @@ def string_list_complement(list1, list2):
         pattern = ""
         numParts = len(path2.parts)
         for i in range(numParts-1):
-            pattern += str(path2.parts[i]).replace('.', '\.')+".*"
-        pattern += path2.parts[-1]
+            pattern += str(path2.parts[i])+".*"
+        pattern += path2.parts[-1]#.replace('.', '\.')
         pattern = str(pattern)
         if re.search(pattern, str(path1)):
             return True
@@ -32,21 +32,21 @@ def string_list_complement(list1, list2):
 
     list3 = []
     for elem1 in list1:
-        print("Searching for\n{}\n".format(elem1))
-        input()
+        # print("Searching for\n{}\n".format(elem1))
+        # input()
         appendFlag = False
         for elem2 in list2:
-            print("{}\n{}\n{}\n".format(elem1, elem2, _compare(elem1, elem2)))
+            # print("{}\n{}\n{}\n".format(elem1, elem2, _compare(elem1, elem2)))
             if _compare(elem1, elem2):
-                print("Labeled video found. Not adding to list.\n")
+                # print("Labeled video found. Not adding to list.\n")
                 appendFlag = True
                 break
 
         if not(appendFlag):
             list3.append(elem1)
-            print("Labeled video not found for\n{}. Adding to list.\n".format(elem1))
-            print("List size: {}.\n".format(len(list3)))
-            input()
+            # print("Labeled video not found for\n{}. Adding to list.\n".format(elem1))
+            # print("List size: {}.\n".format(len(list3)))
+            # input()
 
     return list3
 
@@ -103,7 +103,7 @@ allVideos = np.array(allVideos)[mask]
 # Get video paths that are unlabeled (all - labeled)
 # unlabeledVideos = [x for x in allVideos if x not in labeledVideos]
 # unlabeledVideos = set(allVideos) - set(labeledVideos)
-# unlabeledVideos = string_list_complement(allVideos, labeledVideos)
+unlabeledVideos = string_list_complement(allVideos, labeledVideos)
 unlabeledVideos = []
 for video in unlabeledVideos:
     print(video)
@@ -115,24 +115,24 @@ print("Total videos: ", len(allVideos))
 print("\n")
 
 print("\n")
-str1 = Path(allVideos[48])
-str2 = Path(labeledVideos[0])
-# str2 = str(labeledVideos[28]).replace("GHmls16-263", "GHmls16-263_OK")
+# str1 = Path(allVideos[48])
+# str2 = Path(labeledVideos[0])
+
+# str1 = Path("GHmls16-263_OK/DVD-4/VIDEOS/TRECHO RISER/20161106091420250@DVR-SPARE_Ch1.wmv")
+# str2 = Path("GHmls16-263_OK/DVD-4/20161106091420250@DVR-SPARE_Ch1.wmv")
+str1 = Path("CIMRL10-676_OK\\PIDF-1 PO MRL-021_parte3.mpg")
+str2 = Path("CIMRL10-676_OK\\PIDF-1 PO MRL-021_parte3.mpg")
+
 print(str1)
 print(str2)
-# print(str1.strip() == str2.strip())
-
 pattern = ""
 numParts = len(str2.parts)
 for i in range(numParts-1):
-    pattern += str(str2.parts[i]).replace('.', '\.')+"\\[.]*"
-pattern += str2.parts[-1]
+    pattern += str(str2.parts[i])+".*"
+pattern += str2.parts[-1]#.replace('.', '\.')
 pattern = str(pattern)
 print(pattern)
 if re.match(pattern, str(str1)):
     print('True')
 else:
     print('None')
-
-# print("Unique reports")
-# print(ind1.index.Report.unique())
