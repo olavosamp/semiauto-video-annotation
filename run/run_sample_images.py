@@ -37,7 +37,7 @@ print("")
 numImages = len(imageList)
 
 # Sample 1% of total images with normal distribution
-numSamples = int(numImages*0.1)
+numSamples = int(numImages*0.01)
 sampleIndexes = np.random.choice(numImages, size=numSamples, replace=False)
 
 # Copy images to dest path
