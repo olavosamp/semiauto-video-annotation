@@ -1,7 +1,7 @@
 import re
 import numpy        as np
 import pandas       as pd
-from pathlib        import Path
+from pathlib        import Path, PurePosixPath, PosixPath
 from glob           import glob
 
 import libs.dirs    as dirs
@@ -32,21 +32,21 @@ def string_list_complement(list1, list2):
 
     list3 = []
     for elem1 in list1:
-        # print("Searching for\n{}\n".format(elem1))
-        # input()
+        #print("Searching for\n{}\n".format(elem1))
+        #input()
         appendFlag = False
         for elem2 in list2:
-            # print("{}\n{}\n{}\n".format(elem1, elem2, _compare(elem1, elem2)))
+            #print("{}\n{}\n{}\n".format(elem1, elem2, _compare(elem1, elem2)))
             if _compare(elem1, elem2):
-                # print("Labeled video found. Not adding to list.\n")
+                #print("Labeled video found. Not adding to list.\n")
                 appendFlag = True
                 break
 
         if not(appendFlag):
             list3.append(elem1)
-            # print("Labeled video not found for\n{}. Adding to list.\n".format(elem1))
-            # print("List size: {}.\n".format(len(list3)))
-            # input()
+            #print("Labeled video not found for\n{}. Adding to list.\n".format(elem1))
+            #print("List size: {}.\n".format(len(list3)))
+            #input()
 
     return list3
 
@@ -64,12 +64,12 @@ def add_ok(pathList):
     return list(map(_replace, pathList))
 
 
-datasetPath = dirs.base_videos
+datasetPath = dirs.febe_base_videos
 
-f = lambda x: Path(str(x).strip())
+f = lambda x: Path(str(x).replace("\\", "/").replace(" ", "_"))
 h = lambda x: x.relative_to(datasetPath)
 
-mainIndexPath = Path(dirs.index)
+mainIndexPath = PurePosixPath(dirs.index)
 newIndexPath  = Path(dirs.root) / "index" / "unlabeled_index.csv"
 
 ind1  = IndexManager(path=mainIndexPath)            # Existing image index
@@ -86,10 +86,20 @@ for video in labeledVideos:
 print("Labeled videos: ", len(labeledVideos))
 print("\n")
 
+#print("debug")
+
+#print(str(labeledVideos[0]).replace("\\", "/"))
+#print(str(labeledVideos[0]))
+#print(Path(labeledVideos[0]))
+#input()
+
 # Get video paths in dataset folder (all videos)
 allVideos = []
 for format in commons.videoFormats:
-    globList = glob(datasetPath + "/**" + "/*."+format, recursive=True)
+    globString = datasetPath + "**" + "/*."+format
+    globList = glob(globString, recursive=True)
+#    print(globString)
+#    input()
     allVideos.extend(globList)
 
 allVideos = list(map(f, allVideos))
@@ -100,28 +110,28 @@ mask = list(map(lambda x: not(x.match("VIDEO_TS.VOB")), allVideos))
 allVideos = np.array(allVideos)[mask]
 
 
-# Get video paths that are unlabeled (all - labeled)
-# unlabeledVideos = [x for x in allVideos if x not in labeledVideos]
-# unlabeledVideos = set(allVideos) - set(labeledVideos)
-unlabeledVideos = string_list_complement(allVideos, labeledVideos)
-unlabeledVideos = []
-for video in unlabeledVideos:
-    print(video)
-print("Unlabeled videos: {}, should be {}.".format(len(unlabeledVideos), len(allVideos) - len(labeledVideos)))
-print("\n")
 for video in allVideos:
     print(video)
 print("Total videos: ", len(allVideos))
 print("\n")
 
+# Get video paths that are unlabeled (all - labeled)
+# unlabeledVideos = [x for x in allVideos if x not in labeledVideos]
+# unlabeledVideos = set(allVideos) - set(labeledVideos)
+unlabeledVideos = string_list_complement(allVideos, labeledVideos)
+for video in unlabeledVideos:
+    print(video)
+print("Unlabeled videos: {}, should be {}.".format(len(unlabeledVideos), len(allVideos) - len(labeledVideos)))
 print("\n")
-# str1 = Path(allVideos[48])
-# str2 = Path(labeledVideos[0])
+
+print("\n")
+str1 = Path(allVideos[55])
+str2 = Path(labeledVideos[0])
 
 # str1 = Path("GHmls16-263_OK/DVD-4/VIDEOS/TRECHO RISER/20161106091420250@DVR-SPARE_Ch1.wmv")
 # str2 = Path("GHmls16-263_OK/DVD-4/20161106091420250@DVR-SPARE_Ch1.wmv")
-str1 = Path("CIMRL10-676_OK\\PIDF-1 PO MRL-021_parte3.mpg")
-str2 = Path("CIMRL10-676_OK\\PIDF-1 PO MRL-021_parte3.mpg")
+#str1 = Path("CIMRL10-676_OK/PIDF-1 PO MRL-021_parte3.mpg")
+#str2 = Path("CIMRL10-676_OK/PIDF-1 PO MRL-021_parte3.mpg")
 
 print(str1)
 print(str2)
@@ -129,11 +139,19 @@ pattern = ""
 numParts = len(str2.parts)
 for i in range(numParts-1):
     pattern += str(str2.parts[i])+".*"
-pattern += str2.parts[-1].replace('.', '\.')
+pattern += str(str2.parts[-1])#.replace('.', '\.')
 pattern = str(pattern)
+print("\n", pattern)
+print("len1: ", len(str(str1)))
+print("len2: ", len(str(str2)))
 
-print(pattern)
+print("str1==str2: ", str(str1)==str(str2))
 if re.search(pattern, str(str1)):
-    print('True')
+    print('regex: True')
 else:
-    print('None')
+    print('regex: None')
+
+#for i in range(len(str(str1))):
+#	print("str1: ", str(str1)[i])
+#	print("str2: ", str(str2)[i])
+#	print("equal? ", str(str1)[i] == str(str2)[i])
