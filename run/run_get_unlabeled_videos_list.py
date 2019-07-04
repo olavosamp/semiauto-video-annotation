@@ -107,7 +107,7 @@ unlabeledVideos = string_list_complement(allVideos, labeledVideos)
 unlabeledVideos = []
 for video in unlabeledVideos:
     print(video)
-print("Unlabeled videos: ", len(unlabeledVideos))
+print("Unlabeled videos: {}, should be {}.".format(len(unlabeledVideos), len(allVideos) - len(labeledVideos)))
 print("\n")
 for video in allVideos:
     print(video)
@@ -129,10 +129,11 @@ pattern = ""
 numParts = len(str2.parts)
 for i in range(numParts-1):
     pattern += str(str2.parts[i])+".*"
-pattern += str2.parts[-1]#.replace('.', '\.')
+pattern += str2.parts[-1].replace('.', '\.')
 pattern = str(pattern)
+
 print(pattern)
-if re.match(pattern, str(str1)):
+if re.search(pattern, str(str1)):
     print('True')
 else:
     print('None')
