@@ -26,7 +26,7 @@ for format in commons.videoFormats:
 allVideos = list(map(f, allVideos))
 # allVideos = list(map(h, allVideos))
 
-allVideos = allVideos[0:3]
+allVideos = allVideos[0:2]
 numVideos = len(allVideos)
 # print(allVideos)
 # gff = GetFramesFull(allVideos, destPath="../images/test_get_frames/", interval=1)

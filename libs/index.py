@@ -96,7 +96,15 @@ class IndexManager:
 
             # Save new frame path as FramePath and the old one as OriginalFramePath
             for i in range(numEntries):
-                newFramePath = "--".join([self.newEntryDf.loc[i, 'Report'], 'DVD-'+str(self.newEntryDf.loc[i, 'DVD']), self.newEntryDf.loc[i, 'FrameName']])
+                report    = self.newEntryDf.loc[i, 'Report'][0]
+                dvd       = str(self.newEntryDf.loc[i, 'DVD'][0])
+                frameName = self.newEntryDf.loc[i, 'FrameName'][0]
+                newFramePath = "--".join([report, 'DVD-'+dvd, frameName])
+                # print(report)
+                # print(dvd)
+                # print(frameName)
+                # print(newFramePath)
+                # input()
 
                 self.newEntryDf.loc[i, 'OriginalFramePath'] = self.newEntryDf.loc[i, 'FramePath']
                 self.newEntryDf.loc[i, 'FramePath']         = newFramePath
