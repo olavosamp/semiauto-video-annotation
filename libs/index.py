@@ -62,27 +62,53 @@ class IndexManager:
             newEntry: Dict of lists. Keys are data columns, values are lists containing
                       the data
         '''
-        self.newEntryDf = pd.DataFrame.from_dict(newEntry)
+        # If input is a single entry
+        if type(newEntry) is dict:
+            self.newEntryDf = pd.DataFrame.from_dict(newEntry)
 
-        # Save new frame path as FramePath and the old one as OriginalFramePath
-        newFramePath = "--".join([self.newEntryDf.loc[0, 'Report'], 'DVD-'+str(self.newEntryDf.loc[0, 'DVD']), self.newEntryDf.loc[0, 'FrameName']])
+            # Save new frame path as FramePath and the old one as OriginalFramePath
+            newFramePath = "--".join([self.newEntryDf.loc[0, 'Report'], 'DVD-'+str(self.newEntryDf.loc[0, 'DVD']), self.newEntryDf.loc[0, 'FrameName']])
 
-        self.newEntryDf['OriginalFramePath'] = self.newEntryDf['FramePath']
-        self.newEntryDf['FramePath']         = newFramePath
+            self.newEntryDf['OriginalFramePath'] = self.newEntryDf['FramePath']
+            self.newEntryDf['FramePath']         = newFramePath
 
-        if self.indexExists == True:
-            if self.check_duplicates() == True:
-                # If duplicate, merge data with existing entry
-                self.duplicates_count += 1
+            if self.indexExists:
+                if self.check_duplicates() == True:
+                    # If duplicate, merge data with existing entry
+                    self.duplicates_count += 1
+                else:
+                    # If not duplicate, append to existing df
+                    self.index = self.index.append(self.newEntryDf, sort=False, ignore_index=False).reset_index(drop=True)
+                    self.new_entries_count += 1
             else:
-                # If not duplicate, append to existing df
-                self.index = self.index.append(self.newEntryDf, sort=False, ignore_index=False).reset_index(drop=True)
+                # Create df with new entry
+                self.index              = self.newEntryDf.copy()
+                self.indexExists        = True
                 self.new_entries_count += 1
-        else:
-            # Create df with new entry
+
+        # If input is a list of entries
+        elif type(newEntry) is list:
+            if self.indexExists:
+                raise ValueError("Adding entry from list unsupported for existing index.")
+            numEntries = np.shape(newEntry)[0]
+            # If index does not exist, proceed
+            self.newEntryDf = pd.DataFrame(newEntry)
+
+            # Save new frame path as FramePath and the old one as OriginalFramePath
+            for i in range(numEntries):
+                newFramePath = "--".join([self.newEntryDf.loc[i, 'Report'], 'DVD-'+str(self.newEntryDf.loc[i, 'DVD']), self.newEntryDf.loc[i, 'FrameName']])
+
+                self.newEntryDf.loc[i, 'OriginalFramePath'] = self.newEntryDf.loc[i, 'FramePath']
+                self.newEntryDf.loc[i, 'FramePath']         = newFramePath
+
             self.index              = self.newEntryDf.copy()
             self.indexExists        = True
-            self.new_entries_count += 1
+
+            if self.check_duplicates():
+                raise ValueError("Duplicates entries found. Cannot process.")
+            self.new_entries_count += numEntries
+
+        return self.newEntryDf
 
 
     def check_duplicates(self):
