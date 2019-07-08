@@ -1,5 +1,21 @@
 {
-    "python.pythonPath": "C:\\Users\\Sampaio\\Miniconda3\\envs\\opencvenv\\python.exe",
+    "python.pythonPath": "C:\\ProgramData\\Miniconda3\\envs\\opencvenv\\python.exe",
     "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "python.formatting.provider": "yapf",
+
+    "workbench.colorCustomizations": {
+        // "list.inactiveSelectionBackground": "#C5DEF0",
+        // "sideBar.background": "#F8F6F6",
+        // "sideBar.foreground": "#000000",
+        // "editor.background": "#FFFFFF",
+        // "editor.foreground": "#000000",
+        // "sideBarSectionHeader.background": "#CAC9C9",
+        // "sideBarSectionHeader.foreground": "#000000",
+        // "activityBar.border": "#FFFFFF",
+        "statusBar.background": "#070e25",
+        // "scrollbarSlider.activeBackground": "#77D4CB",
+        // "scrollbarSlider.hoverBackground": "#8CE6DA",
+        // "badge.background": "#81CA91"
+    }
 }
