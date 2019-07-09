@@ -57,17 +57,28 @@ class IndexManager:
 
     def add_entry(self, newEntry):
         '''
-            Adds new entry to index by appending a line to the existing DataFrame or
-            creating a new DataFrame with one line.
-            newEntry: Dict of lists. Keys are data columns, values are lists containing
-                      the data
+            Adds new entry to index by appending new entries to the existing DataFrame or
+            creating a new DataFrame.
+
+            Arguments:
+                newEntry: Single entry or list of entries. Each entry is a Dict of lists. Keys are data columns, values are lists containing
+                          the data
         '''
         # If input is a single entry
         if type(newEntry) is dict:
             self.newEntryDf = pd.DataFrame.from_dict(newEntry)
 
             # Save new frame path as FramePath and the old one as OriginalFramePath
-            newFramePath = "--".join([self.newEntryDf.loc[0, 'Report'], 'DVD-'+str(self.newEntryDf.loc[0, 'DVD']), self.newEntryDf.loc[0, 'FrameName']])
+            # TODO: Guarantee that FramePath is only formatted outside IndexManager
+            # hasFormatting = str(self.newEntryDf.loc[0, 'FrameName']).find("--")
+            # if hasFormatting != -1:
+            newFramePath = str(self.newEntryDf.loc[0, 'FrameName'])
+            # else:
+            #     newFramePath = "--".join([
+            #         self.newEntryDf.loc[0, 'Report'],
+            #         'DVD-' + str(self.newEntryDf.loc[0, 'DVD']),
+            #         self.newEntryDf.loc[0, 'FrameName']
+            #     ])
 
             self.newEntryDf['OriginalFramePath'] = self.newEntryDf['FramePath']
             self.newEntryDf['FramePath']         = newFramePath
@@ -78,7 +89,9 @@ class IndexManager:
                     self.duplicates_count += 1
                 else:
                     # If not duplicate, append to existing df
-                    self.index = self.index.append(self.newEntryDf, sort=False, ignore_index=False).reset_index(drop=True)
+                    self.index = self.index.append(
+                                            self.newEntryDf, sort=False,
+                                            ignore_index=False).reset_index(drop=True)
                     self.new_entries_count += 1
             else:
                 # Create df with new entry
@@ -89,8 +102,11 @@ class IndexManager:
         # If input is a list of entries
         elif type(newEntry) is list:
             if self.indexExists:
-                raise ValueError("Adding entry from list unsupported for existing index.")
+                raise ValueError(
+                    "Adding entry from list unsupported for existing index.\
+                    Please backup and delete current index and try again.")
             numEntries = np.shape(newEntry)[0]
+
             # If index does not exist, proceed
             self.newEntryDf = pd.DataFrame(newEntry)
 
@@ -99,7 +115,8 @@ class IndexManager:
                 report    = self.newEntryDf.loc[i, 'Report'][0]
                 dvd       = str(self.newEntryDf.loc[i, 'DVD'][0])
                 frameName = self.newEntryDf.loc[i, 'FrameName'][0]
-                newFramePath = "--".join([report, 'DVD-'+dvd, frameName])
+                # TODO: Guarantee that FramePath is only formatted outside IndexManager
+                newFramePath = frameName
                 # print(report)
                 # print(dvd)
                 # print(frameName)
@@ -112,8 +129,16 @@ class IndexManager:
             self.index              = self.newEntryDf.copy()
             self.indexExists        = True
 
-            if self.check_duplicates():
-                raise ValueError("Duplicates entries found. Cannot process.")
+            dupIndex = self.index.duplicated(subset="FramePath")
+            dupDf = self.index.loc[dupIndex, :]
+            print(dupDf)
+            print(dupDf.shape)
+            print(np.shape(dupIndex))
+            print(np.sum(dupIndex))
+            # exit()
+
+            # if self.check_duplicates():
+            #     raise ValueError("Duplicates entries found. Cannot process.")
             self.new_entries_count += numEntries
 
         return self.newEntryDf
@@ -243,7 +268,7 @@ class IndexManager:
         print("Original Index had {} entries.\nNew Index has {} entries.".format(self.originalLen, self.index.shape[0]))
 
         print("\nProcessed {} entries. Added {} and merged {} duplicates.\nSaved index to \n{}\
-                        \n".format(self.new_entries_count+self.duplicates_count,
+                        \n"                                                                                                                                                                                                                                                                              .format(self.new_entries_count+self.duplicates_count,
                             self.new_entries_count, self.duplicates_count,
                             self.indexPath))
 

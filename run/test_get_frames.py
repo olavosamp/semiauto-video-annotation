@@ -8,6 +8,7 @@ from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
 datasetPath = dirs.base_videos
+destPath    = Path(dirs.images) / 'test_get_frames'
 
 f = lambda x: Path(x)
 h = lambda x: x.relative_to(datasetPath)
@@ -27,9 +28,20 @@ for format in commons.videoFormats:
 allVideos = list(map(f, allVideos))
 # allVideos = list(map(h, allVideos))
 
-print(allVideos[0])
-gff = GetFramesFull(allVideos[0], destPath="../images/test_get_frames/", interval=1)
-frameEntryList = gff.get_frames()
+allVideos = allVideos[:2]
+numVideos = len(allVideos)
+
+# print(allVideos)
+# gff = GetFramesFull(allVideos, destPath="../images/test_get_frames/", interval=1)
+# frameEntryList = gff.get_frames()
+
+frameEntryList = []
+for i in range(numVideos):
+    videoPath = allVideos[i]
+    print("\nProcessing video {}/{}".format(i+1, numVideos))
+    gff = GetFramesFull(videoPath, videoFolder=datasetPath, destPath=destPath, interval=1, verbose=False)
+    newEntries = gff.get_frames()
+    frameEntryList.extend(newEntries)
 
 
 for entry in frameEntryList:

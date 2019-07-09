@@ -12,11 +12,11 @@ from libs.get_frames_class  import GetFramesFull
 ## Dataset settings
 datasetName = "all_datasets_1s"
 # Local dataset
-# datasetPath = dirs.base_videos
-# destPath    = dirs.images+datasetName
+datasetPath = dirs.base_videos
+destPath    = dirs.images+datasetName
 # Remote dataset
-datasetPath = dirs.febe_base_videos
-destPath    = dirs.febe_images+datasetName
+# datasetPath = dirs.febe_base_videos
+# destPath    = dirs.febe_images+datasetName
 
 ## Log settings
 logWidth1 = 120
@@ -30,7 +30,6 @@ logPath = Path(dirs.root) / "index" / (logName+".txt")
 f = lambda x: Path(x)
 h = lambda x: x.relative_to(datasetPath)
 
-# mainIndexPath = Path(dirs.index) / "index" / "main_index.csv"
 newIndexPath  = Path(dirs.root) / "index" / "unlabeled_index.csv"
 
 ind2  = IndexManager(path=newIndexPath)
@@ -57,7 +56,7 @@ allVideos = list(map(f, allVideos))
 mask = list(map(lambda x: not(x.match("VIDEO_TS.VOB")), allVideos))
 allVideos = np.array(allVideos)[mask]
 
-# allVideos = allVideos[:2] # Test run with 2 videos
+allVideos = allVideos[:2] # Test run with 2 videos
 numVideos = len(allVideos)
 
 # Print video paths for checking
@@ -87,10 +86,11 @@ for i in range(numVideos):
 dateEnd = datetime.now()
 
 numFrames = len(frameEntryList)
-for i in range(numFrames):
-    entry = frameEntryList[i]
-    print("Adding frame {}/{}".format(i, numFrames))
-    ind2.add_entry(entry)
+# for i in range(numFrames):
+#     entry = frameEntryList[i]
+#     print("Adding frame {}/{}".format(i, numFrames))
+#     ind2.add_entry(entry)
+ind2.add_entry(frameEntryList)
 
 with open(logPath, mode='a') as log:
     log.write("Extraction finished on {}.\nElapsed time {}.\n".format(dateEnd, dateEnd-dateStart))

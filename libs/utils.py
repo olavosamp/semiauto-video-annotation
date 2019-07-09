@@ -12,6 +12,65 @@ import libs.dirs    as dirs
 import libs.commons as commons
 
 
+## Path and string processing
+def string_list_complement(list1, list2):
+    '''
+        Arguments:
+            list1, list2: Two lists of strings.
+        Return value:
+            list3: Set complement of the arguments, list1 - list2. Contains elements of list1 that are not in list2.
+    '''
+    def _compare(path1, path2):
+        '''
+            Returns True if path1 contains path2, else returns False.
+        '''
+        pattern = ""
+        numParts = len(path2.parts)
+        for i in range(numParts-1):
+            pattern += str(path2.parts[i]) + ".*"
+        pattern += path2.parts[-1]#.replace('.', '\.')
+        pattern = str(pattern)
+        if re.search(pattern, str(path1)):
+            return True
+        else:
+            return False
+
+    list3 = []
+    for elem1 in list1:
+        #print("Searching for\n{}\n".format(elem1))
+        #input()
+        appendFlag = False
+        for elem2 in list2:
+            #print("{}\n{}\n{}\n".format(elem1, elem2, _compare(elem1, elem2)))
+            if _compare(elem1, elem2):
+                #print("Labeled video found. Not adding to list.\n")
+                appendFlag = True
+                break
+
+        if not(appendFlag):
+            list3.append(elem1)
+            #print("Labeled video not found for\n{}. Adding to list.\n".format(elem1))
+            #print("List size: {}.\n".format(len(list3)))
+            #input()
+
+    return list3
+
+
+def add_ok(pathList):
+    '''
+        Appends "_OK" to reports created without this termination.
+
+        pathList: List of string paths.
+    '''
+    def _replace(x):
+        for report in commons.reportList:
+            x = str(x).replace(report+"/", report+"_OK"+"/")    # Must guarantee to only append _OK to strings without it
+            x = str(x).replace(report+"\\", report+"_OK"+"\\")  # Do it twice for Linux/Windows compatibility
+        return x
+    return list(map(_replace, pathList))
+
+
+## Video and image processing
 def convert_video(video_input, video_output):
     print("\nProcessing video: ", video_input)
     print("Saving to : ", video_output)

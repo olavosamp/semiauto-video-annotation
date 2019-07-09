@@ -41,7 +41,7 @@ class GetFrames:
         '''
             videoPath: source video path
         '''
-        # Get relative video path from full video path
+        # Get video name with extension from full video path
         self.videoName      = Path(self.videoPath.name)
 
         # Get Report field
@@ -66,10 +66,11 @@ class GetFrames:
 
         self.totalFrames = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
 
-        if self.dvd != None:
-            self.videoFolderPath = self.destPath / self.videoReport / ("DVD-" + self.dvd) / Path(self.videoName.stem)
-        else:
-            self.videoFolderPath = self.destPath / self.videoReport / Path(self.videoName.stem)
+        # if self.dvd != None:
+        #     self.videoFolderPath = self.destPath / self.videoReport / ("DVD-" + self.dvd) / Path(self.videoName.stem)
+        # else:
+        #     self.videoFolderPath = self.destPath / self.videoReport / Path(self.videoName.stem)
+        self.videoFolderPath = self.destPath
         dirs.create_folder(self.videoFolderPath)
         return self.video
 
@@ -84,8 +85,6 @@ class GetFrames:
             return self.frameEntryList
 
         self.videoTime   = self.totalFrames/self.frameRate
-        # if self.verbose:
-        #     print("Total video time:")
         print("Video time: ", str(datetime.timedelta(seconds=self.videoTime)))
 
         self.timePos    = 0
@@ -162,11 +161,14 @@ class GetFramesCsv(GetFrames):
 
 
     def get_filename(self):
-        videoNameClean = self.videoName.replace("/", "--")[:-1][:-4]
-        self.frameName = videoNameClean+" ID{} FRAME{} {}.jpg".format(self.eventId,
-                        self.eventFrames, self.eventClass)
+        # TODO: Rewrite function to conform to FramePath standard in libs/commons
 
-        self.framePath = self.videoFolderPath+self.frameName
+        # videoNameClean = self.videoName.replace("/", "--")[:-1][:-4]
+        # self.frameName = videoNameClean+" ID{} FRAME{} {}.jpg".format(self.eventId,
+        #                 self.eventFrames, self.eventClass)
+
+        # self.framePath = self.videoFolderPath+self.frameName
+        pass
 
 
     def get_frames(self):
@@ -267,7 +269,7 @@ class GetFramesCsv(GetFrames):
 
 
 class GetFramesFull(GetFrames):
-    def __init__(self, videoPath, videoFolder=dirs.base_videos, destPath='./images/', interval=5, interMin=0.8, interMax=20, verbose=True):
+    def __init__(self, videoPath, videoFolder=dirs.base_videos, destPath='./images/new_dataset/', interval=5, interMin=0.8, interMax=20, verbose=True):
         super().__init__(destPath, videoFolder=videoFolder, verbose=verbose)
         self.videoPath  = Path(videoPath)
         self.interval   = interval
@@ -289,9 +291,14 @@ class GetFramesFull(GetFrames):
 
     def get_filename(self):
         self.frameName = str(self.videoName)+ " FRAME {}.jpg".format(self.frameNum)
-        # self.frameName = "--".join([self.videoReport, 'DVD-'+str(self.dvd), str(self.videoName)+ " FRAME {}.jpg".format(self.frameNum))
-        self.filePath = self.videoFolderPath / self.frameName
-
+        # self.filePath = self.videoFolderPath / self.frameName
+        self.filePath = "--".join(
+                            [self.videoReport,
+                             'DVD-'+str(self.dvd),
+                             self.frameName]
+        )
+        self.filePath = self.destPath / Path(self.filePath)
+        
         return str(self.filePath)
 
 
@@ -312,10 +319,10 @@ class GetFramesFull(GetFrames):
 
             try: # Escape video read errors
                 self.videoError['read'], self.frame = self.video.read()
-            except _ as e:
+            except:
                 self.criticalReadError = True
                 self.videoError['read'] = False
-                print("\nVideo read error. Message:\n", e, "\nProgram will ignore and continue.")
+                print("\nVideo read error. Message:\n", "\nProgram will ignore and continue.")
 
             self.videoError['write'] = cv2.imwrite(self.get_filename(), self.frame)
             # if self.verbose:
