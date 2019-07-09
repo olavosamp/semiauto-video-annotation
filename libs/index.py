@@ -2,6 +2,7 @@ import os
 import shutil
 import pandas       as pd
 import numpy        as np
+from tqdm           import tqdm
 from   datetime     import datetime
 from   pathlib      import Path
 from   glob         import glob
@@ -108,15 +109,21 @@ class IndexManager:
             numEntries = np.shape(newEntry)[0]
 
             # If index does not exist, proceed
-            self.newEntryDf = pd.DataFrame(newEntry)
+            # TODO: Find a faster way to make a list of Dicts into a DataFrame
+            self.newEntryDf = pd.DataFrame.from_dict(newEntry[0])
+            for entry in tqdm(newEntry):
+                print(entry)
+                newDf = pd.DataFrame.from_dict(entry)
+                self.newEntryDf = self.newEntryDf.append(newDf, sort=False,
+                                            ignore_index=False).reset_index(drop=True)
 
             # Save new frame path as FramePath and the old one as OriginalFramePath
             for i in range(numEntries):
-                report    = self.newEntryDf.loc[i, 'Report'][0]
-                dvd       = str(self.newEntryDf.loc[i, 'DVD'][0])
                 frameName = self.newEntryDf.loc[i, 'FrameName'][0]
                 # TODO: Guarantee that FramePath is only formatted outside IndexManager
                 newFramePath = frameName
+                # report    = self.newEntryDf.loc[i, 'Report'][0]
+                # dvd       = str(self.newEntryDf.loc[i, 'DVD'][0])
                 # print(report)
                 # print(dvd)
                 # print(frameName)
