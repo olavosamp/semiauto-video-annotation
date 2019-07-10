@@ -330,18 +330,18 @@ class GetFramesFull(GetFrames):
 
 
             self.frameEntry = {
-            'VideoPath':            [self.videoPath],
-            'Report':               [self.videoReport],
-            'DVD':                  [self.dvd],
-            'VideoName':            [self.videoName],
-            'EventId':              [None],
-            'FrameTime':            [self.timePos],
-            'AbsoluteFrameNumber':  [self.frameNum],
-            'RelativeFrameNumber':  [None],
-            'Tags':                 ["unlabeled"],
-            'FramePath':            [self.filePath],
-            'FrameName':            [self.filePath.name],
-            'OriginalDataset':      [self.datasetName]
+            'VideoPath':            self.videoPath,
+            'Report':               self.videoReport,
+            'DVD':                  self.dvd,
+            'VideoName':            self.videoName,
+            'EventId':              None,
+            'FrameTime':            self.timePos,
+            'AbsoluteFrameNumber':  self.frameNum,
+            'RelativeFrameNumber':  None,
+            'Tags':                 "unlabeled",
+            'FramePath':            self.filePath,
+            'FrameName':            self.filePath.name,
+            'OriginalDataset':      self.datasetName
             }
 
             # print("\n")

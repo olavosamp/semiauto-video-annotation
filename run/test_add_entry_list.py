@@ -41,11 +41,14 @@ for i in range(numVideos):
     frameEntryList.extend(newEntries)
 
 
-for entry in frameEntryList:
-    ind2.add_entry(entry)
+# for entry in frameEntryList:
+#     ind2.add_entry(entry)
+ind2.add_entry(frameEntryList)
 
 # print("List size: ", len(frameEntryList))
 # ind2.add_entry(frameEntryList)
 
 ind2.write_index(prompt=False)
+ind2.move_files()
+
 ind2.report_changes()
