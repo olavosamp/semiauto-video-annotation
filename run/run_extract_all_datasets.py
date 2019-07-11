@@ -12,11 +12,11 @@ from libs.get_frames_class  import GetFramesFull
 ## Dataset settings
 datasetName = "all_datasets_1s"
 # Local dataset
-datasetPath = dirs.base_videos
-destPath    = dirs.images+datasetName
+# datasetPath = dirs.base_videos
+# destPath    = dirs.images+datasetName
 # Remote dataset
-# datasetPath = dirs.febe_base_videos
-# destPath    = dirs.febe_images+datasetName
+datasetPath = dirs.febe_base_videos
+destPath    = dirs.febe_images+datasetName
 
 ## Log settings
 logWidth1 = 120
@@ -56,7 +56,7 @@ allVideos = list(map(f, allVideos))
 mask = list(map(lambda x: not(x.match("VIDEO_TS.VOB")), allVideos))
 allVideos = np.array(allVideos)[mask]
 
-allVideos = allVideos[:2] # Test run with 2 videos
+# allVideos = allVideos[:2] # Test run with 2 videos
 numVideos = len(allVideos)
 
 # Print video paths for checking
@@ -95,6 +95,6 @@ ind2.add_entry(frameEntryList)
 with open(logPath, mode='a') as log:
     log.write("Extraction finished on {}.\nElapsed time {}.\n".format(dateEnd, dateEnd-dateStart))
 
-ind2.write_index()
+ind2.write_index(prompt=False)
 
 input("\nExtraction finished. Press any key to end.")
