@@ -1,0 +1,7 @@
+2019-11-07
+unlabeled_index_2019-7-11_2-36-59
+
+Captura de frames de todos os vídeos da base, exceto cabecalhos de DVD, de nome VIDEO_TS.
+Frames capturados de 148 vídeos com intervalo de 1s.
+467673 imagens obtidas.
+Log: log all_datasets_1s_2019-7-11_2-36-59
