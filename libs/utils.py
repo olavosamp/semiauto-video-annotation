@@ -1,6 +1,7 @@
 import os
 import re
 import math
+import hashlib
 import subprocess
 import numpy     as np
 import pandas    as pd
@@ -71,13 +72,20 @@ def add_ok(pathList):
     return list(map(_replace, pathList))
 
 
+def file_hash(filePath):
+    with open(filePath, 'rb') as handler:
+        data = handler.read()
+        hashedData = hashlib.md5(data).hexdigest()
+    return hashedData
+
+
 ## Video and image processing
 def convert_video(video_input, video_output):
     print("\nProcessing video: ", video_input)
     print("Saving to : ", video_output)
 
     destFolder = '/'.join(video_output.split('/')[:-1])
-    create_folder(destFolder)
+    dirs.create_folder(destFolder)
 
     cmds = ['ffmpeg', '-i', video_input, video_output]
     subprocess.Popen(cmds)

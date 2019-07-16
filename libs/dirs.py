@@ -12,16 +12,6 @@ dataset             = root+sep+".."+sep+"datasets"+sep
 febe_base_videos    = "/"+"home"+sep+"common"+sep+"flexiveis"+sep+"videos"+sep
 febe_images         = root+".."+sep+"images"+sep
 
-# def create_folder(path, verbose=False):
-#     try:
-#         os.makedirs(path)
-#     except OSError as e:
-#         # Folder already exists or destFolder is invalid
-#         if verbose:
-#             print(e)
-#         else:
-#             pass
-
 def create_folder(path, verbose=False):
     if not(os.path.isdir(path)):
         os.makedirs(path)

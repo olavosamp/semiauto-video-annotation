@@ -8,6 +8,7 @@ from   pathlib      import Path
 from   glob         import glob
 
 import libs.dirs    as dirs
+from libs.utils     import file_hash
 
 
 def move_files_routine(source, destination):
@@ -42,11 +43,22 @@ class IndexManager:
         self.validate_path()
 
 
-    def index_len(self):
+    def get_index_len(self):
+        ''' Returns integer representing number of entries in index, 
+        or None, if index doesn't exists.'''
         if self.indexExists:
             return self.index.shape[0]
         else:
             return 0
+
+
+    def get_video_path_list(self):
+        ''' Returns list with unique videos in the dataset.
+        '''
+        if self.indexExists:
+            return list(dict.fromkeys(self.index['VideoPath']))
+        else:
+            return []
 
 
     def validate_path(self):
@@ -264,7 +276,7 @@ class IndexManager:
 
         self.moveResults = list(map(move_files_routine, self.index.loc[:, 'OriginalFramePath'], self.frameDestPaths))
 
-        for i in range(self.index_len()):
+        for i in range(self.get_index_len()):
             self.index.loc[i, "OriginalFramePath"] = self.index.loc[i, "FramePath"].copy()
             self.index.loc[i, "FramePath"] = self.frameDestPaths[i]
 
@@ -308,3 +320,20 @@ class IndexManager:
     def append_tag(self, entryIndex, newTag):
         self.index.at[entryIndex, 'Tags'] += "-"+newTag
         print(self.index.at[entryIndex, 'Tags'])
+
+
+    def get_video_hash_list(self):
+        ''' 
+            Returns DataFrame with columns 'VideoPath', containing all unique video paths in the index,
+            and 'VideoHash', containing the respective file hashes.
+        '''
+        if self.indexExists:
+            self.hashDf = pd.DataFrame({'VideoPath': self.get_video_path_list()})
+
+            numVideos = self.hashDf.shape[0]
+            for i in tqdm(range(numVideos)):
+                self.hashDf.loc[i, 'VideoHash'] = file_hash(self.hashDf.loc[i, 'VideoPath'])
+        else:
+            self.hashDf = None
+        
+        return self.hashDf

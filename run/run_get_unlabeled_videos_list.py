@@ -83,15 +83,16 @@ for video in labeledVideos:
 print("Labeled videos: ", len(labeledVideos))
 print("\n")
 
-# Get entire dataset video list from videos in video dataset folder
+## Get entire dataset video list
+# # Get list from *Video Dataset Folder*
 # allVideosList = get_video_list_glob(datasetPath)
 # allVideos = format_video_list(allVideosList)
 
-# Get entire dataset video list from unlabeled_index
+# # Get list from *Unlabeled Index*
 allVideosPath = Path("index/unlabeled_index_2019-7-11_2-36-59.csv")
 indAll = IndexManager(path=allVideosPath)
 
-allVideosRaw = indAll.index.VideoPath#.unique()
+allVideosRaw = indAll.index.VideoPath
 print("Processing file with {} entries.".format(np.shape(allVideosRaw)[0]))
 allVideos    = format_video_list(allVideosRaw)
 
