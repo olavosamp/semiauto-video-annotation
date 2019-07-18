@@ -1,6 +1,7 @@
 import os
 import re
 import math
+import shutil
 import hashlib
 import subprocess
 import numpy     as np
@@ -14,7 +15,16 @@ import libs.dirs    as dirs
 import libs.commons as commons
 
 
-## Path and string processing
+## Filepath and string processing
+def copy_files(source, destination):
+    if os.path.isfile(source):
+        shutil.copy2(source, destination)
+        return True
+    else:
+        return False
+    #     print("Source file not found:\n", source)
+
+
 def string_list_complement(list1, list2):
     '''
         Arguments:
