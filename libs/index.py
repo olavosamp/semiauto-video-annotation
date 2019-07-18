@@ -2,7 +2,7 @@ import os
 import shutil
 import pandas       as pd
 import numpy        as np
-from tqdm           import tqdm
+from   tqdm         import tqdm
 from   datetime     import datetime
 from   pathlib      import Path
 from   glob         import glob

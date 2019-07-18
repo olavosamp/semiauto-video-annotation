@@ -1,8 +1,9 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: win-64
-numpy=1.15.4=py37h19fb1c0_0
+numpy=1.16
 opencv=3.4.2=py37h40b0b35_0
-pandas=0.24.1=py37ha925a31_0
-pillow=5.4.1=py37hdc69c19_0
-python=3.7.2=h8c8aaf0_2
+pandas=0.24
+pillow=5.4
+python=3.7
+tqdm
