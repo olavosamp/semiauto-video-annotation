@@ -80,6 +80,22 @@ class IndexManager:
             raise ValueError("Invalid index path.")
 
 
+    @staticmethod
+    def get_new_frame_path(entry):
+        if entry.loc[0, 'DVD'] is None:
+            # Put a DVD-X indicator in frame path
+            newFramePath = "--".join(
+                [entry.loc[0, 'Report'],
+                entry.loc[0, 'FrameName']])
+        else:
+            # Don't put any DVD indicator in path
+            newFramePath = "--".join(
+                [entry.loc[0, 'Report'],
+                'DVD-'+str(entry.loc[0, 'DVD']),
+                entry.loc[0, 'FrameName']])
+        return newFramePath
+
+
     def add_entry(self, newEntry):
         '''
             Adds new entry to index by appending new entries to the existing DataFrame or
@@ -95,10 +111,11 @@ class IndexManager:
 
             # Save new frame path as FramePath and the old one as OriginalFramePath
             # TODO: Guarantee that FramePath is only formatted outside IndexManager
-            newFramePath = str(self.newEntryDf.loc[0, 'FrameName'])
-
+            
+            # If this is a new entry, OriginalFramePath and FramePath will be the same
+            # FramePath should only be changed if the file is actually moved
             self.newEntryDf['OriginalFramePath'] = self.newEntryDf['FramePath']
-            self.newEntryDf['FramePath']         = newFramePath
+            self.newEntryDf['FramePath']         = str(self.newEntryDf.loc[0, 'FrameName'])
 
             if self.indexExists:
                 if self.check_duplicates() == True:
@@ -106,9 +123,8 @@ class IndexManager:
                     self.duplicates_count += 1
                 else:
                     # If not duplicate, append to existing df
-                    self.index = self.index.append(
-                                            self.newEntryDf, sort=False,
-                                            ignore_index=False).reset_index(drop=True)
+                    self.index = self.index.append(self.newEntryDf, sort=False,
+                                                    ignore_index=False).reset_index(drop=True)
                     self.new_entries_count += 1
             else:
                 # Create df with new entry

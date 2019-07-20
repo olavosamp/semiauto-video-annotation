@@ -16,6 +16,15 @@ import libs.commons as commons
 
 
 ## Filepath and string processing
+def get_time_string(date):
+    ''' Argument: datetime object
+        Returns:  Formatted string with year, month, day, hour, minute and seconds.
+    '''
+    timeString = "{}-{}-{}_{}-{}-{}".format(date.year, date.month,\
+        date.day, date.hour, date.minute, date.second)
+    return timeString
+
+
 def copy_files(source, destination):
     if os.path.isfile(source):
         shutil.copy2(source, destination)

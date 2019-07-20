@@ -10,16 +10,7 @@ from datetime       import datetime
 import libs.dirs    as dirs
 import libs.commons as commons
 from libs.index     import IndexManager
-from libs.utils     import copy_files
-
-
-def get_time_string(date):
-    ''' Argument: datetime object
-        Returns:  Formatted string with year, month, day, hour, minute and seconds.
-    '''
-    timeString = "{}-{}-{}_{}-{}-{}".format(date.year, date.month,\
-        date.day, date.hour, date.minute, date.second)
-    return timeString
+from libs.utils     import copy_files, get_time_string
 
 
 class SampleImages:
