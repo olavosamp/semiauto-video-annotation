@@ -1,3 +1,7 @@
+# Pytest
+.pytest_cache/v/cache/nodeids
+.pytest_cache/v/cache/stepwise
+
 # VSCode
 .vscode/
 

@@ -13,11 +13,16 @@ from libs.index     import IndexManager
 from libs.utils     import copy_files, get_time_string
 
 
+def func_strip(x):         return Path(str(x).strip())
+# def func_relative_path(x): return x.relative_to(sourcePath)
+
+
 class SampleImages:
     '''
         Sample images from a folder or an index determined by source.
         Sampled images are copied to destFolder.
     '''
+
     def __init__(self, source, destFolder, seed=None):
         self.date        = datetime.now()
         self.source      = Path(source)
@@ -37,24 +42,14 @@ class SampleImages:
             # Sample files from directory
             self._sample_from_folder()
 
-        elif self.source.suffix == "csv":
+        elif self.source.suffix == ".csv":
             # Sample files from entries in a csv index
             self._sample_from_index()
         else:
             raise ValueError("Source must be a folder or csv index path.")
 
 
-    def _sample_from_folder(self):
-        self.index = None
-        def func_strip(x):         return Path(str(x).strip())
-        # def func_relative_path(x): return x.relative_to(sourcePath)
-
-        # Get video paths in dataset folder (all videos)
-        self.imageList = glob(str(self.source) + "/**" + "/*.jpg", recursive=True)
-        self.imageList = list(map(func_strip, self.imageList))
-        # self.imageList = list(map(func_relative_path, self.imageList))
-
-        print("")
+    def _sample_routine(self):
         self.numImages = len(self.imageList)
 
         # Sample 1% of total images with normal distribution
@@ -74,8 +69,30 @@ class SampleImages:
             copy_files(imagePath, destPath)
 
         print("\nImage copying finished.")
+
+
+    def _sample_from_folder(self):
+        self.index = None
+
+        # Get video paths in dataset folder (all videos)
+        self.imageList = glob(str(self.source) + "/**" + "/*.jpg", recursive=True)
+        self.imageList = list(map(func_strip, self.imageList))
+        # self.imageList = list(map(func_relative_path, self.imageList))
+
+        self._sample_routine()
         return self.imageSourcePaths
     
+
+    def _sample_from_index(self):
+        self.index = pd.read_csv(self.source, dtype=str)
+        print(self.index.head())
+        print(self.index.info())
+        self.imageList = self.index.loc[:, 'VideoPath'].values
+        self.imageList = list(map(func_strip, self.imageList))
+
+        self._sample_routine()
+        return self.imageSourcePaths
+
 
     def save_to_index(self):
         ''' 
@@ -90,12 +107,12 @@ class SampleImages:
         return self.indexPath
 
 
+    # def get_image_dest_path(self, imagePath):
+    #     tmp = imagePath.relative_to(self.source).parts
+    #     destPath = self.imageFolder / "--".join(tmp)
+    #     return destPath
+
     def get_image_dest_path(self, imagePath):
-        tmp = imagePath.relative_to(self.source).parts
-        destPath = self.imageFolder / "--".join(tmp)
-        return destPath
-
-
-    def _sample_from_index(self):
-        # TODO: IMPLEMENT
-        raise NotImplementedError("Method not yet implemented.")
+        imagePath = Path(imagePath)
+        destPath = self.imageFolder / imagePath.name
+        return imagePath

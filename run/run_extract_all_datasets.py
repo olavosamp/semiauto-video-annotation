@@ -9,14 +9,19 @@ import libs.commons         as commons
 from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
+'''
+    Captura todos os frames de todos os vídeos da pasta de vídeos em datasetPath,
+    move as imagens para destPath e registra no índice em newIndexPath
+'''
+
 ## Dataset settings
 datasetName = "all_datasets_1s"
 # Local dataset
-# datasetPath = dirs.base_videos
-# destPath    = dirs.images+datasetName
+datasetPath = dirs.base_videos
+destPath    = dirs.images+datasetName
 # Remote dataset
-datasetPath = dirs.febe_base_videos
-destPath    = dirs.febe_images+datasetName
+# datasetPath = dirs.febe_base_videos
+# destPath    = dirs.febe_images+datasetName
 
 ## Log settings
 logWidth1 = 120
@@ -30,7 +35,7 @@ logPath = Path(dirs.root) / "index" / (logName+".txt")
 f = lambda x: Path(x)
 h = lambda x: x.relative_to(datasetPath)
 
-newIndexPath  = Path(dirs.root) / "index" / "unlabeled_index.csv"
+newIndexPath  = Path(dirs.root) / "index" / "test_index.csv"
 
 ind2  = IndexManager(path=newIndexPath)
 
@@ -56,7 +61,7 @@ allVideos = list(map(f, allVideos))
 mask = list(map(lambda x: not(x.match("VIDEO_TS.VOB")), allVideos))
 allVideos = np.array(allVideos)[mask]
 
-# allVideos = allVideos[:2] # Test run with 2 videos
+allVideos = allVideos[:10] # Test run with 2 videos
 numVideos = len(allVideos)
 
 # Print video paths for checking
