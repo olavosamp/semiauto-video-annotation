@@ -65,8 +65,8 @@ class SampleImages:
             imagePath = self.imageSourcePaths[i]
             destPath = self.get_image_dest_path(imagePath)
 
-            self.imageDestPaths.append(destPath)
             copy_files(imagePath, destPath)
+            self.imageDestPaths.append(destPath)
 
         print("\nImage copying finished.")
 
@@ -94,15 +94,22 @@ class SampleImages:
         return self.imageSourcePaths
 
 
-    def save_to_index(self):
+    def save_to_index(self, indexPath=None):
         ''' 
             Saves sampled images information to csv index file.
         '''
         if self.index is None:
             self.index = pd.DataFrame({"FramePath": self.imageDestPaths,
                                        "OriginalPath": self.imageSourcePaths})
+        else:
+            self.index = self.index.loc[self.sampleIndexes, :]
         
-        self.indexPath = self.destFolder / ("sample_index_" + get_time_string(self.date) + ".csv")
+        if indexPath is None:
+            self.indexPath = self.destFolder / ("sample_index_" + get_time_string(self.date) + ".csv")
+        else:
+            self.indexPath = indexPath
+            assert (Path(self.indexPath).suffix == ".csv"), "IndexPath must point to a csv file."
+
         self.index.to_csv(self.indexPath, index=False)
         return self.indexPath
 
@@ -115,4 +122,4 @@ class SampleImages:
     def get_image_dest_path(self, imagePath):
         imagePath = Path(imagePath)
         destPath = self.imageFolder / imagePath.name
-        return imagePath
+        return destPath
