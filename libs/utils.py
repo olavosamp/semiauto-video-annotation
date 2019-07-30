@@ -16,13 +16,17 @@ import libs.commons as commons
 
 
 ## Filepath and string processing
+def make_path(filePathList):
+    def _path_func(x):  return Path(x)
+    return list(map(_path_func, filePathList))
+
 
 def get_relative_list(fileList, refFolder):
     '''
         Input:   a list of filepaths and a reference folder
         Returns: the input list with every entry relative to the ref folder
     '''
-    def func_rel_to(x): return Path(x).relative_to(refFolder)
+    def func_rel_to(x): return str(Path(x).relative_to(refFolder))
     return list(map(func_rel_to, fileList))
 
 
@@ -137,14 +141,15 @@ def string_list_complement(list1, list2):
 
 def add_ok(pathList):
     '''
-        Appends "_OK" to reports created without this termination.
+        Appends "_OK" to reports created without this termination. Also replaces '\\' with '/'.
 
         pathList: List of string paths.
     '''
     def _replace(x):
         for report in commons.reportList:
             x = str(x).replace(report+"/", report+"_OK"+"/")    # Must append _OK only to strings without it
-            x = str(x).replace(report+"\\", report+"_OK"+"\\")  # Do it twice for Linux/Windows compatibility
+            x = x.replace(report+"\\", report+"_OK"+"\\")  # Do it twice for Linux/Windows compatibility
+            x = x.replace("\\", "/")
         return x
     return list(map(_replace, pathList))
 

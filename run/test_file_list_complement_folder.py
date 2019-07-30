@@ -10,14 +10,15 @@ from libs.index     import IndexManager
 from libs.utils     import (string_list_complement,
                             get_file_list,
                             remove_video_ts,
-                            get_relative_list)
+                            get_relative_list,
+                            make_path)
 
 
 # Base:    8 VOB + 31 wmv = 39 non-header videos, 40 total
 # Compare: 6 VOB + 24 wmv = 30 non-header videos, 31 total
 # Dif:     2 VOB + 7 wmv  =  9 non-header videos
-baseFolderPath    = Path(dirs.test_assets + "video_list_complement/" + "base_folder/")
-compareFolderPath = Path(dirs.test_assets + "video_list_complement/" + "compare_folder/")
+baseFolderPath    = Path(dirs.test_assets + "video_list_complement_folder/" + "base_folder/")
+compareFolderPath = Path(dirs.test_assets + "video_list_complement_folder/" + "compare_folder/")
 
 # Get file lists based on folder paths
 baseFileList    = get_file_list(baseFolderPath, ext_list=commons.videoFormats)
