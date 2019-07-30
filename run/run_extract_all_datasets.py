@@ -32,8 +32,8 @@ logName = "log "+datasetName +"_{}-{}-{}_{}-{}-{}".format(dateStart.year, dateSt
 logPath = Path(dirs.root) / "index" / (logName+".txt")
 
 # Auxiliary lambda functions
-f = lambda x: Path(x)
-h = lambda x: x.relative_to(datasetPath)
+func_make_path   = lambda x: Path(x)
+func_relative_to = lambda x: x.relative_to(datasetPath)
 
 newIndexPath  = Path(dirs.root) / "index" / "test_index.csv"
 
@@ -54,7 +54,7 @@ for format in formats:
 allVideos = list(dict.fromkeys(allVideos))
 
 # Make every entry a Path object
-allVideos = list(map(f, allVideos))
+allVideos = list(map(func_make_path, allVideos))
 # allVideos = list(map(h, allVideos))
 
 # Delete DVD headers

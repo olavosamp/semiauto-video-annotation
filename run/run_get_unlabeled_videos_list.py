@@ -13,7 +13,7 @@ from libs.utils     import string_list_complement, add_ok
 datasetPath = dirs.base_videos
 datasetPath = "../20170724_FTP83G_Petrobras/"
 
-def format_path(x): return Path(str(x).replace("\\", "/").replace(" ", "_"))
+def format_dash_underscore(x): return Path(str(x).replace("\\", "/").replace(" ", "_"))
 
 def format_relative_to(x):
     # If x starts with datasetPath, return relative path
@@ -41,13 +41,14 @@ def get_video_list_glob(datasetPath):
 def format_video_list(videoList):
     '''
        Find and format video paths in input dataset folder.
-       Formatting includes converting all filepaths to Path objects;
-        replacing backwards dashes with foward dashes and spaces with underscores;
-        set filepaths relative to dataset path.
-        Also deletes video paths VIDEO_TS that indicates DVD headers.
+       Formatting includes:
+            converts all filepaths to Path objects;
+            replaces backwards dashes with foward dashes and spaces with underscores;
+            sets filepaths relative to dataset path;
+            deletes video paths VIDEO_TS that indicates DVD headers.
     '''
     # Format each path as a Path object
-    videoList = list(map(format_path, videoList))
+    videoList = list(map(format_dash_underscore, videoList))
     # Format videos as relative to dataset path
     videoList = list(map(format_relative_to, videoList))
 
@@ -64,7 +65,7 @@ def format_video_list(videoList):
     videoList = list(dict.fromkeys(videoList))
     
     # Format as Path again
-    videoList = list(map(format_path, videoList))
+    videoList = list(map(format_dash_underscore, videoList))
     return videoList
 
 

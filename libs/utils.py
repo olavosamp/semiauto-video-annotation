@@ -16,6 +16,61 @@ import libs.commons as commons
 
 
 ## Filepath and string processing
+
+def get_relative_list(fileList, refFolder):
+    '''
+        Input:   a list of filepaths and a reference folder
+        Returns: the input list with every entry relative to the ref folder
+    '''
+    def func_rel_to(x): return Path(x).relative_to(refFolder)
+    return list(map(func_rel_to, fileList))
+
+
+def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
+    '''
+        Returns list of files in the file tree starting at folderPath.
+
+        Optional argument ext_list defines list of recognized extensions, case insensitive.
+    '''
+    def format_foward_dash(x): return str(x).replace("\\", "/")#.replace(" ", "_")
+
+    # Also search for upper case formats for Linux compatibility
+    ext_list.extend([x.upper() for x in commons.videoFormats])
+
+    folderPath = format_foward_dash(folderPath)
+    print(folderPath)
+
+    fileList = []
+    for format in ext_list:
+        globString = folderPath + "/**" + "/*."+format
+        globList = glob(globString, recursive=True)
+        # print(globList[0])
+        # input()
+        fileList.extend(globList)
+    
+    if remove_dups:
+        # Remove duplicated entries
+        fileList = list(dict.fromkeys(fileList))
+    
+    fileList = list(map(format_foward_dash, fileList))
+
+    return fileList
+
+
+def remove_video_ts(videoList):
+    '''
+        Delete VIDEO_TS.VOB DVD headers.
+        Returns numpy array without header entries.
+    '''
+    # Map function
+    def matchVideoTS(x): return (str(x).find("VIDEO_TS.VOB") == -1)
+
+    mask      = list(map(matchVideoTS, videoList))                  # Get index mask
+    videoList = np.array(videoList)[mask]                           # Make path list into numpy array and
+                                                                    # apply index mask
+    return list(videoList)
+
+
 def get_time_string(date):
     ''' Argument: datetime object
         Returns:  Formatted string with year, month, day, hour, minute and seconds.
@@ -45,6 +100,9 @@ def string_list_complement(list1, list2):
         '''
             Returns True if path1 contains path2, else returns False.
         '''
+        path1 = Path(path1)
+        path2 = Path(path2)
+
         pattern = ""
         numParts = len(path2.parts)
         for i in range(numParts-1):
@@ -85,13 +143,16 @@ def add_ok(pathList):
     '''
     def _replace(x):
         for report in commons.reportList:
-            x = str(x).replace(report+"/", report+"_OK"+"/")    # Must guarantee to only append _OK to strings without it
+            x = str(x).replace(report+"/", report+"_OK"+"/")    # Must append _OK only to strings without it
             x = str(x).replace(report+"\\", report+"_OK"+"\\")  # Do it twice for Linux/Windows compatibility
         return x
     return list(map(_replace, pathList))
 
 
 def file_hash(filePath):
+    '''
+        Returns md5 file hash string corresponding to file found at filePath.
+    '''
     with open(filePath, 'rb') as handler:
         data = handler.read()
         hashedData = hashlib.md5(data).hexdigest()
