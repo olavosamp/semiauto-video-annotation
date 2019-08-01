@@ -9,7 +9,6 @@ import libs.commons as commons
 from libs.index     import IndexManager
 from libs.utils     import (add_ok,
                             string_list_complement,
-                            string_list_complement2,
                             get_file_list,
                             remove_video_ts,
                             get_relative_list,

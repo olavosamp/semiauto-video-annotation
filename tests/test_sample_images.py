@@ -1,40 +1,17 @@
 import pytest
+import shutil               as sh
+import pandas               as pd
 from pathlib                import Path
 from glob                   import glob
 
 import libs.dirs            as dirs
 from libs.iteration_manager import SampleImages
-from libs.utils             import copy_files
+from libs.utils             import copy_files, replace_backslashes
 
-# class Test_maza(unittest.TestCase):
-#     def test_maza1(self):
-#         self.assertEqual(maza(4, 3), 6)
 
 class Test_SampleImages():
-    # def test_setup_SampleImages(self):
-    #     self.testImagePath = Path(dirs.test_assets) / \
-    #             "TVILL16-054_OK--DVD-1--Dive 420 16-02-24 19.32.32_C1.wmv FRAME 300.jpg"
-        
-    #     assert self.testImagePath.is_file()
-
-    # def test_setup_get_image_dest_path(self):
-    #     self.getImageDestPathTestFolder = Path(dirs.test) / "test_get_image_dest_path"
-    #     dirs.create_folder(self.getImageDestPathTestFolder)
-    #     self.testImagePath = Path(dirs.test_assets) / \
-    #             "TVILL16-054_OK--DVD-1--Dive 420 16-02-24 19.32.32_C1.wmv FRAME 300.jpg"
-
-    #     self.sourceFolder = (self.getImageDestPathTestFolder / "folder1") / "folder2"
-    #     dirs.create_folder(self.sourceFolder)
-
-    #     self.getImageDestPathTestImage = self.getImageDestPathTestFolder / self.testImagePath.name
-        
-    #     copy_files(self.testImagePath, self.getImageDestPathTestImage)
-
-    #     assert self.getImageDestPathTestImage.is_file()
-    #     assert self.getImageDestPathTestImage.suffix == ".jpg"
-
-
     def test_setup_SampleImages(self):
+        # Metatest if test assets are in place
         sourceFolder = Path(dirs.test_assets) / "dataset_test"
         setupImageList = glob(str(sourceFolder) + "/**.jpg", recursive=True)
 
@@ -45,6 +22,10 @@ class Test_SampleImages():
         self.sourceFolder = Path(dirs.test_assets) / "dataset_test"
         self.sampleImagesFolder = Path(dirs.test) / "test_sample_images"
         self.destFolderSFF = self.sampleImagesFolder / "test_sample_from_folder"
+
+        # Guarantee that the destination folder was created for this test only
+        if self.destFolderSFF.is_dir():
+            self.teardown_sample_from_folder()
         dirs.create_folder(self.destFolderSFF)
 
 
@@ -56,21 +37,25 @@ class Test_SampleImages():
         self.setup_sample_from_folder()
         assert self.destFolderSFF.is_dir()
 
-        sampler = SampleImages(self.sourceFolder, self.destFolderSFF)
+        self.sampler = SampleImages(self.sourceFolder, self.destFolderSFF)
 
-        # Verify image sampling and copying
-        sampler.sample(percentage=0.01)
-        imageList = glob(str(self.destFolderSFF) + "**.jpg", recursive=True)
+        # Test image sampling and copying
+        self.sampler.sample(percentage=0.01)
+
+        globString = str(self.sampler.imageFolder) + "/**.jpg"
+        globString = replace_backslashes(globString)
+        imageList = glob(globString, recursive=True)
 
         assert len(imageList) == 26
 
-        self.outIndexPathSFF = self.destFolderSFF + "test_index_sample_from_file.csv"
-        sampler.save_to_index(indexPath=self.outIndexPathSFF)
+        # Test saving samples to index
+        self.outIndexPathSFF = self.sampler.imageFolder / "test_index_sample_from_file.csv"
+        print("Saving index to\n", self.outIndexPathSFF)
+
+        self.sampler.save_to_index(indexPath=self.outIndexPathSFF)
 
         self.outIndexSFF = pd.read_csv(self.outIndexPathSFF)
         assert self.outIndexPathSFF.is_file()
         assert self.outIndexSFF.shape[0] == 26
         
         self.teardown_sample_from_folder()
-        # assert self.destFolderSFF.is_dir() == False
-    
