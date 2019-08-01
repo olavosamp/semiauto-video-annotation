@@ -17,9 +17,16 @@ import libs.commons as commons
 
 ## Filepath and string processing
 def replace_backslashes(stringList):
-    '''Replaces backslashes ("\\") with foward slashes ("/"),'''
+    '''Replaces backslashes ("\\") with foward slashes ("/") in strings.'''
+
     def _func_replace(x): return str(x).replace("\\", "/")#.replace(" ", "_")
-    return list(map(_func_replace, stringList))
+
+    if isinstance(stringList, str):         # Input is string
+        return _func_replace(stringList)
+    elif hasattr(stringList, "__iter__"):   # Input is list of strings
+        return list(map(_func_replace, stringList))
+    else:
+        raise TypeError("Input must be a string or list of strings.")
 
 
 def make_path(filePathList):
