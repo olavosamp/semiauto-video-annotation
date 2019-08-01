@@ -9,9 +9,11 @@ import libs.commons as commons
 from libs.index     import IndexManager
 from libs.utils     import (add_ok,
                             string_list_complement,
+                            string_list_complement2,
                             get_file_list,
                             remove_video_ts,
-                            get_relative_list)
+                            get_relative_list,
+                            replace_backslashes)
 
 
 # Base:    8 VOB + 31 wmv = 39 non-header videos, 40 total
@@ -42,9 +44,13 @@ compareFileList = list(dict.fromkeys(compareFileList))
 # Add _OK to reports
 compareFileList = add_ok(compareFileList)
 
-# # Remove VIDEO_TS headers
+# Remove VIDEO_TS headers
 baseFileList    = remove_video_ts(baseFileList)
 compareFileList = remove_video_ts(compareFileList)
+
+# Replace backslashes again, just to be sure
+baseFileList    = replace_backslashes(baseFileList)
+compareFileList = replace_backslashes(compareFileList)
 
 print("\nBase:\n")
 for entry in baseFileList:
@@ -60,6 +66,7 @@ print(len(baseFileList))
 print("\nCompare len:\n")
 print(len(compareFileList))
 
+# Get list differences
 print("")
 print("Base: ", len(baseFileList))
 print("Compare: ", len(compareFileList))

@@ -16,7 +16,14 @@ import libs.commons as commons
 
 
 ## Filepath and string processing
+def replace_backslashes(stringList):
+    '''Replaces backslashes ("\\") with foward slashes ("/"),'''
+    def _func_replace(x): return str(x).replace("\\", "/")#.replace(" ", "_")
+    return list(map(_func_replace, stringList))
+
+
 def make_path(filePathList):
+    '''Makes every entry in a filepath list a pathlib.Path object.'''
     def _path_func(x):  return Path(x)
     return list(map(_path_func, filePathList))
 
@@ -36,12 +43,11 @@ def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
 
         Optional argument ext_list defines list of recognized extensions, case insensitive.
     '''
-    def format_foward_dash(x): return str(x).replace("\\", "/")#.replace(" ", "_")
 
     # Also search for upper case formats for Linux compatibility
     ext_list.extend([x.upper() for x in commons.videoFormats])
 
-    folderPath = format_foward_dash(folderPath)
+    folderPath = replace_backslashes(folderPath)
     print(folderPath)
 
     fileList = []
@@ -56,7 +62,7 @@ def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
         # Remove duplicated entries
         fileList = list(dict.fromkeys(fileList))
     
-    fileList = list(map(format_foward_dash, fileList))
+    fileList = list(map(replace_backslashes, fileList))
 
     return fileList
 
