@@ -104,7 +104,8 @@ def string_list_complement(list1, list2):
         Arguments:
             list1, list2: Two lists of strings.
         Return value:
-            list3: Set complement of the arguments, list1 - list2. Contains elements of list1 that are not in list2.
+            list3: Set complement of the arguments, list1 - list2.
+            Only contains elements of list1 that are not in list2.
     '''
     def _compare(path1, path2):
         '''
@@ -128,15 +129,15 @@ def string_list_complement(list1, list2):
     for elem1 in list1:
         #print("Searching for\n{}\n".format(elem1))
         #input()
-        appendFlag = False
+        appendFlag = True
         for elem2 in list2:
             #print("{}\n{}\n{}\n".format(elem1, elem2, _compare(elem1, elem2)))
             if _compare(elem1, elem2):
                 #print("Labeled video found. Not adding to list.\n")
-                appendFlag = True
+                appendFlag = False
                 break
 
-        if not(appendFlag):
+        if appendFlag:
             list3.append(elem1)
             #print("Labeled video not found for\n{}. Adding to list.\n".format(elem1))
             #print("List size: {}.\n".format(len(list3)))
