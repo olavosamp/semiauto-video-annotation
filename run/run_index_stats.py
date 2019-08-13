@@ -21,7 +21,6 @@ for targetTag in uniqueTags:
 
     # print("Selecting images of class: ", targetTag)
     selectDf = ind1.index.copy()
-
     f = lambda x: x.split('-')
     selectDf['TagList'] = ind1.index['Tags'].apply(f)
 

@@ -179,6 +179,38 @@ def file_hash(filePath):
 
 
 ## Video and image processing
+def make_video_hash_list(videoFolder):
+    '''
+        Find and save video paths in a file tree in a list,
+         calculate their MD5 hashes and save both lists as a Pandas DataFrame.
+
+        Argument:
+            videoFolder: video folder root path.
+
+        Returns:
+            table: Pandas DataFrame with two columns: LocalizedVideoPath and HashMD5.
+    '''
+    videoFolder = replace_backslashes(videoFolder)
+    
+    videoList = []
+    for ext in commons.videoFormats:
+        newVideos = list(Path(videoFolder).glob("**/*." + ext))
+        videoList.extend(newVideos)
+
+    # hashList = list(map(file_hash, videoList))
+
+    # videoList = videoList[:4]
+
+    numVideos = len(videoList)
+    print("Processing MD5 hash of {} videos...".format(numVideos))
+    hashList = []
+    for i in tqdm(range(numVideos)):
+        # print("{}".format(i).ljust(5), "/{} :\n{}".format(numVideos, videoList[i]))
+        hashList.append(file_hash(videoList[i]))
+
+    table = pd.DataFrame({'LocalisedVideoPath': videoList, 'HashMD5': hashList})
+    return table
+
 def convert_video(video_input, video_output):
     print("\nProcessing video: ", video_input)
     print("Saving to : ", video_output)
