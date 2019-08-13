@@ -8,6 +8,7 @@ index               = root+"index"+sep+"main_index.csv"
 images              = root+".."+sep+"images"+sep
 base_videos         = root+".."+sep+"20170724_FTP83G_Petrobras"+sep
 dataset             = root+sep+".."+sep+"datasets"+sep
+hashtable           = root+"index"+sep+"localised_video_path_list.csv"
 
 test                = root+sep+".."+sep+"test"+sep
 test_assets         = test+"test_assets"+sep

@@ -49,13 +49,18 @@ def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
         Returns list of files in the file tree starting at folderPath.
 
         Optional argument ext_list defines list of recognized extensions, case insensitive.
+        
+        Argument remove_dups should almost always be True, else it will return duplicated entries
+        as it searches both upper and lower case versions of all given extensions.
     '''
 
     # Also search for upper case formats for Linux compatibility
     ext_list.extend([x.upper() for x in commons.videoFormats])
+    # TODO: Replace this workaround by making a case insensitive search or
+    # making all paths lower case before making comparisons (possible?)
 
     folderPath = replace_backslashes(folderPath)
-    print(folderPath)
+    # print(folderPath)
 
     fileList = []
     for format in ext_list:
@@ -179,7 +184,7 @@ def file_hash(filePath):
 
 
 ## Video and image processing
-def make_video_hash_list(videoFolder):
+def make_video_hash_list(videoList, verbose=True):
     '''
         Find and save video paths in a file tree in a list,
          calculate their MD5 hashes and save both lists as a Pandas DataFrame.
@@ -189,20 +194,12 @@ def make_video_hash_list(videoFolder):
 
         Returns:
             table: Pandas DataFrame with two columns: LocalizedVideoPath and HashMD5.
-    '''
-    videoFolder = replace_backslashes(videoFolder)
-    
-    videoList = []
-    for ext in commons.videoFormats:
-        newVideos = list(Path(videoFolder).glob("**/*." + ext))
-        videoList.extend(newVideos)
-
+    '''    
     # hashList = list(map(file_hash, videoList))
-
-    # videoList = videoList[:4]
-
     numVideos = len(videoList)
-    print("Processing MD5 hash of {} videos...".format(numVideos))
+    if verbose:
+        print("Processing MD5 hash of {} videos...".format(numVideos))
+    
     hashList = []
     for i in tqdm(range(numVideos)):
         # print("{}".format(i).ljust(5), "/{} :\n{}".format(numVideos, videoList[i]))
@@ -210,6 +207,7 @@ def make_video_hash_list(videoFolder):
 
     table = pd.DataFrame({'LocalisedVideoPath': videoList, 'HashMD5': hashList})
     return table
+
 
 def convert_video(video_input, video_output):
     print("\nProcessing video: ", video_input)

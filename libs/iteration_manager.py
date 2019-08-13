@@ -9,11 +9,11 @@ from datetime       import datetime
 import libs.dirs    as dirs
 import libs.commons as commons
 from libs.index     import IndexManager
-from libs.utils     import copy_files, get_time_string
+from libs.utils     import *
 
 
 def func_strip(x):         return Path(str(x).strip())
-# def func_relative_path(x): return x.relative_to(sourcePath)
+def func_relative_path(x): return x.relative_to(sourcePath)
 
 
 class SampleImages:

@@ -325,7 +325,7 @@ class IndexManager:
 
     def get_unique_tags(self):
         self.tagList = []
-        f = lambda x: self.tagList.extend(x.split('-'))
+        def hiphenated_string_to_list(x): self.tagList.extend(x.split('-'))
 
         self.index['Tags'].apply(f)
         self.tagList = list(dict.fromkeys(self.tagList))
@@ -353,3 +353,23 @@ class IndexManager:
             self.hashDf = None
         
         return self.hashDf
+
+    def estimate_hashes(self, videoFolder):
+        '''
+            For each entry, using the value in VideoPath, estimate the best correspondent LocalisedVideoPath
+            through a regex comparison, compute its MD5 file hash and save it in a new columns.
+
+            Creates a new HashMD5 column for the index DataFrame.
+        '''
+        self.videoFolder = videoFolder
+        self.videoList   = get_file_list(videoFolder, ext_list=commons.videoFormats, remove_dups=True)
+
+        self.hashTable   = pd.read_csv(dirs.hashtable)
+
+        assert len(self.videoList) == self.hashTable.shape[0], "Video hash table must have an entry for every video in VideoFolder.\nHash table has {} entries and VideoFolder has {}".format(
+            len(self.videoList, self.hashTable.shape[0]))
+
+        hashList = make_video_hash_list(self.index.loc[:, "VideoPath"].values)
+        # TODO: Change check_duplicates to use file hashes instead of convoluted string field comparisons
+
+        # TODO: Add matching entries to HashMD5 columns; Treat non matching VideoPaths;
