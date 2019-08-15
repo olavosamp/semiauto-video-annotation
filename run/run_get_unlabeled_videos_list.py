@@ -69,7 +69,7 @@ def format_video_list(videoList):
     return videoList
 
 
-mainIndexPath = Path(dirs.index)
+mainIndexPath = Path(dirs.index+"main_index.csv")
 newIndexPath  = Path(dirs.root) / "index" / "unlabeled_index.csv"
 
 indLabeled  = IndexManager(path=mainIndexPath)            # Existing image index

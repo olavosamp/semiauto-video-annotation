@@ -13,7 +13,7 @@ destPath    = Path(dirs.images) / 'test_get_frames'
 f = lambda x: Path(x)
 h = lambda x: x.relative_to(datasetPath)
 
-# mainIndexPath = Path(dirs.index) / "index" / "main_index.csv"
+# mainIndexPath = Path(dirs.index+"main_index.csv") / "index" / "main_index.csv"
 newIndexPath  = Path(dirs.root) / "index" / "unlabeled_index.csv"
 
 # ind1  = IndexManager(path=mainIndexPath)

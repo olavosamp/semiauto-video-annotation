@@ -26,7 +26,7 @@ def move_files_routine(source, destination):
 
 
 class IndexManager:
-    def __init__(self, path=dirs.index, destFolder='auto', verbose=True):
+    def __init__(self, path=dirs.index+"main_index.csv", destFolder='auto', verbose=True):
         self.path               = Path(path)
         self.indexExists        = False
         self.bkpFolderName      = "index_backup"
@@ -136,8 +136,8 @@ class IndexManager:
         elif type(newEntry) is list:
             if self.indexExists:
                 raise ValueError(
-                    "Adding entry from list unsupported for existing index.\
-                    Please backup and delete current index and try again."                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    )
+                    "Adding entry from list unsupported for existing index.\n\
+                    Please backup and delete current index and try again.")
             numEntries = np.shape(newEntry)[0]
 
             # If index does not exist, proceed
@@ -150,7 +150,7 @@ class IndexManager:
                 # newFramePath = frameName
 
                 self.newEntryDf.loc[i, 'OriginalFramePath'] = self.newEntryDf.loc[i, 'FramePath']
-                # TODO: Guarantee that FramePath is only modified in move_files, when the files are
+                # TODO: Guarantee that FramePath is only modified in move_files when the files are
                 #  actually moved
                 # self.newEntryDf.loc[i, 'FramePath']         = newFramePath
 
