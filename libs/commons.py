@@ -17,7 +17,9 @@ videoFormats = ['wmv', 'mpg', 'vob', 'avi', 'VOB']
     'FrameName':           Frame file name. Last part of FramePath.
     'OriginalDataset':     Identification of frame's source. Explains from where the entry was obtained.
     'OriginalFramePath':   Original frame location, before it was copied to dataset folder. Likely another dataset folder.
+    'HashMD5':             MD5
 '''
+
 # Field list
 indexEntryColumns = [
             'VideoPath',
@@ -32,9 +34,10 @@ indexEntryColumns = [
             'FramePath',
             'FrameName',
             'OriginalDataset',
+            'HashMD5'
 ]
 
-unlabeledDatasetName = "unlabeled_images"
+unlabeledDatasetName = "unlabeled_dataset"
 
 reportList = [
             "CIMRL10-676",

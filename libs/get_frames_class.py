@@ -8,7 +8,7 @@ from tqdm           import tqdm
 
 import libs.dirs    as dirs
 import libs.commons as commons
-from libs.utils     import timeConverter
+from libs.utils     import *
 
 class GetFrames:
     '''
@@ -39,8 +39,11 @@ class GetFrames:
 
     def get_video_data(self):
         '''
-            videoPath: source video path
+            Get assorted details about the target video.
         '''
+        # Get video MD5 hash
+        self.videoHash = file_hash(self.videoPath)
+
         # Get video name with extension from full video path
         self.videoName      = Path(self.videoPath.name)
 
@@ -54,7 +57,10 @@ class GetFrames:
             self.dvd = str(self.videoPath)[dvdIndex+4]
 
         try:
-        	self.video = cv2.VideoCapture(str(self.videoPath))
+            print("debugging................")
+            print(self.videoPath)
+            input()
+            self.video = cv2.VideoCapture(str(self.videoPath))
         except:
             print("\nError opening video:\n")
             cv2.VideoCapture(str(self.videoPath))
@@ -103,7 +109,43 @@ class GetFrames:
         self.videoError["set"]   = True
         self.videoError["read"]  = True
         self.videoError["write"] = True
+    
 
+    def make_frame_entry(self):
+        '''
+            Assemble new entry dictionary for current frame data.
+        '''
+        self.frameEntry = {
+            'VideoPath':            self.videoPath,
+            'Report':               self.videoReport,
+            'DVD':                  self.dvd,
+            'VideoName':            self.videoName,
+            'EventId':              None,
+            'FrameTime':            self.timePos,
+            'AbsoluteFrameNumber':  self.frameNum,
+            'RelativeFrameNumber':  None,
+            'Tags':                 "unlabeled",
+            'FramePath':            self.filePath,
+            'FrameName':            self.filePath.name,
+            'OriginalDataset':      self.datasetName,
+            'HashMD5':              self.videoHash
+            }
+
+        # print("\n")
+        # print('VideoPath ', self.videoPath)
+        # print('Report ', self.videoReport)
+        # print("dvd: ", self.dvd)
+        # print("videoname: ", self.videoName)
+        # # print('EventId: ', self.eventId)
+        # print('FrameTime: ', self.timePos)
+        # print('AbsoluteFrameNumber: ', self.frameNum)
+        # # print('RelativeFrameNumber: ', self.relFrame)
+        # # print('Tags: ', self.tags)
+        # print('FramePath: ',       self.filePath)
+        # print('FrameName: ',       self.filePath.name)
+        # print("OriginalDataset: ", self.datasetName)
+        # input()
+        return self.frameEntry
 
 
 class GetFramesCsv(GetFrames):
@@ -276,7 +318,6 @@ class GetFramesFull(GetFrames):
         self.interMin   = interMin
         self.interMax   = interMax
 
-
         # Validate video path and file
         self.video = self.get_video_data()
 
@@ -292,11 +333,16 @@ class GetFramesFull(GetFrames):
     def get_filename(self):
         self.frameName = str(self.videoName)+ " FRAME {}.jpg".format(self.frameNum)
         # self.filePath = self.videoFolderPath / self.frameName
-        self.filePath = "--".join(
-                            [self.videoReport,
-                             'DVD-'+str(self.dvd),
-                             self.frameName]
-        )
+        if self.dvd is None:
+            self.filePath = "--".join(
+                [self.videoReport,
+                self.frameName])
+        else:
+            self.filePath = "--".join(
+                                [self.videoReport,
+                                'DVD-'+str(self.dvd),
+                                self.frameName]
+            )
         self.filePath = self.destPath / Path(self.filePath)
         
         return str(self.filePath)
@@ -328,36 +374,7 @@ class GetFramesFull(GetFrames):
             # if self.verbose:
             #     print("Frame number: ", int(self.frameNum), "  Frame time: ", self.timePos)
 
-
-            self.frameEntry = {
-            'VideoPath':            self.videoPath,
-            'Report':               self.videoReport,
-            'DVD':                  self.dvd,
-            'VideoName':            self.videoName,
-            'EventId':              None,
-            'FrameTime':            self.timePos,
-            'AbsoluteFrameNumber':  self.frameNum,
-            'RelativeFrameNumber':  None,
-            'Tags':                 "unlabeled",
-            'FramePath':            self.filePath,
-            'FrameName':            self.filePath.name,
-            'OriginalDataset':      self.datasetName
-            }
-
-            # print("\n")
-            # print('VideoPath ', self.videoPath)
-            # print('Report ', self.videoReport)
-            # print("dvd: ", self.dvd)
-            # print("videoname: ", self.videoName)
-            # # print('EventId: ', self.eventId)
-            # print('FrameTime: ', self.timePos)
-            # print('AbsoluteFrameNumber: ', self.frameNum)
-            # # print('RelativeFrameNumber: ', self.relFrame)
-            # # print('Tags: ', self.tags)
-            # print('FramePath: ',       self.filePath)
-            # print('FrameName: ',       self.filePath.name)
-            # print("OriginalDataset: ", self.datasetName)
-            # input()
+            self.make_frame_entry()
 
             self.frameEntryList.append(self.frameEntry)
 

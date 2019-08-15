@@ -66,8 +66,6 @@ def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
     for format in ext_list:
         globString = folderPath + "/**" + "/*."+format
         globList = glob(globString, recursive=True)
-        # print(globList[0])
-        # input()
         fileList.extend(globList)
     
     if remove_dups:
@@ -94,7 +92,9 @@ def remove_video_ts(videoList):
 
 
 def get_time_string(date):
-    ''' Argument: datetime object
+    ''' 
+        Argument: datetime object
+
         Returns:  Formatted string with year, month, day, hour, minute and seconds.
     '''
     timeString = "{}-{}-{}_{}-{}-{}".format(date.year, date.month,\
