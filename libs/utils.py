@@ -2,6 +2,7 @@ import os
 import re
 import math
 import shutil
+import pickle
 import hashlib
 import subprocess
 import numpy     as np
@@ -13,6 +14,18 @@ from pathlib     import Path
 
 import libs.dirs    as dirs
 import libs.commons as commons
+
+
+def save_pickle(object, filePath):
+    with open(filePath, 'wb') as fileHandle:
+        pickle.dump(object, fileHandle)
+    return 0
+
+
+def load_pickle(filePath):
+    with open(filePath, 'rb') as fileHandle:
+        pickledInfo = pickle.load(fileHandle)
+    return pickledInfo
 
 
 ## Filepath and string processing

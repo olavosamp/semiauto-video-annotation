@@ -8,7 +8,10 @@ index               = root+"index"+sep
 images              = root+".."+sep+"images"+sep
 base_videos         = root+".."+sep+"20170724_FTP83G_Petrobras"+sep
 dataset             = root+sep+".."+sep+"datasets"+sep
+
 hashtable           = root+"index"+sep+"localised_video_path_list.csv"
+iter_folder         = root+".."+sep+"annotation_loop"+sep
+iter_info           = iter_folder+"iter_info.txt"
 
 test                = root+sep+".."+sep+"test"+sep
 test_assets         = test+"test_assets"+sep
