@@ -57,9 +57,6 @@ class GetFrames:
             self.dvd = str(self.videoPath)[dvdIndex+4]
 
         try:
-            print("debugging................")
-            print(self.videoPath)
-            input()
             self.video = cv2.VideoCapture(str(self.videoPath))
         except:
             print("\nError opening video:\n")

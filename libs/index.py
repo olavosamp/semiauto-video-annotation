@@ -8,7 +8,7 @@ from   pathlib      import Path
 from   glob         import glob
 
 import libs.dirs    as dirs
-from libs.utils     import file_hash
+from libs.utils     import *
 
 
 def move_files_routine(source, destination):
@@ -259,8 +259,9 @@ class IndexManager:
         self.make_backup()
 
         if auto_path == True:
-            newName = str(self.path.stem) +"_{}-{}-{}_{}-{}-{}".format(self.date.year, self.date.month,\
-             self.date.day, self.date.hour, self.date.minute, self.date.second)
+            # newName = str(self.path.stem) +"_{}-{}-{}_{}-{}-{}".format(self.date.year, self.date.month,\
+            #  self.date.day, self.date.hour, self.date.minute, self.date.second)l
+            newName = str(self.path.stem) + "_" + get_time_string(self.date)
 
             self.indexPath = self.path.with_name( newName + str(self.path.suffix))
         else:
