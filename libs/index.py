@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 import pandas       as pd
 import numpy        as np
 from   tqdm         import tqdm
@@ -380,7 +381,7 @@ class IndexManager:
         if self.indexExists:
             start = time.time()
 
-            print("Calculating frame hashes...")
+            print("Calculating hashes of {} images...".format(self.get_index_len()))
             self.index["FrameHash"] = self.index.loc[:, "FramePath"].apply(file_hash)
 
             elapsedTime = time.time() - start

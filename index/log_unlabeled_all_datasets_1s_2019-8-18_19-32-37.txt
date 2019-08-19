@@ -1,0 +1,152 @@
+Processing 148 videos. Started in 2019-08-18 19:32:37.365489.
+Video                                                                                                                   Frames    
+/home/common/flexiveis/videos/F0A-DVD2940-2/PIDF-1 IA P-56 - MLS-161 02 de 02.wmv                                            15448
+/home/common/flexiveis/videos/F0A-DVD3645/OS-1252-2012.wmv                                                                   16529
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161102000728984@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161102023734109@DVR-SPARE_Ch1.wmv                     1551
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161102003730171@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161101212059250@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161102013732546@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161101235105625@DVR-SPARE_Ch1.wmv                      269
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161101205058500@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161102033327125@DVR-SPARE_Ch1.wmv                     1216
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161102030326828@DVR-SPARE_Ch1.wmv                     1800
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161102035345781@DVR-SPARE_Ch1.wmv                     1800
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161102010731375@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161101202838328@DVR-SPARE_Ch1.wmv                     1337
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161101222101578@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161102020733265@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161101215100437@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161101232103406@DVR-SPARE_Ch1.wmv                     1802
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161102042346484@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161101235538296@DVR-SPARE_Ch1.wmv                      708
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-1/VIDEOS/TRECHO FLOW/20161101225102250@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-2/VIDEOS/TRECHO FLOW/20161102061422703@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-2/VIDEOS/TRECHO FLOW/20161102045347140@DVR-SPARE_Ch1.wmv                     1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-2/VIDEOS/TRECHO FLOW/20161102052348359@DVR-SPARE_Ch1.wmv                     1800
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-2/VIDEOS/TRECHO FLOW/20161102064423359@DVR-SPARE_Ch1.wmv                     1648
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-2/VIDEOS/TRECHO FLOW/20161102055349515@DVR-SPARE_Ch1.wmv                     1208
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-4/VIDEOS/TRECHO RISER/20161113025912843@DVR-SPARE_Ch1.wmv                     717
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-4/VIDEOS/TRECHO RISER/20161106094421453@DVR-SPARE_Ch1.wmv                    1800
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-4/VIDEOS/TRECHO RISER/20161106104423531@DVR-SPARE_Ch1.wmv                    1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-4/VIDEOS/TRECHO RISER/20161106111424203@DVR-SPARE_Ch1.wmv                    1572
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-4/VIDEOS/TRECHO RISER/20161106091420250@DVR-SPARE_Ch1.wmv                    1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-4/VIDEOS/TRECHO RISER/20161106101422187@DVR-SPARE_Ch1.wmv                    1801
+/home/common/flexiveis/videos/GHmls16-263_OK/DVD-3/VIDEOS/TRECHO RISER/20161113025912843@DVR-SPARE_Ch1.wmv                     717
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/18-02-10 OS-2728 PIDF1 do GL MSP-MA-01 X P-08 part.4.wmv                  2446
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/18-02-10 OS-2728 PIDF1 do GL MSP-MA-01 X P-08 part.1.wmv                  7211
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/18-02-10 OS-2728 PIDF1 do GL MSP-MA-01 X P-08 part.3.wmv                  7590
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/18-02-10 OS-2728 PIDF1 do GL MSP-MA-01 X P-08 part.2.wmv                  7111
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-1/Dive 420 16-02-24 20.02.35_C1.wmv                                          1805
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-1/Dive 420 16-02-24 20.32.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-1/Dive 420 16-02-24 19.32.32_C1.wmv                                          1804
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-1/Dive 420 16-02-24 22.02.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-1/Dive 420 16-02-24 22.32.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-1/Dive 420 16-02-24 21.02.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-1/Dive 420 16-02-24 23.32.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-1/Dive 420 16-02-24 23.02.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-1/Dive 420 16-02-24 21.32.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-2/Dive 420 16-02-25 01.02.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-2/Dive 420 16-02-25 00.02.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-2/Dive 420 16-02-25 02.02.35_C1.wmv                                          1801
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-2/Dive 420 16-02-25 01.32.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-2/Dive 420 16-02-25 02.32.35_C1.wmv                                           663
+/home/common/flexiveis/videos/TVILL16-054_OK/DVD-2/Dive 420 16-02-25 00.32.35_C1.wmv                                          1802
+/home/common/flexiveis/videos/F0A-DVD2940-1/PIDF-1 IA P-56 - MLS-161 01 de 02.wmv                                            14404
+/home/common/flexiveis/videos/CIMRL10-676_OK/PIDF-1 PO MRL-021_parte2.mpg                                                     7731
+/home/common/flexiveis/videos/CIMRL10-676_OK/PIDF-1 PO MRL-021_parte1.mpg                                                     7485
+/home/common/flexiveis/videos/CIMRL10-676_OK/PIDF-1 PO MRL-021_parte3.mpg                                                        0
+/home/common/flexiveis/videos/F0B-PIDF-12/PIDF-1 IG PRM-002_DVD 1.mpg                                                         8484
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/07-11-2009 OS-1545-2009 inspecaoNoDano.mpg                                 486
+/home/common/flexiveis/videos/SVTab17-001_OK/OS-6000427923 - SVTab17-001 - Rev. 0 - COMPLETO - 23-04-2017.avi                13559
+/home/common/flexiveis/videos/F0A-DVD3867-1/VIDEO_TS/VTS_01_5.VOB                                                             4039
+/home/common/flexiveis/videos/F0A-DVD3867-1/VIDEO_TS/VTS_01_1.VOB                                                             4634
+/home/common/flexiveis/videos/F0A-DVD3867-1/VIDEO_TS/VTS_01_2.VOB                                                             4635
+/home/common/flexiveis/videos/F0A-DVD3867-1/VIDEO_TS/VTS_01_4.VOB                                                             4636
+/home/common/flexiveis/videos/F0A-DVD3867-1/VIDEO_TS/VTS_01_3.VOB                                                             4636
+/home/common/flexiveis/videos/TPAB10-075_corrompido/VIDEO_TS/VTS_01_2.VOB                                                      671
+/home/common/flexiveis/videos/TCOPM16-160_OK/DVD-1/VIDEO_TS/VTS_01_5.VOB                                                      4041
+/home/common/flexiveis/videos/TCOPM16-160_OK/DVD-1/VIDEO_TS/VTS_01_1.VOB                                                      4635
+/home/common/flexiveis/videos/TCOPM16-160_OK/DVD-1/VIDEO_TS/VTS_01_2.VOB                                                      4635
+/home/common/flexiveis/videos/TCOPM16-160_OK/DVD-1/VIDEO_TS/VTS_01_4.VOB                                                      4637
+/home/common/flexiveis/videos/TCOPM16-160_OK/DVD-1/VIDEO_TS/VTS_01_3.VOB                                                      4635
+/home/common/flexiveis/videos/TCOPM16-160_OK/DVD-2/VIDEO_TS/VTS_01_1.VOB                                                        37
+/home/common/flexiveis/videos/TCOPM16-160_OK/DVD-2/VIDEO_TS/VTS_01_2.VOB                                                        50
+/home/common/flexiveis/videos/TCOPM16-160_OK/DVD-2/VIDEO_TS/VTS_01_3.VOB                                                         0
+/home/common/flexiveis/videos/F0A-DVD3867-2/VIDEO_TS/VTS_02_3.VOB                                                              380
+/home/common/flexiveis/videos/F0A-DVD3867-2/VIDEO_TS/VTS_01_1.VOB                                                             4396
+/home/common/flexiveis/videos/F0A-DVD3867-2/VIDEO_TS/VTS_02_2.VOB                                                             4397
+/home/common/flexiveis/videos/F0A-DVD3867-2/VIDEO_TS/VTS_01_2.VOB                                                             4397
+/home/common/flexiveis/videos/F0A-DVD3867-2/VIDEO_TS/VTS_01_3.VOB                                                             2595
+/home/common/flexiveis/videos/F0A-DVD3867-2/VIDEO_TS/VTS_02_1.VOB                                                             4395
+/home/common/flexiveis/videos/TCOmll15-017_OK/VIDEO_TS/VTS_01_5.VOB                                                           1235
+/home/common/flexiveis/videos/TCOmll15-017_OK/VIDEO_TS/VTS_01_1.VOB                                                           4635
+/home/common/flexiveis/videos/TCOmll15-017_OK/VIDEO_TS/VTS_01_2.VOB                                                           4650
+/home/common/flexiveis/videos/TCOmll15-017_OK/VIDEO_TS/VTS_01_4.VOB                                                           4613
+/home/common/flexiveis/videos/TCOmll15-017_OK/VIDEO_TS/VTS_01_3.VOB                                                           4621
+/home/common/flexiveis/videos/ROBI12-417_OK/VIDEO_TS/VTS_01_1.VOB                                                             3554
+/home/common/flexiveis/videos/ROBI12-417_OK/VIDEO_TS/VTS_01_2.VOB                                                              588
+/home/common/flexiveis/videos/FSll16-224_OK/DVD-1/VIDEO_TS/VTS_01_1.VOB                                                       4693
+/home/common/flexiveis/videos/FSll16-224_OK/DVD-1/VIDEO_TS/VTS_01_2.VOB                                                       4702
+/home/common/flexiveis/videos/FSll16-224_OK/DVD-2/VIDEO_TS/VTS_01_1.VOB                                                       4696
+/home/common/flexiveis/videos/FSll16-224_OK/DVD-2/VIDEO_TS/VTS_01_2.VOB                                                       4699
+/home/common/flexiveis/videos/FSll16-224_OK/DVD-2/VIDEO_TS/VTS_01_4.VOB                                                       1486
+/home/common/flexiveis/videos/FSll16-224_OK/DVD-2/VIDEO_TS/VTS_01_3.VOB                                                       4699
+/home/common/flexiveis/videos/FSll16-224_OK/DVD-3/VIDEO_TS/VTS_01_1.VOB                                                       4693
+/home/common/flexiveis/videos/FSll16-224_OK/DVD-3/VIDEO_TS/VTS_01_2.VOB                                                       4702
+/home/common/flexiveis/videos/FSll16-224_OK/DVD-3/VIDEO_TS/VTS_01_4.VOB                                                        568
+/home/common/flexiveis/videos/FSll16-224_OK/DVD-3/VIDEO_TS/VTS_01_3.VOB                                                       4696
+/home/common/flexiveis/videos/F0A-DVD3867-3/VIDEO_TS/VTS_01_5.VOB                                                              593
+/home/common/flexiveis/videos/F0A-DVD3867-3/VIDEO_TS/VTS_01_1.VOB                                                             4635
+/home/common/flexiveis/videos/F0A-DVD3867-3/VIDEO_TS/VTS_01_2.VOB                                                             4636
+/home/common/flexiveis/videos/F0A-DVD3867-3/VIDEO_TS/VTS_01_4.VOB                                                             4636
+/home/common/flexiveis/videos/F0A-DVD3867-3/VIDEO_TS/VTS_01_3.VOB                                                             4635
+/home/common/flexiveis/videos/F0A-DVD3867-3/VIDEO_TS/VTS_02_1.VOB                                                             2872
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-6/VIDEO_TS/VTS_01_1.VOB                                                      4636
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-6/VIDEO_TS/VTS_01_2.VOB                                                      4634
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-6/VIDEO_TS/VTS_01_3.VOB                                                      1822
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-5/VIDEO_TS/VTS_01_5.VOB                                                      2177
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-5/VIDEO_TS/VTS_01_1.VOB                                                      4640
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-5/VIDEO_TS/VTS_01_2.VOB                                                      4631
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-5/VIDEO_TS/VTS_01_4.VOB                                                      4638
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-5/VIDEO_TS/VTS_01_3.VOB                                                      4633
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-1/VIDEO_TS/VTS_01_5.VOB                                                      3092
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-1/VIDEO_TS/VTS_01_1.VOB                                                      4636
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-1/VIDEO_TS/VTS_01_2.VOB                                                      4637
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-1/VIDEO_TS/VTS_01_4.VOB                                                      4634
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-1/VIDEO_TS/VTS_01_3.VOB                                                      4635
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-2/VIDEO_TS/VTS_01_5.VOB                                                      3253
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-2/VIDEO_TS/VTS_01_1.VOB                                                      4637
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-2/VIDEO_TS/VTS_01_2.VOB                                                      4633
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-2/VIDEO_TS/VTS_01_4.VOB                                                      4638
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-2/VIDEO_TS/VTS_01_3.VOB                                                      4635
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-4/VIDEO_TS/VTS_01_5.VOB                                                      3057
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-4/VIDEO_TS/VTS_01_2.VOB                                                      4635
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-4/VIDEO_TS/VTS_01_4.VOB                                                      4638
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-4/VIDEO_TS/VTS_01_1 (1).VOB                                                  4633
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-4/VIDEO_TS/VTS_01_3.VOB                                                      4637
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-3/VIDEO_TS/VTS_01_5.VOB                                                      1663
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-3/VIDEO_TS/VTS_01_1.VOB                                                      4625
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-3/VIDEO_TS/VTS_01_2.VOB                                                      4646
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-3/VIDEO_TS/VTS_01_4.VOB                                                      4632
+/home/common/flexiveis/videos/TCOpm16-140_OK/DVD-3/VIDEO_TS/VTS_01_3.VOB                                                      4640
+/home/common/flexiveis/videos/FAmls16-119_OK/VIDEO_TS/VTS_06_2.VOB                                                            1455
+/home/common/flexiveis/videos/FAmls16-119_OK/VIDEO_TS/VTS_06_1.VOB                                                            3561
+/home/common/flexiveis/videos/FAmls16-119_OK/VIDEO_TS/VTS_01_1.VOB                                                            1385
+/home/common/flexiveis/videos/FAmls16-119_OK/VIDEO_TS/VTS_07_1.VOB                                                            1463
+/home/common/flexiveis/videos/FAmls16-119_OK/VIDEO_TS/VTS_03_1.VOB                                                             328
+/home/common/flexiveis/videos/FAmls16-119_OK/VIDEO_TS/VTS_05_1.VOB                                                             332
+/home/common/flexiveis/videos/FAmls16-119_OK/VIDEO_TS/VTS_04_1.VOB                                                            1176
+/home/common/flexiveis/videos/FAmls16-119_OK/VIDEO_TS/VTS_02_1.VOB                                                            1533
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/05-01-10 OS-1699-2009 PIDF-2 UH P-33 - MRL-127_1.MPG                       397
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/05-01-10 OS-1699-2009 PIDF-2 UH P-33 - MRL-127_4.MPG                       422
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/05-01-10 OS-1699-2009 PIDF-2 UH P-33 - MRL-127_2.MPG                       402
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/05-01-10 OS-1699-2009 PIDF-2 UH P-33 - MRL-127_3.MPG                       412
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/05-01-10 OS-1699-2009 PIDF-2 UH P-33 - MRL-127_7.MPG                       378
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/05-01-10 OS-1699-2009 PIDF-2 UH P-33 - MRL-127_5.MPG                       524
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/05-01-10 OS-1699-2009 PIDF-2 UH P-33 - MRL-127 Part2.MPG                   603
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/05-01-10 OS-1699-2009 PIDF-2 UH P-33 - MRL-127.MPG                         435
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/05-01-10 OS-1699-2009 PIDF-2 UH P-33 - MRL-127_8.MPG                       130
+/home/common/flexiveis/videos/F0B-OS-1545-1699-2728/05-01-10 OS-1699-2009 PIDF-2 UH P-33 - MRL-127_6.MPG                       531
+Extraction finished on 2019-08-19 01:37:42.028859.
+Elapsed time 6:05:04.663370.

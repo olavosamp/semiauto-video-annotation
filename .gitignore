@@ -5,7 +5,7 @@
 .vscode/
 
 # Index backups
-index/index_backup/
+index/index_backup/*
 
 # Frame totals files
 *.tot
