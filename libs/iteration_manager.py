@@ -32,7 +32,6 @@ class IterationManager:
 
         self.load_info()
 
-
     def load_info(self):
         if self.iterInfoPath.is_file():
             self.iterInfo = load_pickle(self.iterInfoPath)
@@ -41,12 +40,16 @@ class IterationManager:
             create_folder(self.iterFolder)
 
             save_pickle(self.iterInfo, self.iterInfoPath)
-        
+
         return self.iterInfo
-    
+
 
     def new_iteration(self):
-        print("Finished iteration {}. Starting iteration {}.".format(self.iterInfo.iteration, self.iterInfo.iteration+1))
+        '''
+            Executes the following operations
+        '''
+        print("Finished iteration {}. Starting iteration {}.".format(
+            self.iterInfo.iteration, self.iterInfo.iteration+1))
         self.iterInfo.iteration += 1
         self.iterInfo.completed_iter = False
 

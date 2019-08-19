@@ -96,7 +96,7 @@ def extract_dataset(videoFolder, destFolder,
         with open(logPath, mode='a') as log:
             log.write("Extraction finished on {}.\nElapsed time {}.\n".format(dateEnd, dateEnd-dateStart))
 
-    index.write_index(auto_path=False, prompt=False)
+    index.write_index(dest_path=False, prompt=False)
 
     input("\nExtraction finished. Press any key to end.")
 

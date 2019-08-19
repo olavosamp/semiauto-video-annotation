@@ -15,9 +15,9 @@ videoFormats = ['wmv', 'mpg', 'vob', 'avi', 'VOB']
     'Tags':                Tags associated with frame. Come from an annotation or flagging. It is a string composed of tags separated by '-' character. Would rather be a true list.
     'FramePath':           Frame filepath on disk relative to project folder. Should follow format '<Report>--DVD-<DVD>--<VideoName(w/o ext)>.jpg' or '<Report>--<VideoName(w/o ext)>.jpg', if there is no associated DVD.
     'FrameName':           Frame file name. Last part of FramePath.
-    'OriginalDataset':     Identification of frame's source. Explains from where the entry was obtained.
+    'OriginalDataset':     Identification of frame's source. Indicates from where the entry was obtained.
     'OriginalFramePath':   Original frame location, before it was copied to dataset folder. Likely another dataset folder.
-    'HashMD5':             MD5
+    'HashMD5':             MD5 hash of the source video.
 '''
 
 # Field list

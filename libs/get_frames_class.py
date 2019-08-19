@@ -95,9 +95,10 @@ class GetFrames:
 
         # Actual frame extraction function
         self._routine_get_frames()
+        if self.verbose:
+            print(self.videoError)
 
-        print(self.videoError)
-        print("{} frames captured.".format(self.frameCount))
+        print("{} frames captured.\n".format(self.frameCount))
         return self.frameEntryList
 
 

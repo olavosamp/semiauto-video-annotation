@@ -30,7 +30,7 @@ class IndexManager:
         self.path               = Path(path)
         self.indexExists        = False
         self.bkpFolderName      = "index_backup"
-        self.destFolder         = destFolder
+        self.imagesDestFolder   = destFolder
         self.verbose            = verbose
 
         self.duplicates_count   = 0
@@ -244,7 +244,7 @@ class IndexManager:
             os.rename(entry, newPath)
 
 
-    def write_index(self, auto_path=True, prompt=True):
+    def write_index(self, dest_path='auto', prompt=True):
         '''
             Create a backup of old index and write current index DataFrame to a csv file.
             auto_path == True appends date and time to index path
@@ -253,42 +253,39 @@ class IndexManager:
             print("\n\nReally write index to file?\nPress any key to continue, Ctrl-C to cancel.\n")
             input()
 
-        # Create destination folder
-        dirs.create_folder(self.path.parent)
-
         self.make_backup()
 
-        if auto_path == True:
-            # newName = str(self.path.stem) +"_{}-{}-{}_{}-{}-{}".format(self.date.year, self.date.month,\
-            #  self.date.day, self.date.hour, self.date.minute, self.date.second)l
+        if dest_path == 'auto':
             newName = str(self.path.stem) + "_" + get_time_string(self.date)
-
             self.indexPath = self.path.with_name( newName + str(self.path.suffix))
         else:
-            self.indexPath = self.path
+            self.indexPath = dest_path
+
+        # Create destination folder
+        dirs.create_folder(self.indexPath.parent)
 
         self.index.to_csv(self.indexPath, index=False)
         self.report_changes()
 
 
-    def move_files(self, destFolder='auto', write=True):
+    def move_files(self, imagesDestFolder='auto', write=True):
         '''
             Try to move all files in index to a new folder specified by destFolder input.
         '''
         assert self.indexExists, "Index does not exist. Cannot move files."
 
-        self.destFolder = destFolder
+        self.imagesDestFolder = imagesDestFolder
 
-        if self.destFolder == 'auto':
-            self.destFolder = Path(dirs.dataset + "compiled_dataset_{}-{}-{}_{}-{}-{}".format(
+        if self.imagesDestFolder == 'auto':
+            self.imagesDestFolder = Path(dirs.dataset + "compiled_dataset_{}-{}-{}_{}-{}-{}".format(
                               self.date.year, self.date.month, self.date.day,
                               self.date.hour, self.date.minute, self.date.second))
 
-        dirs.create_folder(self.destFolder, verbose=True)
+        dirs.create_folder(self.imagesDestFolder, verbose=True)
 
         print("Moving {} files.".format(self.index.shape[0]))
 
-        f = lambda x: self.destFolder / x
+        f = lambda x: self.imagesDestFolder / x
         self.frameDestPaths = self.index.loc[:, 'FrameName'].apply(f)
 
         self.moveResults = list(map(move_files_routine, self.index.loc[:, 'OriginalFramePath'], self.frameDestPaths))
@@ -307,7 +304,7 @@ class IndexManager:
             {}\
             \n{} files were not found."
             .format(len(self.moveResults), sum(self.moveResults),
-                    self.destFolder,
+                    self.imagesDestFolder,
                     len(self.moveResults) - sum(self.moveResults)))
         return self.moveResults
 
@@ -374,3 +371,19 @@ class IndexManager:
         # TODO: Change check_duplicates to use file hashes instead of convoluted string field comparisons
 
         # TODO: Add matching entries to HashMD5 columns; Treat non matching VideoPaths;
+
+    def compute_frame_hashes(self):
+        '''
+            Compute MD5 hashes for every frame in the index. Save hashes to new column
+            'FrameHash'.
+        '''
+        if self.indexExists:
+            start = time.time()
+
+            print("Calculating frame hashes...")
+            self.index["FrameHash"] = self.index.loc[:, "FramePath"].apply(file_hash)
+
+            elapsedTime = time.time() - start
+            return elapsedTime
+        else:
+            raise ValueError("Index does not exists.")
