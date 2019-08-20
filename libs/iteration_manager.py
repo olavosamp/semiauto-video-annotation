@@ -17,27 +17,45 @@ def func_relative_path(x): return x.relative_to(sourcePath)
 
 
 class IterInfo:
-    def __init__(self, baseDataset, iter_folder):
-        self.baseDataset        = baseDataset
-        self.iter_folder        = iter_folder
+    def __init__(self, datasetFolder, indexPath, iterFolder):
+        self.datasetFolder      = datasetFolder
+        self.iterFolder         = iterFolder
+        self.indexPath          = indexPath
         self.iteration          = 0
         self.completed_iter     = False
 
 
 class IterationManager:
-    def __init__(self, unlabeledFolder, iterFolder=dirs.iter_folder):
-        self.unlabeledFolder = unlabeledFolder
-        self.iterFolder      = Path(iterFolder)
-        self.iterInfoPath    = self.iterFolder / "iter_info.txt"
+    '''
+        Iteration loop organizer class.
+
+        Manages a iteration loop folder, containing a iter_info.pickle file that saves a IterInfo
+        object that has details about the current loop state.
+
+        Constructor arguments:
+            unlabeledFolder:
+                Folder containing the unlabeled images.
+            unlabeledIndexPath:
+                Path to the csv Index of the unlabeled images in unlabeledFolder
+            loopFolder:
+                Folder where the iteration folders and info will be saved
+
+    '''
+    def __init__(self, unlabeledFolder, unlabeledIndexPath, loopFolder=dirs.iter_folder):
+        self.unlabeledFolder        = unlabeledFolder
+        self.unlabeledIndexPath     = unlabeledIndexPath
+        self.loopFolder             = Path(loopFolder)
+        self.iterInfoPath           = self.loopFolder / "iter_info.pickle"
 
         self.load_info()
+
 
     def load_info(self):
         if self.iterInfoPath.is_file():
             self.iterInfo = load_pickle(self.iterInfoPath)
         else:
-            self.iterInfo = IterInfo(self.unlabeledFolder, self.iter_folder)
-            create_folder(self.iterFolder)
+            self.iterInfo = IterInfo(self.unlabeledFolder, self.unlabeledIndexPath, self.loopFolder)
+            dirs.create_folder(self.loopFolder)
 
             save_pickle(self.iterInfo, self.iterInfoPath)
 
@@ -46,30 +64,67 @@ class IterationManager:
 
     def new_iteration(self):
         '''
-            Executes the following operations
+            create new iteration folder v
+        sample new images               v
+            update iter_info            v
+        label images
+        merge new labels (manual) to annotated dataset
+        train model
+        set boundaries
+        automatic annotation
+        merge new labels (automatic) to annotated dataset
+            update iter_info, iteration complete
+
+            Executes the following operations:
+                Check if it is the first iteration;
+                Load base index, create folders and iter_info;
+                Sample images
         '''
-        print("Finished iteration {}. Starting iteration {}.".format(
-            self.iterInfo.iteration, self.iterInfo.iteration+1))
+        if self.iterInfo.completed_iter == False and self.iterInfo.iteration != 0:
+            raise ValueError("Current iteration has not finished. Resolve it and try again.")
+
         self.iterInfo.iteration += 1
         self.iterInfo.completed_iter = False
+        print("Starting iteration {}.".format(self.iterInfo.iteration))
 
-        newFolder = self.iterFolder / "iteration_"+self.iterInfo.iteration
-        create_folder(newFolder)
+        self.iterInfo.currentIterFolder = self.loopFolder / "iteration_{}".format(self.iterInfo.iteration)
+
+        dirs.create_folder(self.iterInfo.currentIterFolder)
+        print("Iteration setup finished.\nCall sample_images method for next step: sample and label images.")
 
 
+    def sample_images(self):
+        '''
+            Sample a percentage of the unlabeled images for labeling.
+            Saves sampled images in 
+        '''
+        # TODO: REMEMBER to Remove fixed seed when using sampler outside of testing
+        self.sampler = SampleImages(self.unlabeledIndexPath,
+                                    self.iterInfo.currentIterFolder, seed=42)
+        self.sampler.sample(percentage=0.01)
+
+        self.sampler.save_to_index(self.iterInfo.currentIterFolder /
+                                   "sampled_images_iteration_{}.csv".format(self.iterInfo.iteration))
+
+
+    def merge_labeled_dataset(self):
+        pass
+
+    def train_model(self):
+        pass
 
 
 class SampleImages:
     '''
         Sample images from a folder or an index determined by source.
-        Sampled images are copied to destFolder.
+        Sampled images are copied to destFolder / 'sampled_images'/.
     '''
 
     def __init__(self, source, destFolder, seed=None):
         self.date        = datetime.now()
         self.source      = Path(source)
         self.destFolder  = Path(destFolder)
-        self.imageFolder = self.destFolder / "images"
+        self.imageFolder = self.destFolder / "sampled_images"
         self.percentage  = None
         self.seed        = seed
 
@@ -118,27 +173,27 @@ class SampleImages:
         # Get video paths in dataset folder (all videos)
         self.imageList = glob(str(self.source) + "/**" + "/*.jpg", recursive=True)
         self.imageList = list(map(func_strip, self.imageList))
-        # self.imageList = list(map(func_relative_path, self.imageList))
 
         self._sample_routine()
         return self.imageSourcePaths
-    
+
 
     def _sample_from_index(self):
         self.index = pd.read_csv(self.source, dtype=str)
-        self.imageList = self.index.loc[:, 'VideoPath'].values
+        self.imageList = self.index.loc[:, 'FramePath'].values
         self.imageList = list(map(func_strip, self.imageList))
 
         self._sample_routine()
         return self.imageSourcePaths
 
 
-    def save_to_index(self, indexPath=None):
+    def save_to_index(self, indexPath='auto'):
         ''' 
             Saves sampled images information to csv index file.
 
             Optional Argument:
-                indexPath: filepath. The index csv file is saved to indexPath. If indexPath is None, 
+                indexPath: filepath. The index csv file is saved to indexPath. If indexPath is 'auto',
+                use destFolder / sample_index + date string. 
         '''
         if self.index is None:
             # Index does not exist: assemble new index
@@ -149,7 +204,7 @@ class SampleImages:
             # append new data to existing index
             self.index = self.index.loc[self.sampleIndexes, :]
         
-        if indexPath is None:
+        if indexPath is 'auto':
             # indexPath has not been passed: create a destination path
             self.indexPath = self.destFolder / ("sample_index_" + get_time_string(self.date) + ".csv")
         else:
