@@ -5,11 +5,11 @@ from libs.dataset_utils     import extract_dataset
 
 if __name__ == "__main__":
     ## Dataset settings
-    datasetName = "test_all_datasets_1s"
+    datasetName = "test_dataset_indexed"
 
     # Local dataset
     datasetPath   = dirs.base_videos
-    destFolder    = dirs.images+datasetName
+    destFolder    = dirs.test_assets+datasetName
     # Remote dataset
     # datasetPath   = dirs.febe_base_videos
     # destFolder    = dirs.febe_images+datasetName
@@ -18,6 +18,6 @@ if __name__ == "__main__":
 
     unlabeledIndex = extract_dataset(datasetPath, destFolder,
                                     datasetName="unlabeled_dataset_test",
-                                    indexPath="auto")
+                                    indexPath=newIndexPath)
 
     print("Index shape: ", unlabeledIndex.index.shape)

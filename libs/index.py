@@ -260,7 +260,7 @@ class IndexManager:
             newName = str(self.path.stem) + "_" + get_time_string(self.date)
             self.indexPath = self.path.with_name( newName + str(self.path.suffix))
         else:
-            self.indexPath = dest_path
+            self.indexPath = Path(dest_path)
 
         # Create destination folder
         dirs.create_folder(self.indexPath.parent)
@@ -388,3 +388,24 @@ class IndexManager:
             return elapsedTime
         else:
             raise ValueError("Index does not exists.")
+
+
+    def check_files(self):
+        '''
+            Verifies integrity of the index by checking if every entry FramePath value points to an existing image.
+        '''
+        print("\nVerifying file path integrity.")
+        fileCheck = self.index.loc[:, 'FramePath'].apply(func_file_exists)
+
+        mask = np.logical_not(fileCheck)
+        notFound = np.extract(mask, self.index.loc[:, 'FramePath'])
+        print(len(notFound))
+        
+        if fileCheck.sum() < fileCheck.shape[0]:
+            for elem in notFound:
+                print(Path(elem))
+            print("\nThe above entries' FramePath values did not point to a valid file.")
+
+            print("\nTotal entries: ", fileCheck.shape[0])
+            print("Files not found: ", len(notFound))
+        

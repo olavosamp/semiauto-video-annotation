@@ -19,7 +19,7 @@ def extract_dataset(videoFolder, destFolder,
                  verbose=True):
     '''
         Captura todos os frames de todos os vídeos da pasta de vídeos em videoFolder,
-        move as imagens para destFolder e registra no índice em newIndexPath
+        move as imagens para destFolder e registra no índice em indexPath
     '''
     ## Log settings
     logWidth1 = 120
@@ -37,7 +37,6 @@ def extract_dataset(videoFolder, destFolder,
     dirs.create_folder(indexPath.parent)
 
     # Auxiliary lambda functions
-    def func_make_path(x):   return Path(x)
     def func_relative_to(x): return x.relative_to(videoFolder)
 
     index  = IndexManager(path=indexPath)
@@ -96,7 +95,7 @@ def extract_dataset(videoFolder, destFolder,
         with open(logPath, mode='a') as log:
             log.write("Extraction finished on {}.\nElapsed time {}.\n".format(dateEnd, dateEnd-dateStart))
 
-    index.write_index(dest_path=False, prompt=False)
+    index.write_index(dest_path=indexPath, prompt=False)
 
     input("\nExtraction finished. Press any key to end.")
 

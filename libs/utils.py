@@ -16,6 +16,12 @@ import libs.dirs    as dirs
 import libs.commons as commons
 
 
+# Small lambda functions
+def func_make_path(x):   return Path(x)
+def func_strip(x):         return Path(str(x).strip())
+def func_file_exists(x):   return Path(x).is_file()
+
+# Pickle functions
 def save_pickle(object, filePath):
     with open(filePath, 'wb') as fileHandle:
         pickle.dump(object, fileHandle)

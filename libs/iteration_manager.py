@@ -12,10 +12,6 @@ from libs.index     import IndexManager
 from libs.utils     import *
 
 
-def func_strip(x):         return Path(str(x).strip())
-def func_relative_path(x): return x.relative_to(sourcePath)
-
-
 class IterInfo:
     def __init__(self, datasetFolder, indexPath, iterFolder):
         self.datasetFolder      = datasetFolder
@@ -95,16 +91,27 @@ class IterationManager:
 
     def sample_images(self):
         '''
-            Sample a percentage of the unlabeled images for labeling.
-            Saves sampled images in 
+            Sample a percentage (1%) of the unlabeled images for labeling.
+
+            Saves sampled images to 'iteration_#/sampled_images/'.
+            Sampled images index is saved to 'iteration_#/sampled_images.csv'.
         '''
+        self.samplesIndexPath = self.iterInfo.currentIterFolder / \
+            "sampled_images_iteration_{}.csv".format(self.iterInfo.iteration)
+
+        # Check if samples index already exists: probably means sample_images was
+        # already executed this iteration
+        if self.samplesIndexPath.is_file():
+            raise FileExistsError(
+                "Sampled index already exists.\nHas sampling been already performed this iteration?\n \
+                To perform new sampling, delete sampled_images folder and index and run sample_images method again.")
+
         # TODO: REMEMBER to Remove fixed seed when using sampler outside of testing
         self.sampler = SampleImages(self.unlabeledIndexPath,
                                     self.iterInfo.currentIterFolder, seed=42)
         self.sampler.sample(percentage=0.01)
 
-        self.sampler.save_to_index(self.iterInfo.currentIterFolder /
-                                   "sampled_images_iteration_{}.csv".format(self.iterInfo.iteration))
+        self.sampler.save_to_index(self.samplesIndexPath)
 
 
     def merge_labeled_dataset(self):
