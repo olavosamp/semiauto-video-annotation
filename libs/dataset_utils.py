@@ -90,6 +90,7 @@ def extract_dataset(videoFolder, destFolder,
     dateEnd = datetime.now()
 
     index.add_entry(frameEntryList)
+    index.compute_frame_hashes()
     
     if logFolder:
         with open(logPath, mode='a') as log:

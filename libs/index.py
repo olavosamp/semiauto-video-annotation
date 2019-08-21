@@ -373,6 +373,7 @@ class IndexManager:
 
         # TODO: Add matching entries to HashMD5 columns; Treat non matching VideoPaths;
 
+
     def compute_frame_hashes(self):
         '''
             Compute MD5 hashes for every frame in the index. Save hashes to new column
