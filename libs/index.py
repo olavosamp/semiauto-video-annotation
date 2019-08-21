@@ -399,13 +399,12 @@ class IndexManager:
 
         mask = np.logical_not(fileCheck)
         notFound = np.extract(mask, self.index.loc[:, 'FramePath'])
-        print(len(notFound))
         
         if fileCheck.sum() < fileCheck.shape[0]:
             for elem in notFound:
                 print(Path(elem))
             print("\nThe above entries' FramePath values did not point to a valid file.")
 
-            print("\nTotal entries: ", fileCheck.shape[0])
-            print("Files not found: ", len(notFound))
+        print("\nTotal entries: ", fileCheck.shape[0])
+        print("Files not found: ", len(notFound))
         
