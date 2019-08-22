@@ -9,4 +9,4 @@ sourceFolder = Path(dirs.images) / "all_datasets_1s"
 
 iterManager = IterationManager(sourceFolder, unlabeledIndexPath, loopFolder=loopFolder)
 iterManager.new_iteration()
-iterManager.sample_images()
+iterManager.sample_images(seed=42)

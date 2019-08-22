@@ -326,15 +326,29 @@ class IndexManager:
         self.tagList = []
         def hiphenated_string_to_list(x): self.tagList.extend(x.split('-'))
 
-        self.index['Tags'].apply(f)
+        self.index['Tags'].apply(hiphenated_string_to_list)
         self.tagList = list(dict.fromkeys(self.tagList))
-
         return self.tagList
 
 
     def append_tag(self, entryIndex, newTag):
-        self.index.at[entryIndex, 'Tags'] += "-"+newTag
-        print(self.index.at[entryIndex, 'Tags'])
+        def _func_append_tag(tagArg):
+            # Check if argument is a string, then append to append_tag::tag.
+            if isinstance(tagArg, str):
+                tag += "-"+tagArg
+            else:
+                raise TypeError("Argument must be a string or list of strings.")
+
+        tag = self.index.loc[entryIndex, 'Tags'].copy()
+
+        # Check if newTag is a list or a string
+        if isinstance(newTag, str):
+            _func_append_tag(newTag)
+        elif hasattr(newTag, "__len__"):
+            for t in newTag:
+                _func_append_tag(t)
+
+        self.index.loc[entryIndex, 'Tags'] = list(dict.fromkeys(tag))
 
 
     def get_video_hash_list(self):
@@ -353,25 +367,25 @@ class IndexManager:
         
         return self.hashDf
 
-    def estimate_hashes(self, videoFolder):
-        '''
-            For each entry, using the value in VideoPath, estimate the best correspondent LocalisedVideoPath
-            through a regex comparison, compute its MD5 file hash and save it in a new columns.
+    # def estimate_hashes(self, videoFolder):
+    #     '''
+    #         For each entry, using the value in VideoPath, estimate the best correspondent LocalisedVideoPath
+    #         through a regex comparison, compute its MD5 file hash and save it in a new columns.
 
-            Creates a new HashMD5 column for the index DataFrame.
-        '''
-        self.videoFolder = videoFolder
-        self.videoList   = get_file_list(videoFolder, ext_list=commons.videoFormats, remove_dups=True)
+    #         Creates a new HashMD5 column for the index DataFrame.
+    #     '''
+    #     self.videoFolder = videoFolder
+    #     self.videoList   = get_file_list(videoFolder, ext_list=commons.videoFormats, remove_dups=True)
 
-        self.hashTable   = pd.read_csv(dirs.hashtable)
+    #     self.hashTable   = pd.read_csv(dirs.hashtable)
 
-        assert len(self.videoList) == self.hashTable.shape[0], "Video hash table must have an entry for every video in VideoFolder.\nHash table has {} entries and VideoFolder has {}".format(
-            len(self.videoList, self.hashTable.shape[0]))
+    #     assert len(self.videoList) == self.hashTable.shape[0], "Video hash table must have an entry for every video in VideoFolder.\nHash table has {} entries and VideoFolder has {}".format(
+    #         len(self.videoList, self.hashTable.shape[0]))
 
-        hashList = make_video_hash_list(self.index.loc[:, "VideoPath"].values)
-        # TODO: Change check_duplicates to use file hashes instead of convoluted string field comparisons
+    #     hashList = make_video_hash_list(self.index.loc[:, "VideoPath"].values)
+    #     # TODO: Change check_duplicates to use file hashes instead of convoluted string field comparisons
 
-        # TODO: Add matching entries to HashMD5 columns; Treat non matching VideoPaths;
+    #     # TODO: Add matching entries to HashMD5 columns; Treat non matching VideoPaths;
 
 
     def compute_frame_hashes(self):
@@ -393,10 +407,11 @@ class IndexManager:
 
     def check_files(self):
         '''
-            Verifies integrity of the index by checking if every entry FramePath value points to an existing image.
+            Verifies integrity of the index by checking if every entry FramePath value
+             points to an existing image.
         '''
         print("\nVerifying file path integrity.")
-        fileCheck = self.index.loc[:, 'FramePath'].apply(func_file_exists)
+        fileCheck = self.index.loc[:, 'FramePath'].apply(file_exists)
 
         mask = np.logical_not(fileCheck)
         notFound = np.extract(mask, self.index.loc[:, 'FramePath'])
@@ -408,4 +423,47 @@ class IndexManager:
 
         print("\nTotal entries: ", fileCheck.shape[0])
         print("Files not found: ", len(notFound))
+
+
+    def merge_annotations(self, newLabelsPath):
+        '''
+            Add new annotations in newLabels interface-generated csv to existing annotated 
+            images csv, existingIndex.
+
+            existingIndex path will be inferred through newLabels path, which must follow
+                the template "<loop_folder>/iteration_#/sampled_images_labels.csv".
+            The function will search for a csv file at <loop_folder> and, if found, assume
+                it is the existingIndex. If none is found, a new index will be created.
+
+            The standard name for existingIndex is labeled_images_index.csv
+
+            Every entry in newLabels must be present in existingIndex, if it exists, or 
+            in a "iteration_#/sampled_images_iteration_#.csv" file.
+        '''
+        assert file_exists(newLabelsPath), "File doesn't exist."
         
+        # Read index
+        newLabelsIndex = pd.read_csv(newLabelsPath)
+        newLabelLen = newLabelsIndex.shape[0]
+        
+        # Get new tags from index columns
+        tagList = []
+        for i in range(newLabelLen):
+            # Discard duplicated tags
+            newTags = list(dict.fromkeys([newLabelsIndex.loc[i, 'rede1'],
+                                          newLabelsIndex.loc[i, 'rede2'],
+                                          newLabelsIndex.loc[i, 'rede3']]))
+            if newTags.count("-") > 0:
+                newTags.remove("-")
+            tagList.append(newTags)
+        
+        self.index.set_index('FrameHash', drop=False, inplace=False)
+
+        for i in range(newLabelLen):
+        # TODO: Works up to this point. Raises KeyError in the next line
+        # Must get hashes of this new index
+            ind = newLabelsIndex.loc[i, 'FrameHash']
+            self.append_tag(ind, tagList)
+        translate_labels(label)
+        self.index.reset_index(drop=True, inplace=True)
+

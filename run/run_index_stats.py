@@ -31,4 +31,4 @@ for targetTag in uniqueTags:
 
 print("\nTags:\n")
 for tag, count in tagCount.items():
-    print(tag, ": \t\t", count)
+    print(tag.ljust(10), ":", "{}".format(count).rjust(5))

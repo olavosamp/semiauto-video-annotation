@@ -89,7 +89,7 @@ class IterationManager:
         print("Iteration setup finished.\nCall sample_images method for next step: sample and label images.")
 
 
-    def sample_images(self):
+    def sample_images(self, seed=None):
         '''
             Sample a percentage (1%) of the unlabeled images for labeling.
 
@@ -108,7 +108,7 @@ class IterationManager:
 
         # TODO: REMEMBER to Remove fixed seed when using sampler outside of testing
         self.sampler = SampleImages(self.unlabeledIndexPath,
-                                    self.iterInfo.currentIterFolder, seed=42)
+                                    self.iterInfo.currentIterFolder, seed=seed)
         self.sampler.sample(percentage=0.01)
 
         self.sampler.save_to_index(self.samplesIndexPath)

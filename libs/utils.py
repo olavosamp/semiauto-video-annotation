@@ -19,7 +19,7 @@ import libs.commons as commons
 # Small lambda functions
 def func_make_path(x):   return Path(x)
 def func_strip(x):         return Path(str(x).strip())
-def func_file_exists(x):   return Path(x).is_file()
+
 
 # Pickle functions
 def save_pickle(object, filePath):
@@ -35,6 +35,10 @@ def load_pickle(filePath):
 
 
 ## Filepath and string processing
+def file_exists(x):
+    return Path(x).is_file()
+
+
 def replace_backslashes(stringList):
     '''Replaces backslashes ("\\") with foward slashes ("/") in strings.'''
 

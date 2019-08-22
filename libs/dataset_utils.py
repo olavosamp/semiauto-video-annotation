@@ -101,3 +101,37 @@ def extract_dataset(videoFolder, destFolder,
     input("\nExtraction finished. Press any key to end.")
 
     return index
+
+
+def translate_labels(labels):
+    '''
+        Translate interface-generated labels to the index standard, following commons.classes
+         class list.
+
+        Argument:
+            label: a string or list of strings representing one or more classes, following
+             the pattern of interface-generated labels.
+
+        Returns:
+            translation: a string or list of strings of elements of commons.classes, representing
+            the same classes present in the input strings. 
+    '''
+    def _translate(label):
+        translation = None
+        for tup in translationTable.items():
+            for value in tup[1]:
+                if label.lower() == value:
+                    print("label.lower: ", label.lower())
+                    print("value: ", value)
+                    input()
+                    translation = tup[0]
+        return translation
+
+    translationTable = commons.classes
+    if hasattr(labels, "__len__"):
+        # If list, apply translation subroutine to every element in list
+        translation = list(map(_translate, labels))
+    else:
+        # If not list, just translate input
+        translation = _translate(labelList)
+    return translation
