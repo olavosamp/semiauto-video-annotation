@@ -72,18 +72,18 @@ def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
         Returns list of files in the file tree starting at folderPath.
 
         Optional argument ext_list defines list of recognized extensions, case insensitive.
+        ext_list must be a list of strings, each defining an extension, without dots.
         
         Argument remove_dups should almost always be True, else it will return duplicated entries
         as it searches both upper and lower case versions of all given extensions.
     '''
 
     # Also search for upper case formats for Linux compatibility
-    ext_list.extend([x.upper() for x in commons.videoFormats])
+    ext_list.extend([x.upper() for x in ext_list])
     # TODO: Replace this workaround by making a case insensitive search or
     # making all paths lower case before making comparisons (possible?)
 
     folderPath = replace_backslashes(folderPath)
-    # print(folderPath)
 
     fileList = []
     for format in ext_list:
@@ -207,28 +207,30 @@ def file_hash(filePath):
 
 
 ## Video and image processing
-def make_video_hash_list(videoList, verbose=True):
+def make_video_hash_list(fileList, columnName='FilePath', verbose=True):
     '''
         Find and save video paths in a file tree in a list,
          calculate their MD5 hashes and save both lists as a Pandas DataFrame.
 
         Argument:
-            videoFolder: video folder root path.
+            fileList: list of strings. List of paths of the files to hash.
+            columnName: name of the DataFrame columns where the filepath list
+             will be saved.
 
         Returns:
-            table: Pandas DataFrame with two columns: LocalizedVideoPath and HashMD5.
+            table: Pandas DataFrame with two columns: columnName and HashMD5.
     '''    
-    # hashList = list(map(file_hash, videoList))
-    numVideos = len(videoList)
+    # hashList = list(map(file_hash, fileList))
+    numVideos = len(fileList)
     if verbose:
-        print("Processing MD5 hash of {} videos...".format(numVideos))
+        print("Processing MD5 hash of {} files...".format(numVideos))
     
     hashList = []
     for i in tqdm(range(numVideos)):
-        # print("{}".format(i).ljust(5), "/{} :\n{}".format(numVideos, videoList[i]))
-        hashList.append(file_hash(videoList[i]))
+        # print("{}".format(i).ljust(5), "/{} :\n{}".format(numVideos, fileList[i]))
+        hashList.append(file_hash(fileList[i]))
 
-    table = pd.DataFrame({'LocalisedVideoPath': videoList, 'HashMD5': hashList})
+    table = pd.DataFrame({str(columnName): fileList, 'HashMD5': hashList})
     return table
 
 

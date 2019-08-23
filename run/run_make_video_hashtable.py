@@ -11,11 +11,11 @@ from libs.utils             import *
 
 videoFolder = dirs.base_videos
 
-videoList = get_file_list(videoFolder, ext_list=dirs.videoFormats)
+videoList = get_file_list(videoFolder, ext_list=commons.videoFormats)
 
-start = time.time()
-hashTable = make_video_hash_list(videoList)
-hashTime = time.time() - start
+start       = time.time()
+hashTable   = make_video_hash_list(videoList, columnName='LocalisedVideoPath')
+hashTime    = time.time() - start
 
 print("Elapsed time to hash: {:.2f} seconds.".format(hashTime))
 print(hashTable.shape)

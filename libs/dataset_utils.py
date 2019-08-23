@@ -12,6 +12,43 @@ from libs.get_frames_class  import GetFramesFull
 from libs.utils             import *
 
 
+def add_frame_hash_to_labels_file(labelsFile, framePathColumn='imagem'):
+    '''
+        Compute MD5 hashes of frames in a interface-generated labels csv file.
+        File must be in a parent folder of the labeled images'.
+
+        Adds a column called 'HashMD5' with file hashes of the images found in
+    '''
+    labelsFile    = Path(labelsFile)
+    labelsDf      = pd.read_csv(labelsFile)
+    
+    # Get filepaths of images in child directories
+    framePathList = get_file_list(str(labelsFile.parent), ext_list=['jpg'])
+    framePathList = list(map(func_make_path, framePathList))    # Make all filepaths Path objects
+
+    labelsDf.set_index(framePathColumn, drop=False, inplace=True)
+
+    # Compute framePaths
+    try:
+        for framePath in framePathList:
+            labelsDf.loc[framePath.name, 'FramePath'] = framePath
+    except KeyError as e:
+        print("KeyError in add_frame_hash_to_labels_file: probably a frame\
+               path did not have a corresponding framePathColumns correspondent key.\
+               Did you move any interface-generated image?\n\n")
+        raise KeyError(e)
+
+    # Drop frame name index
+    labelsDf.reset_index(drop=True, inplace=True)
+
+    # Compute and add frame hashes
+    labelsDf['HashMD5'] = make_video_hash_list(labelsDf['FramePath'])['HashMD5']
+    return labelsDf
+
+
+
+
+
 def extract_dataset(videoFolder, destFolder,
                  datasetName="unlabeled_dataset_test",
                  indexPath='auto',
