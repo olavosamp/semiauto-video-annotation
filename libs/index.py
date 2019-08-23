@@ -1,15 +1,21 @@
 import os
 import shutil
 import time
-import pandas       as pd
-import numpy        as np
-from   tqdm         import tqdm
-from   datetime     import datetime
-from   pathlib      import Path
-from   glob         import glob
+from copy                   import copy
+import pandas               as pd
+import numpy                as np
+from   tqdm                 import tqdm
+from   datetime             import datetime
+from   pathlib              import Path
+from   glob                 import glob
 
-import libs.dirs    as dirs
-from libs.utils     import *
+import libs.dirs            as dirs
+from libs.utils             import *
+from libs.dataset_utils     import *
+
+
+def hyphenated_string_to_list(hyphenString):
+    return hyphenString.split("-")
 
 
 def move_files_routine(source, destination):
@@ -323,32 +329,55 @@ class IndexManager:
 
 
     def get_unique_tags(self):
+        def _hyphenated_string_to_list(x): self.tagList.extend(x.split('-'))
         self.tagList = []
-        def hiphenated_string_to_list(x): self.tagList.extend(x.split('-'))
 
-        self.index['Tags'].apply(hiphenated_string_to_list)
+        self.index['Tags'].apply(hyphenated_string_to_list)
         self.tagList = list(dict.fromkeys(self.tagList))
         return self.tagList
 
 
     def append_tag(self, entryIndex, newTag):
+        tag = copy(self.index.loc[entryIndex, 'Tags'])
         def _func_append_tag(tagArg):
+            # TODO: tag referenced before assignment. For some reason, tag is not initialized
+            # or is not seem from inside this function. It should have access to its parent namespace, no?
+            print(tag)
+            print(tagArg)
+            input()
             # Check if argument is a string, then append to append_tag::tag.
             if isinstance(tagArg, str):
                 tag += "-"+tagArg
             else:
                 raise TypeError("Argument must be a string or list of strings.")
 
-        tag = self.index.loc[entryIndex, 'Tags'].copy()
-
         # Check if newTag is a list or a string
-        if isinstance(newTag, str):
-            _func_append_tag(newTag)
-        elif hasattr(newTag, "__len__"):
+        if isinstance(newTag, list):
+            # print("isinstance")
+            # print("newTag", newTag)
             for t in newTag:
                 _func_append_tag(t)
-
+        # elif hasattr(newTag, "__len__"):
+        else:
+            _func_append_tag(newTag)
         self.index.loc[entryIndex, 'Tags'] = list(dict.fromkeys(tag))
+        
+        # Delete unlabeled tag, as it is now labeled
+        self.delete_tag(entryIndex, 'unlabeled')
+
+
+    def delete_tag(self, entryIndex, targetTag, raise_error=False):
+        '''
+            Delete one instance of targetTag tag of self.index[entryIndex] tag list.
+        '''
+        tagList =  hyphenated_string_to_list(self.index.loc[entryIndex, 'Tags'])
+        if targetTag in tagList:
+            tagList.remove(targetTag)
+        elif raise_error:
+            raise ValueError("Target tag not found at desired entry.")
+        
+        self.index.loc[entryIndex, 'Tags'] = "-".join(tagList)
+
 
 
     def get_video_hash_list(self):
@@ -455,15 +484,19 @@ class IndexManager:
                                           newLabelsIndex.loc[i, 'rede3']]))
             if newTags.count("-") > 0:
                 newTags.remove("-")
-            tagList.append(newTags)
-        
-        self.index.set_index('FrameHash', drop=False, inplace=False)
+            tagList.append(translate_labels(newTags))
+        # print(tagList)
+        # input()
+        self.index.set_index('FrameHash', drop=False, inplace=True)
+        print("Before new tags append")
+        # print(self.index[self.index['FrameHash'] == "bb310a3b9bb72b81326cd70c29117c4b"])
+        print(self.index.loc["bb310a3b9bb72b81326cd70c29117c4b", :])
+        input()
 
         for i in range(newLabelLen):
-        # TODO: Works up to this point. Raises KeyError in the next line
-        # Must get hashes of this new index
             ind = newLabelsIndex.loc[i, 'FrameHash']
-            self.append_tag(ind, tagList)
-        translate_labels(label)
-        self.index.reset_index(drop=True, inplace=True)
+            self.append_tag(ind, tagList[i])
 
+        print("\n\nAfter new tags append")
+        print(self.index["bb310a3b9bb72b81326cd70c29117c4b"])
+        self.index.reset_index(drop=True, inplace=True)

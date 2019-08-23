@@ -7,7 +7,7 @@ from datetime               import datetime
 
 import libs.dirs            as dirs
 import libs.commons         as commons
-from libs.index             import IndexManager
+from libs.index             import *
 from libs.get_frames_class  import GetFramesFull
 from libs.utils             import *
 
@@ -17,8 +17,10 @@ def add_frame_hash_to_labels_file(labelsFile, framePathColumn='imagem'):
         Compute MD5 hashes of frames in a interface-generated labels csv file.
         File must be in a parent folder of the labeled images'.
 
-        Adds a column called 'HashMD5' with file hashes of the images found in
+        Adds a column called def_frameHashColumnName with file hashes of the images found in
     '''
+    def_frameHashColumnName = 'FrameHash'
+
     labelsFile    = Path(labelsFile)
     labelsDf      = pd.read_csv(labelsFile)
     
@@ -42,11 +44,13 @@ def add_frame_hash_to_labels_file(labelsFile, framePathColumn='imagem'):
     labelsDf.reset_index(drop=True, inplace=True)
 
     # Compute and add frame hashes
-    labelsDf['HashMD5'] = make_video_hash_list(labelsDf['FramePath'])['HashMD5']
+    labelsDf[def_frameHashColumnName] = make_video_hash_list(labelsDf['FramePath'])['HashMD5']
+
+    # Drop FramePath column
+    labelsDf.drop('FramePath', axis=1, inplace=True)
+
+    labelsDf.to_csv(labelsFile, index=False)
     return labelsDf
-
-
-
 
 
 def extract_dataset(videoFolder, destFolder,
@@ -154,15 +158,16 @@ def translate_labels(labels):
             the same classes present in the input strings. 
     '''
     def _translate(label):
-        translation = None
+        translatedLabel = None
         for tup in translationTable.items():
             for value in tup[1]:
-                if label.lower() == value:
-                    print("label.lower: ", label.lower())
-                    print("value: ", value)
-                    input()
-                    translation = tup[0]
-        return translation
+                if label.lower() == value.lower():
+                    translatedLabel = str(tup[0])
+        if translatedLabel:
+            return translatedLabel
+        else:
+            raise KeyError("Translation not found for this label.")
+
 
     translationTable = commons.classes
     if hasattr(labels, "__len__"):
@@ -171,4 +176,6 @@ def translate_labels(labels):
     else:
         # If not list, just translate input
         translation = _translate(labelList)
+    # print(translation)
+    # input()
     return translation
