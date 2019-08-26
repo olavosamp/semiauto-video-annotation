@@ -39,10 +39,15 @@ def file_exists(x):
     return Path(x).is_file()
 
 
-def replace_backslashes(stringList):
-    '''Replaces backslashes ("\\") with foward slashes ("/") in strings.'''
+def replace_symbols(stringList, og_symbol="\\", new_symbol="/"):
+    '''
+        Replaces symbols in strings or string lists.
 
-    def _func_replace(x): return str(x).replace("\\", "/")#.replace(" ", "_")
+        Replace all instances of og_symbol with new_symbol.
+        Defaults to replacing backslashes ("\\") with foward slashes ("/").
+    '''
+
+    def _func_replace(x): return str(x).replace(og_symbol, new_symbol)
 
     if isinstance(stringList, str):         # Input is string
         return _func_replace(stringList)
@@ -83,7 +88,7 @@ def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
     # TODO: Replace this workaround by making a case insensitive search or
     # making all paths lower case before making comparisons (possible?)
 
-    folderPath = replace_backslashes(folderPath)
+    folderPath = replace_symbols(folderPath)
 
     fileList = []
     for format in ext_list:
@@ -95,7 +100,7 @@ def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
         # Remove duplicated entries
         fileList = list(dict.fromkeys(fileList))
     
-    fileList = list(map(replace_backslashes, fileList))
+    fileList = list(map(replace_symbols, fileList))
 
     return fileList
 
@@ -126,6 +131,11 @@ def get_time_string(date):
 
 
 def copy_files(source, destination):
+    '''
+        copy_files(source, destination)
+
+        Copy file at source to destination path.
+    '''
     if os.path.isfile(source):
         shutil.copy2(source, destination)
         return True

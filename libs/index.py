@@ -329,38 +329,38 @@ class IndexManager:
 
 
     def get_unique_tags(self):
+        '''
+            Get unique tags over the entire Index.
+            Return a list of tags.
+        '''
         def _hyphenated_string_to_list(x): self.tagList.extend(x.split('-'))
         self.tagList = []
 
-        self.index['Tags'].apply(hyphenated_string_to_list)
+        self.index['Tags'].apply(_hyphenated_string_to_list)
         self.tagList = list(dict.fromkeys(self.tagList))
         return self.tagList
 
 
     def append_tag(self, entryIndex, newTag):
-        tag = copy(self.index.loc[entryIndex, 'Tags'])
+        # self.tag = copy(self.index.loc[entryIndex, 'Tags'])
         def _func_append_tag(tagArg):
-            # TODO: tag referenced before assignment. For some reason, tag is not initialized
-            # or is not seem from inside this function. It should have access to its parent namespace, no?
-            print(tag)
-            print(tagArg)
-            input()
             # Check if argument is a string, then append to append_tag::tag.
             if isinstance(tagArg, str):
-                tag += "-"+tagArg
+                self.tagsToAppend.append(tagArg)
             else:
                 raise TypeError("Argument must be a string or list of strings.")
 
+        self.tagsToAppend = hyphenated_string_to_list(self.index.loc[entryIndex, 'Tags'])
+
         # Check if newTag is a list or a string
         if isinstance(newTag, list):
-            # print("isinstance")
-            # print("newTag", newTag)
             for t in newTag:
                 _func_append_tag(t)
-        # elif hasattr(newTag, "__len__"):
         else:
             _func_append_tag(newTag)
-        self.index.loc[entryIndex, 'Tags'] = list(dict.fromkeys(tag))
+        
+        self.tagsToAppend = list(dict.fromkeys(self.tagsToAppend))
+        self.index.loc[entryIndex, 'Tags'] = "-".join(self.tagsToAppend)
         
         # Delete unlabeled tag, as it is now labeled
         self.delete_tag(entryIndex, 'unlabeled')
@@ -370,12 +370,12 @@ class IndexManager:
         '''
             Delete one instance of targetTag tag of self.index[entryIndex] tag list.
         '''
-        tagList =  hyphenated_string_to_list(self.index.loc[entryIndex, 'Tags'])
+        tagList = hyphenated_string_to_list(self.index.loc[entryIndex, 'Tags'])
         if targetTag in tagList:
             tagList.remove(targetTag)
         elif raise_error:
             raise ValueError("Target tag not found at desired entry.")
-        
+
         self.index.loc[entryIndex, 'Tags'] = "-".join(tagList)
 
 
@@ -488,15 +488,15 @@ class IndexManager:
         # print(tagList)
         # input()
         self.index.set_index('FrameHash', drop=False, inplace=True)
-        print("Before new tags append")
-        # print(self.index[self.index['FrameHash'] == "bb310a3b9bb72b81326cd70c29117c4b"])
-        print(self.index.loc["bb310a3b9bb72b81326cd70c29117c4b", :])
-        input()
+        # print("Before new tags append")
+        # print(self.index.loc["bb310a3b9bb72b81326cd70c29117c4b", :])
 
         for i in range(newLabelLen):
             ind = newLabelsIndex.loc[i, 'FrameHash']
             self.append_tag(ind, tagList[i])
 
-        print("\n\nAfter new tags append")
-        print(self.index["bb310a3b9bb72b81326cd70c29117c4b"])
+        # print("\n\nAfter new tags append")
+        # print(self.index.loc["bb310a3b9bb72b81326cd70c29117c4b", :])
+        # input()
         self.index.reset_index(drop=True, inplace=True)
+        # print(self.index.iloc[21, :])

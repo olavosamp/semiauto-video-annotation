@@ -12,7 +12,7 @@ from libs.utils     import (add_ok,
                             get_file_list,
                             remove_video_ts,
                             get_relative_list,
-                            replace_backslashes)
+                            replace_symbols)
 
 
 # Base:    8 VOB + 31 wmv = 39 non-header videos, 40 total
@@ -48,8 +48,8 @@ baseFileList    = remove_video_ts(baseFileList)
 compareFileList = remove_video_ts(compareFileList)
 
 # Replace backslashes again, just to be sure
-baseFileList    = replace_backslashes(baseFileList)
-compareFileList = replace_backslashes(compareFileList)
+baseFileList    = replace_symbols(baseFileList)
+compareFileList = replace_symbols(compareFileList)
 
 print("\nBase:\n")
 for entry in baseFileList:

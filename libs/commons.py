@@ -18,6 +18,7 @@ videoFormats = ['wmv', 'mpg', 'vob', 'avi', 'VOB']
     'OriginalDataset':     Identification of frame's source. Indicates from where the entry was obtained.
     'OriginalFramePath':   Original frame location, before it was copied to dataset folder. Likely another dataset folder.
     'HashMD5':             MD5 hash of the source video.
+    'FrameHash':           MD5 hash of the image file.
 '''
 
 # Field list
@@ -34,12 +35,13 @@ indexEntryColumns = [
             'FramePath',
             'FrameName',
             'OriginalDataset',
-            'HashMD5'
+            'HashMD5',
+            'FrameHash'
 ]
 
 unlabeledDatasetName = "unlabeled_dataset"
 
-reportList = [
+reportList = [  # Report list without _OK suffix
             "CIMRL10-676",
             "FAmls16-119",
             "FSll16-224",
@@ -53,22 +55,22 @@ reportList = [
 ]
 
 classes = {
-            'Duto': ["tubo", "duto"],
-            'Nada': ["nada"],
-            'Confuso': ["conf", "confuso"],
+            'Duto':         ["tubo", "duto"],
+            'Nada':         ["nada"],
+            'Confuso':      ["conf", "confuso"],
 
-            'Evento': ["evnt", "evento"],
-            'Não-Evento': ["nevt", "Nao_Evento"],
+            'Evento':       ["evnt", "evento"],
+            'NaoEvento':    ["nevt", "Nao_Evento"],
 
-            'Anodo': ["anodo", "anoto"],
-            'Flutuadores': ["boia", "flutuadores"], 
-            'Reparo': ["repr", "reparo"],
-            'Dano': ["dano"],
-            'Loop': ["loop"],
-            'Torção': ["torc", "torcao"],
-            'Gaiola': ["gaio", "gaiola"],
-            'Corrosão': ["corr", "corrosao"],
+            'Anodo':        ["anodo", "anoto"],
+            'Flutuadores':  ["boia", "flutuadores"], 
+            'Reparo':       ["repr", "reparo"],
+            'Dano':         ["dano"],
+            'Loop':         ["loop"],
+            'Torcao':       ["torc", "torcao"],
+            'Gaiola':       ["gaio", "gaiola"],
+            'Corrosao':     ["corr", "corrosao"],
             'Enterramento': ["ente", "enterramento"],
-            'Cruzamento': ["cruz", "cruzamento"],
-            'Flange': ["flan", "flange"],
+            'Cruzamento':   ["cruz", "cruzamento"],
+            'Flange':       ["flan", "flange"],
 }

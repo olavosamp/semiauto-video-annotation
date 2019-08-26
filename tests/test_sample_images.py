@@ -6,7 +6,7 @@ from glob                   import glob
 
 import libs.dirs            as dirs
 from libs.iteration_manager import SampleImages
-from libs.utils             import copy_files, replace_backslashes
+from libs.utils             import copy_files, replace_symbols
 
 
 class Test_SampleImages():
@@ -43,7 +43,7 @@ class Test_SampleImages():
         self.sampler.sample(percentage=0.01)
 
         globString = str(self.sampler.imageFolder) + "/**.jpg"
-        globString = replace_backslashes(globString)
+        globString = replace_symbols(globString)
         imageList = glob(globString, recursive=True)
 
         assert len(imageList) == 26
