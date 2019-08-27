@@ -104,13 +104,14 @@ class IterationManager:
         if self.samplesIndexPath.is_file():
             raise FileExistsError(
                 "Sampled index already exists.\nHas sampling been already performed this iteration?\n \
-                To perform new sampling, delete sampled_images folder and index and run sample_images method again.")
+                To perform new sampling, delete sampled_images folder and index and run sample_images\
+                 method again.")
 
         # TODO: REMEMBER to Remove fixed seed when using sampler outside of testing
         self.sampler = SampleImages(self.unlabeledIndexPath,
                                     self.iterInfo.currentIterFolder, seed=seed)
-        self.sampler.sample(percentage=0.01)
 
+        self.sampler.sample(percentage=0.01)
         self.sampler.save_to_index(self.samplesIndexPath)
 
 

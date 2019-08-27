@@ -12,6 +12,28 @@ from libs.get_frames_class  import GetFramesFull
 from libs.utils             import *
 
 
+def translate_interface_labels_file(filePath):
+    assert file_exists(filePath), "File doesn't exist."
+    
+    # Read index
+    newLabelsIndex = pd.read_csv(filePath)
+    newLabelLen = newLabelsIndex.shape[0]
+    
+    # Get new tags from index columns
+    tagList = []
+    for i in range(newLabelLen):
+        # Discard duplicated tags
+        newTags = list(dict.fromkeys([newLabelsIndex.loc[i, 'rede1'],
+                                        newLabelsIndex.loc[i, 'rede2'],
+                                        newLabelsIndex.loc[i, 'rede3']]))
+        if newTags.count("-") > 0:
+            newTags.remove("-")
+        tagList.append(translate_labels(newTags))
+    
+    newLabelsIndex['Tags'] = tagList
+    return newLabelsIndex
+
+
 def add_frame_hash_to_labels_file(labelsFile, framePathColumn='imagem'):
     '''
         Compute MD5 hashes of frames in a interface-generated labels csv file.

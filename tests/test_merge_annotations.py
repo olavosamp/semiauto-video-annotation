@@ -43,17 +43,34 @@ class Test_merge_annotations:
         assert labelsDf.loc[13, 'FrameHash'] == '1bf13ea0c0537481aa1d1ed46b207783'
 
 
-    def test_merge_annotations(self):
+    def test_translate_interface_labels(self):
         self.testFolder          = Path(dirs.test) / "test_loop/iteration_0/"
         self.indexPath           = self.testFolder / "sampled_images.csv"
-        self.newLabelsPath  = self.testFolder / "sampled_images_labels.csv"
+        self.newLabelsPath       = self.testFolder / "sampled_images_labels.csv"
+
+        newLabelsIndex = translate_interface_labels_file(self.newLabelsPath)
+        assert newLabelsIndex.loc[21, 'Tags'] == ["Duto", "Evento", "Flange"]
+
+
+    def test_merge_annotations(self):
+        #TODO: Finish this test when there are example labeled index csvs.
+        self.testFolder          = Path(dirs.test) / "test_loop/iteration_0/"
+        self.assetsFolder        = Path(dirs.test_assets) / "test_loop/iteration_0/"
+        self.indexPath           = self.assetsFolder / "index_merge_annotations.csv"
+        self.newLabelsPath       = self.testFolder / "sampled_images_labels.csv"
+        self.newLabelsTranslated = self.testFolder / "sampled_images_labels_translated.csv"
+
+        self.newLabelsIndex = translate_interface_labels_file(self.newLabelsPath)
+        # self.newLabelsTemp.to_csv(self.newLabelsTranslated, index=False)
+
+        # self.newLabelsIndex = pd.read_csv(self.newLabelsTranslated)
 
         ind = IndexManager(self.indexPath)
-        ind.merge_annotations(self.newLabelsPath)
+        ind.merge_annotations(self.newLabelsIndex)
 
         assert ind.index.loc[21, 'Tags'] == "Duto-Evento-Flange"
 
 
     def test_tear_down(self):
-        self.testFolder = Path(dirs.test) / "test_loop/iteration_0/"
+        self.testFolder         = Path(dirs.test) / "test_loop/iteration_0/"
         sh.rmtree(self.testFolder)

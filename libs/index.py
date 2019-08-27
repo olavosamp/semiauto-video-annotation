@@ -251,7 +251,7 @@ class IndexManager:
             os.rename(entry, newPath)
 
 
-    def write_index(self, dest_path='auto', prompt=True):
+    def write_index(self, dest_path='auto', make_backup=True, prompt=True):
         '''
             Create a backup of old index and write current index DataFrame to a csv file.
             auto_path == True appends date and time to index path
@@ -260,7 +260,8 @@ class IndexManager:
             print("\n\nReally write index to file?\nPress any key to continue, Ctrl-C to cancel.\n")
             input()
 
-        self.make_backup()
+        if make_backup:
+            self.make_backup()
 
         if dest_path == 'auto':
             newName = str(self.path.stem) + "_" + get_time_string(self.date)
@@ -342,11 +343,18 @@ class IndexManager:
 
 
     def append_tag(self, entryIndex, newTag):
-        # self.tag = copy(self.index.loc[entryIndex, 'Tags'])
+        '''
+            Add newTag input to Tag column at entryIndex. newTag is appended with
+            '-' separator.
+
+            newTag: String or list of strings to be added to existing Tag column.
+            entryIndex: target row index of self.index where the new tags will be added.
+        ''' 
         def _func_append_tag(tagArg):
             # Check if argument is a string, then append to append_tag::tag.
             if isinstance(tagArg, str):
-                self.tagsToAppend.append(tagArg)
+                # self.tagsToAppend.append(tagArg)
+                self.tagsToAppend.extend(tagArg.split('-'))
             else:
                 raise TypeError("Argument must be a string or list of strings.")
 
@@ -374,10 +382,10 @@ class IndexManager:
         if targetTag in tagList:
             tagList.remove(targetTag)
         elif raise_error:
+            # Raises error if tag not found and raise_error flag is set to True
             raise ValueError("Target tag not found at desired entry.")
 
         self.index.loc[entryIndex, 'Tags'] = "-".join(tagList)
-
 
 
     def get_video_hash_list(self):
@@ -395,6 +403,7 @@ class IndexManager:
             self.hashDf = None
         
         return self.hashDf
+
 
     # def estimate_hashes(self, videoFolder):
     #     '''
@@ -417,16 +426,18 @@ class IndexManager:
     #     # TODO: Add matching entries to HashMD5 columns; Treat non matching VideoPaths;
 
 
-    def compute_frame_hashes(self):
+    def compute_frame_hashes(self, reference_column='FramePath'):
         '''
-            Compute MD5 hashes for every frame in the index. Save hashes to new column
-            'FrameHash'.
+            Compute MD5 hashes for every frame in the index. The reference column
+            is given by the input string reference_column.
+            
+            Hashes are saved to new column 'FrameHash'.
         '''
         if self.indexExists:
             start = time.time()
 
             print("Calculating hashes of {} images...".format(self.get_index_len()))
-            self.index["FrameHash"] = self.index.loc[:, "FramePath"].apply(file_hash)
+            self.index["FrameHash"] = self.index.loc[:, reference_column].apply(file_hash)
 
             elapsedTime = time.time() - start
             return elapsedTime
@@ -454,7 +465,7 @@ class IndexManager:
         print("Files not found: ", len(notFound))
 
 
-    def merge_annotations(self, newLabelsPath):
+    def merge_annotations(self, newLabelsIndex):
         '''
             Add new annotations in newLabels interface-generated csv to existing annotated 
             images csv, existingIndex.
@@ -469,22 +480,7 @@ class IndexManager:
             Every entry in newLabels must be present in existingIndex, if it exists, or 
             in a "iteration_#/sampled_images_iteration_#.csv" file.
         '''
-        assert file_exists(newLabelsPath), "File doesn't exist."
-        
-        # Read index
-        newLabelsIndex = pd.read_csv(newLabelsPath)
         newLabelLen = newLabelsIndex.shape[0]
-        
-        # Get new tags from index columns
-        tagList = []
-        for i in range(newLabelLen):
-            # Discard duplicated tags
-            newTags = list(dict.fromkeys([newLabelsIndex.loc[i, 'rede1'],
-                                          newLabelsIndex.loc[i, 'rede2'],
-                                          newLabelsIndex.loc[i, 'rede3']]))
-            if newTags.count("-") > 0:
-                newTags.remove("-")
-            tagList.append(translate_labels(newTags))
         # print(tagList)
         # input()
         self.index.set_index('FrameHash', drop=False, inplace=True)
@@ -492,8 +488,10 @@ class IndexManager:
         # print(self.index.loc["bb310a3b9bb72b81326cd70c29117c4b", :])
 
         for i in range(newLabelLen):
-            ind = newLabelsIndex.loc[i, 'FrameHash']
-            self.append_tag(ind, tagList[i])
+            ind     = newLabelsIndex.loc[i, 'FrameHash']
+            tagList = newLabelsIndex.loc[i, 'Tags']
+            # self.append_tag(ind, tagList[i])
+            self.append_tag(ind, tagList)
 
         # print("\n\nAfter new tags append")
         # print(self.index.loc["bb310a3b9bb72b81326cd70c29117c4b", :])
