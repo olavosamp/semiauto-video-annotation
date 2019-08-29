@@ -125,7 +125,7 @@ def get_time_string(date):
 
         Returns:  Formatted string with year, month, day, hour, minute and seconds.
     '''
-    timeString = "{}-{}-{}_{}-{}-{}".format(date.year, date.month,\
+    timeString = "{:.0f}-{:.0f}-{:.0f}_{:.0f}-{:.0f}-{:.0f}".format(date.year, date.month,\
         date.day, date.hour, date.minute, date.second)
     return timeString
 
