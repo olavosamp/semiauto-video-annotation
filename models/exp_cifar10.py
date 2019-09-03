@@ -117,7 +117,6 @@ if __name__ == "__main__":
     images, labels = dataiter.next()
     labels = labels.to(device)
 
-
     print("Ground truth: ", " ".join(["{:5s}".format(classes[labels[j]]) for j in range(4)]))
     imshow(torchvision.utils.make_grid(images))
 
@@ -127,8 +126,6 @@ if __name__ == "__main__":
     _, predicted = torch.max(outputs, 1)
     
     print("Prediction: ", " ".join(["{:5s}".format(classes[predicted[j]]) for j in range(4)]))
-
-    # input()
 
     # Inference in the whole test set
     correct = 0

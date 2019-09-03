@@ -4,9 +4,7 @@ import torch
 import matplotlib
 import torchvision
 import torch.nn             as nn
-import torch.optim          as optim
 from pathlib                import Path
-from torch.optim            import lr_scheduler
 from torchvision            import models
 
 import libs.dirs            as dirs
@@ -37,13 +35,13 @@ class TrainModel:
         '''
             Generate dataloaders for input dataset.
 
-            dataset: torchvision.datasets dataset object
-                Dataset object.
+            dataset: dict-like dataset object
+                Dataset dict-like object that must contain 'train' and 'val' keys.
 
             num_examples_per_batch: int
                 Number of examples per batch.
         '''
-        self.dataset     = dataset
+        self.dataset = dataset
         self.num_examples_per_batch = num_examples_per_batch
 
         self.datasetSizes = {
@@ -52,9 +50,11 @@ class TrainModel:
         # Define batch generator
         self.dataloaders = {}
         for x in ['train', 'val']:
-            self.dataloaders[x] = torch.utils.data.DataLoader(self.dataset[x], batch_size=self.num_examples_per_batch,
+            self.dataloaders[x] = torch.utils.data.DataLoader(self.dataset[x],
+                                                              batch_size=self.num_examples_per_batch,
                                                               shuffle=True, num_workers=4)
         self.classNames = dataset['train'].classes
+        self.numClasses = len(self.classNames)
         
         return self.dataloaders
 
@@ -78,7 +78,10 @@ class TrainModel:
                 param.requires_grad = False
 
         # Add FC layer
-        self.model.fc = nn.Linear(self.numFeatures, 2)
+        # self.model.fc = nn.Linear(self.numFeatures, 2)
+        # print("Num classes: ", self.numClasses)
+        self.model.fc = nn.Linear(self.numFeatures, self.numClasses)
+        # self.model.fc = nn.Softmax(dim=-1)
         self.model.to(self.device)
 
         return self.model
@@ -110,8 +113,12 @@ class TrainModel:
 
                 # Iterate over data
                 for inputs, labels in self.dataloaders[phase]:
+                    # print(self.inputs)
                     self.inputs = inputs.to(self.device)
                     self.labels = labels.to(self.device)
+                    # print(self.inputs.size())
+                    # print(self.labels.size())
+                    # input()
 
                     # Reset gradients
                     self.optimizer.zero_grad()
@@ -128,16 +135,16 @@ class TrainModel:
                             self.loss.backward()
                             self.optimizer.step()
                             self.scheduler.step()
-                    
+
                     # Get statistics
                     self.runningLoss += self.loss.item() * self.inputs.size(0)
                     self.runningCorrects += torch.sum(self.predictions == self.labels.data)
-                
-                self.epochLoss = self.runningLoss/ self.datasetSizes[phase]
+
+                self.epochLoss = self.runningLoss / self.datasetSizes[phase]
                 self.epochAcc = self.runningCorrects.double() / self.datasetSizes[phase]
 
                 print("{} Phase\n\tLoss: {:.4f}\n\tAcc : {:.4f}".format(
-                                            phase, self.epochLoss, self.epochAcc))
+                    phase, self.epochLoss, self.epochAcc))
 
                 # Save model if there is an improvement in evaluation metric
                 if phase == 'val' and self.epochAcc > self.bestAcc:
@@ -153,3 +160,7 @@ class TrainModel:
         # Load best model weights
         self.model.load_state_dict(self.bestModelWeights)
         return self.model
+
+    def report_start(self):
+        print
+        

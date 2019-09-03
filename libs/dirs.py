@@ -12,6 +12,7 @@ dataset             = root+sep+".."+sep+"datasets"+sep
 hashtable           = root+"index"+sep+"localised_video_path_list.csv"
 iter_folder         = root+".."+sep+"annotation_loop"+sep
 iter_info           = iter_folder+"iter_info.txt"
+saved_models        = root+".."+sep+"saved_models"+sep
 
 test                = root+sep+".."+sep+"test"+sep
 test_assets         = test+"test_assets"+sep
