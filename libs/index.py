@@ -18,20 +18,6 @@ def hyphenated_string_to_list(hyphenString):
     return hyphenString.split("-")
 
 
-def move_files_routine(source, destination):
-    '''
-        Wrapper function for shutil.copy2().
-        Arguments: source, destination filepaths
-        Returns: True if operation was successful and False if it failed.
-    '''
-    if os.path.isfile(source):
-        shutil.copy2(source, destination)
-        return True
-    else:
-        #     print("Source file not found:\n", source)
-        return False
-
-
 class IndexManager:
     def __init__(self, path=dirs.index+"main_index.csv", destFolder='auto', verbose=True):
         self.path               = Path(path)
@@ -51,12 +37,14 @@ class IndexManager:
 
 
     def get_index_len(self):
-        ''' Returns integer representing number of entries in index, 
-        or None, if index doesn't exists.'''
+        '''
+            Returns integer representing number of entries in index, 
+            or None, if index doesn't exists.
+        '''
         if self.indexExists:
             return self.index.shape[0]
         else:
-            return 0
+            return None
 
 
     def get_video_path_list(self):
@@ -296,7 +284,7 @@ class IndexManager:
         f = lambda x: self.imagesDestFolder / x
         self.frameDestPaths = self.index.loc[:, 'FrameName'].apply(f)
 
-        self.moveResults = list(map(move_files_routine, self.index.loc[:, 'OriginalFramePath'], self.frameDestPaths))
+        self.moveResults = list(map(copy_files, self.index.loc[:, 'OriginalFramePath'], self.frameDestPaths))
 
         for i in range(self.get_index_len()):
             self.index.loc[i, "OriginalFramePath"] = self.index.loc[i, "FramePath"].copy()

@@ -26,3 +26,4 @@ def create_folder(path, verbose=False):
 
 create_folder(images)
 create_folder(test)
+create_folder(saved_models)

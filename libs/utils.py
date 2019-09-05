@@ -16,12 +16,12 @@ import libs.dirs    as dirs
 import libs.commons as commons
 
 
-# Small lambda functions
+## Small lambda functions
 def func_make_path(x):   return Path(x)
-def func_strip(x):         return Path(str(x).strip())
+def func_strip(x):       return Path(str(x).strip())
 
 
-# Pickle functions
+## Pickle functions
 def save_pickle(object, filePath):
     with open(filePath, 'wb') as fileHandle:
         pickle.dump(object, fileHandle)
@@ -37,6 +37,7 @@ def load_pickle(filePath):
 ## Filepath and string processing
 def file_exists(x):
     return Path(x).is_file()
+    # return os.path.isfile(x)
 
 
 def replace_symbols(stringList, og_symbol="\\", new_symbol="/"):
@@ -46,7 +47,6 @@ def replace_symbols(stringList, og_symbol="\\", new_symbol="/"):
         Replace all instances of og_symbol with new_symbol.
         Defaults to replacing backslashes ("\\") with foward slashes ("/").
     '''
-
     def _func_replace(x): return str(x).replace(og_symbol, new_symbol)
 
     if isinstance(stringList, str):         # Input is string

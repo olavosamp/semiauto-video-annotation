@@ -4,32 +4,24 @@ import torchvision.datasets as datasets
 import torch.nn             as nn
 import torch.optim          as optim
 from torchvision            import models, transforms
-from torch.utils.data       import random_split
+from torch.utils.data       import random_split, TensorDataset
 
 import libs.dirs            as dirs
 from libs.utils             import *
+from libs.dataset_utils     import data_folder_split
 from models.trainer_class   import TrainModel
 
 
-def tensor_to_3_channel_greyscale(tensor):
-    return torch.cat((tensor, tensor, tensor), 0)
-
-def rgb_to_greyscale(img):
-    return 0.299 *img[0] + 0.587 *img[1] + 0.114 * img[2]
-
 if __name__ == "__main__":
 
-    datasetPath = Path(dirs.dataset) / "torch/mnist"
-    numImgBatch = 128
+    datasetPath = Path(dirs.iter_folder) / "test_loop/iteration_0/sample_images_sorted_test/"
+    numImgBatch = 4
 
     # ImageNet statistics
     # No need to normalize pixel range from [0, 255] to [0, 1] because
     # ToTensor transform already does that
     mean    = [0.485, 0.456, 0.406]#/255
     std     = [0.229, 0.224, 0.225]#/255
-
-    # mean    = [rgb_to_greyscale(mean)] * 3
-    # std     = [rgb_to_greyscale(std)] * 3
 
     # Idea: compare with actual data statistics
     
@@ -39,42 +31,52 @@ if __name__ == "__main__":
                     transforms.RandomResizedCrop(224),
                     transforms.RandomHorizontalFlip(),
                     transforms.ToTensor(),
-                    transforms.Lambda(tensor_to_3_channel_greyscale),
                     transforms.Normalize(mean, std),
         ]),
         'val': transforms.Compose([
                     transforms.Resize(256),
                     transforms.CenterCrop(224),
                     transforms.ToTensor(),
-                    transforms.Lambda(tensor_to_3_channel_greyscale),
                     transforms.Normalize(mean, std),
         ])
     }
 
+
     # Dataset loaders for train and val sets
-    # imageDatasets = {
-    #     x: datasets.ImageFolder(str(datasetPath / x), dataTransforms[x]) for x in ['train', 'val']
-    # }
+    imageDataset = datasets.ImageFolder(datasetPath)
 
     # # Load MNIST dataset
-    # imageDatasets = datasets.MNIST(datasetPath, train=True, transform=None, download=True)
-    # datasetLen = len(imageDatasets)
+    # imageDataset = datasets.MNIST(datasetPath, train=True, transform=None, download=True)
+    datasetLen = len(imageDataset)
 
-    # # Split datasets in train and validation sets
-    # trainPercentage = 0.8
-    # valPercentage   = 0.2
+    # Split datasets in train and validation sets
+    trainPercentage = 0.8
+    valPercentage   = 0.2
+
+    data_folder_split(datasetPath, [trainPercentage, valPercentage])
+    exit()
 
     # trainSize = int(datasetLen*trainPercentage)
-    # valSize   = int(datasetLen*valPercentage)
+    valSize   = int(datasetLen*valPercentage)
+    trainSize = datasetLen - valSize # This avoids dataset length mismatch due to rounding set sizes
 
-    # trainSubset, valSubset = random_split(imageDatasets, [trainSize, valSize])
+    trainSet, valSet = random_split(imageDataset, [trainSize, valSize])
+    trainSet         = TensorDataset(trainSet)#, transforms=dataTransforms['train'])
+    valSet           = TensorDataset(valSet)#,   transforms=dataTransforms['val'])
 
-    # dataset['train']  = trainSubset.dataset
-    # dataset['val']    = valSubset.dataset
+    # print(len(trainSet))
+    # print(len(valSet))
+    # print(trainSet.imgs)
+    # print(trainSet.img)
+    # print(trainSet.classes)
+    # exit()
+
+    # dataset['train']  = trainSet.dataset
+    # dataset['val']    = valSet.dataset
 
     # # Indexes of each image set in the original dataset
-    # trainIndexes      = trainSubset.indices
-    # valIndexes        = valSubset.indices
+    # trainIndexes      = trainSet.indices
+    # valIndexes        = valSet.indices
 
     dataset = {}
     dataset['train']  = datasets.MNIST(datasetPath, train=True, transform=dataTransforms['train'],
@@ -97,9 +99,6 @@ if __name__ == "__main__":
 
     # Perform training
     trainer.load_data(dataset, num_examples_per_batch=numImgBatch)
-    # print(trainer.dataloaders['train'])
-    # print(trainer.dataloaders['train'].__iter__())
-    # exit()
 
     modelFineTune = trainer.define_model_resnet18(finetune=True)
 

@@ -1,5 +1,7 @@
 import numpy                as np
 import pandas               as pd
+import shutil               as sh
+from copy                   import copy
 from tqdm                   import tqdm
 from glob                   import glob
 from pathlib                import Path
@@ -10,6 +12,69 @@ import libs.commons         as commons
 from libs.index             import *
 from libs.get_frames_class  import GetFramesFull
 from libs.utils             import *
+
+
+def data_folder_split(datasetPath, split_percentages):
+    '''
+        Split dataset images in train and validation sets. Move image files found
+        at datasetPath to two folders: datasetPath/train/ and datasetPath/val/, according
+        to the given split percentages.
+
+        datasetPath: filepath string
+            Dataset root folder.
+        
+        split_percentages: list of positive floats
+            List of dataset split percentages. Following the order [train, validation, test],
+            each number represents the percentage of examples that will be allocated to
+            the respective set.
+            OBS: Currently only implemented for train and validation
+    '''
+    def _add_set_name(x, name):
+        return datasetPath / name / Path(x).relative_to(datasetPath)
+
+    assert len(split_percentages) == 2, "List must contain only train and val percentages."
+    datasetPath = Path(datasetPath)
+
+    # Get file list as Path objects
+    fileList   = make_path(get_file_list(str(datasetPath), ext_list=['jpg', 'png']))
+
+    datasetLen = len(fileList)
+
+    # Compute size of each set
+    setLengths = np.zeros(len(split_percentages), dtype=int)
+    setLengths[:-1] = np.multiply(split_percentages[:-1], datasetLen).astype(int)
+    setLengths[-1]  = (datasetLen - setLengths.sum()) # Last size is the number of remaining examples
+
+    assert setLengths.sum() == datasetLen, "Error: Set sizes doesn't sum to total size."
+
+
+    # Shuffle list and sample examples for each set
+    np.random.shuffle(fileList)
+    trainSourceList = fileList[:setLengths[0]]
+    valSourceList   = fileList[setLengths[0]:]
+    
+    trainDestList = list(map(_add_set_name, trainSourceList, ['train']*int(setLengths[0])))
+    valDestList   = list(map(_add_set_name, valSourceList, ['val']*int(setLengths[0])))
+
+    sources = copy(trainSourceList)
+    dests   = copy(trainDestList)
+
+    sources.extend(valSourceList)
+    dests.extend(valDestList)
+
+    for source, dest in zip(sources, dests):
+        dirs.create_folder(source.parent)
+        dirs.create_folder(dest.parent)
+        
+        copy_files(source, dest)
+    
+    print("Set lengths:\n\ttrain: {}\n\tval: {}".format(setLengths[0], setLengths[1]))
+    print(setLengths)
+    print("Moved files to train and val folders in ", datasetPath)
+
+    # Remove old files
+    # for f in fileList:
+    #     sh.rmtree(f)
 
 
 def translate_interface_labels_file(filePath):
