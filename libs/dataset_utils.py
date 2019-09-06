@@ -27,7 +27,8 @@ def data_folder_split(datasetPath, split_percentages):
             List of dataset split percentages. Following the order [train, validation, test],
             each number represents the percentage of examples that will be allocated to
             the respective set.
-            OBS: Currently only implemented for train and validation
+
+        OBS: Currently only implemented for train and validation sets
     '''
     def _add_set_name(x, name):
         return datasetPath / name / Path(x).relative_to(datasetPath)
@@ -46,7 +47,6 @@ def data_folder_split(datasetPath, split_percentages):
     setLengths[-1]  = (datasetLen - setLengths.sum()) # Last size is the number of remaining examples
 
     assert setLengths.sum() == datasetLen, "Error: Set sizes doesn't sum to total size."
-
 
     # Shuffle list and sample examples for each set
     np.random.shuffle(fileList)
@@ -141,10 +141,10 @@ def add_frame_hash_to_labels_file(labelsFile, framePathColumn='imagem'):
 
 
 def extract_dataset(videoFolder, destFolder,
-                 datasetName="unlabeled_dataset_test",
-                 indexPath='auto',
-                 logFolder=dirs.index,
-                 verbose=True):
+                    datasetName="unlabeled_dataset_test",
+                    indexPath='auto',
+                    logFolder=dirs.index,
+                    verbose=True):
     '''
         Captura todos os frames de todos os vídeos da pasta de vídeos em videoFolder,
         move as imagens para destFolder e registra no índice em indexPath
@@ -237,12 +237,14 @@ def translate_labels(labels):
          class list.
 
         Argument:
-            label: a string or list of strings representing one or more classes, following
-             the pattern of interface-generated labels.
+            label: string or list of strings
+                A string or list of strings representing one or more classes, following
+                the pattern of interface-generated labels.
 
         Returns:
-            translation: a string or list of strings of elements of commons.classes, representing
-            the same classes present in the input strings. 
+            translation: string or list of strings
+                A string or list of strings, representing the translation of each input string,
+                according to the dictionary at commons.classes.
     '''
     def _translate(label):
         translatedLabel = None

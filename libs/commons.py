@@ -54,7 +54,8 @@ reportList = [  # Report list without _OK suffix
             "TVILL16-054",
 ]
 
-classes = {
+classes = { # This translation table follows the non-standard format described below.
+            # Standard class name:  [ list of words equivalent to the standard name]
             'Duto':         ["tubo", "duto"],
             'Nada':         ["nada"],
             'Confuso':      ["conf", "confuso"],

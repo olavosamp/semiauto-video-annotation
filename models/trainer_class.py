@@ -29,7 +29,7 @@ class TrainModel:
             self.device = torch.device('cuda:0')
         else:
             self.device = torch.device('cpu')
-        
+
         self.bestAcc          = 0.
         self.bestModelWeights = None
 
@@ -38,8 +38,9 @@ class TrainModel:
         '''
             Generate dataloaders for input dataset.
 
-            dataset: dict-like dataset object
-                Dataset dict-like object that must contain 'train' and 'val' keys.
+            dataset: dictionary of Dataset objects
+                Dictionary of torch.utils.data.Dataset-derived objects. It must
+                 contain the keys 'train' and 'val'.
 
             num_examples_per_batch: int
                 Number of examples per batch.
@@ -58,7 +59,7 @@ class TrainModel:
                                                               shuffle=True, num_workers=4)
         self.classNames = dataset['train'].classes
         self.numClasses = len(self.classNames)
-        
+
         return self.dataloaders
 
 
@@ -172,6 +173,7 @@ class TrainModel:
 
     # def report_start(self):
     #     print
+
 
 class IterLoopTrainer(TrainModel):
     def load_data(self, dataset, split_percentages=[0.75, 0.15, 0.1], num_examples_per_batch=4):
