@@ -1,13 +1,14 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: win-64
+matplotlib
 numpy=1.16
-opencv=3.4.2=py37h40b0b35_0
+opencv=3.4.2
 pandas=0.24
 pillow=5.4
 python=3.7
-matplotlib
-tqdm
-rope
 pytorch
+rope
+scikit-learn
 torchvision
+tqdm

@@ -5,6 +5,7 @@ import matplotlib
 import torchvision
 import numpy                as np
 import torch.nn             as nn
+import sklearn.metrics      as skm
 from pathlib                import Path
 from torchvision            import models
 from torch.utils.data       import Sampler
@@ -23,15 +24,15 @@ class TrainModel:
         self.num_epochs             = None
         self.finetune               = None
         self.num_examples_per_batch = None
+        self.bestModelWeights       = None
+
+        self.phases = ['train', 'val']
 
         # Select device
         if torch.cuda.is_available():
             self.device = torch.device('cuda:0')
         else:
             self.device = torch.device('cpu')
-
-        self.bestAcc          = 0.
-        self.bestModelWeights = None
 
 
     def load_data(self, dataset, num_examples_per_batch=4):
@@ -49,16 +50,24 @@ class TrainModel:
         self.num_examples_per_batch = num_examples_per_batch
 
         self.datasetSizes = {
-            x: len(self.dataset[x]) for x in ['train', 'val']}
+            x: len(self.dataset[x]) for x in self.phases}
 
         # Define batch generator
         self.dataloaders = {}
-        for x in ['train', 'val']:
+        for x in self.phases:
             self.dataloaders[x] = torch.utils.data.DataLoader(self.dataset[x],
                                                               batch_size=self.num_examples_per_batch,
                                                               shuffle=True, num_workers=4)
-        self.classNames = dataset['train'].classes
+        self.classNames = self.dataset['train'].classes
         self.numClasses = len(self.classNames)
+        
+        # Get class counts
+        self.classIndexes = list(range(self.numClasses))
+        self.classSizes = {}
+        for phase in self.phases:
+            self.classSizes[phase] = np.zeros(self.numClasses, dtype=int)
+            for i in self.classIndexes:
+                self.classSizes[phase][i] = np.sum(np.equal(self.dataset[phase].targets, i))
 
         return self.dataloaders
 
@@ -95,11 +104,12 @@ class TrainModel:
 
 
     def train(self, model, criterion, optimizer, scheduler, num_epochs=25):
-        self.model      = model
-        self.criterion  = criterion
-        self.optimizer  = optimizer
-        self.scheduler  = scheduler
-        self.num_epochs = num_epochs
+        self.model            = model
+        self.criterion        = criterion
+        self.optimizer        = optimizer
+        self.scheduler        = scheduler
+        self.num_epochs       = num_epochs
+        self.bestAcc          = 0.
 
         self.bestModelWeights = copy.deepcopy(self.model.state_dict())
 
@@ -110,31 +120,31 @@ class TrainModel:
             print("\n-----------------------")
             print("Epoch {}/{}".format(self.epoch+1, self.num_epochs))
 
-            for phase in ['train', 'val']:
-                if phase == 'train':
+            for phase in self.phases:
+                trainPhase = (phase == 'train')
+                if trainPhase:
                     self.model.train()   # Set model to training mode
                 else:
                     self.model.eval()    # Set model to evaluate mode
 
                 self.runningLoss     = 0.
-                self.runningCorrects = 0
+                self.runningCorrects = np.zeros(self.numClasses)
+                self.totalPreds      = []
+                self.totalLabels     = []
 
                 # Iterate over data
                 for inputs, labels in self.dataloaders[phase]:
-                    # print(self.inputs)
                     self.inputs = inputs.to(self.device)
                     self.labels = labels.to(self.device)
-                    # print(self.inputs.size())
-                    # print(self.labels.size())
-                    # input()
 
                     # Reset gradients
                     self.optimizer.zero_grad()
 
                     # Forward propagation
-                    trainPhase = (phase == 'train')
                     with torch.set_grad_enabled(trainPhase):
                         self.outputs = self.model(self.inputs)
+                        
+                        # Get predictions as numerical class indexes
                         _, self.predictions = torch.max(self.outputs, 1)
                         self.loss = self.criterion(self.outputs, self.labels)
 
@@ -145,12 +155,15 @@ class TrainModel:
                             self.scheduler.step()
 
                     # Get statistics
-                    # TODO: Fix metrics for multiclass classification
-                    self.runningLoss += self.loss.item() * self.inputs.size(0)
-                    self.runningCorrects += torch.sum(self.predictions == self.labels.data)
+                    self.totalPreds.extend(self.predictions.cpu().numpy())
+                    self.totalLabels.extend(self.labels.cpu().numpy())
+                    # self.runningCorrects += torch.sum(self.predictions == self.labels.data)
 
+                    self.runningLoss += self.loss.item() * self.inputs.size(0)
+
+                # self.epochAcc = self.runningCorrects.double() / self.datasetSizes[phase]
                 self.epochLoss = self.runningLoss / self.datasetSizes[phase]
-                self.epochAcc = self.runningCorrects.double() / self.datasetSizes[phase]
+                self.epochAcc  = skm.accuracy_score(self.totalLabels, self.totalPreds)
 
                 print("{} Phase\n\tLoss: {:.4f}\n\tAcc : {:.4f}".format(
                     phase, self.epochLoss, self.epochAcc))
@@ -161,7 +174,7 @@ class TrainModel:
                     self.bestModelWeights = copy.deepcopy(self.model.state_dict())
 
         self.elapsedTime = time.time() - self.start
-        print("\nTraining completed. Elapsed time: {:.0f}:{:.0f}".format(
+        print("\nTraining completed. Elapsed time: {:.0f}min{:.0f}".format(
                                             self.elapsedTime / 60, self.elapsedTime % 60))
 
         print("Best val accuracy: {:.4f}".format(self.bestAcc))
