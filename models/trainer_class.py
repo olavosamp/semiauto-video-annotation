@@ -66,8 +66,9 @@ class TrainModel:
         self.classSizes = {}
         for phase in self.phases:
             self.classSizes[phase] = np.zeros(self.numClasses, dtype=int)
+            targets = self.dataset[phase].targets
             for i in self.classIndexes:
-                self.classSizes[phase][i] = np.sum(np.equal(self.dataset[phase].targets, i))
+                self.classSizes[phase][i] = np.sum(np.equal(targets, i))
 
         return self.dataloaders
 
@@ -254,4 +255,42 @@ class IterLoopTrainer(TrainModel):
         self.classNames = dataset['train'].classes
         self.numClasses = len(self.classNames)
         
+        return self.dataloaders
+
+class MnistTrainer(TrainModel):
+    def load_data(self, dataset, num_examples_per_batch=4):
+        '''
+            Generate dataloaders for input dataset.
+
+            dataset: dictionary of Dataset objects
+                Dictionary of torch.utils.data.Dataset-derived objects. It must
+                 contain the keys 'train' and 'val'.
+
+            num_examples_per_batch: int
+                Number of examples per batch.
+        '''
+        self.dataset = dataset
+        self.num_examples_per_batch = num_examples_per_batch
+
+        self.datasetSizes = {
+            x: len(self.dataset[x]) for x in self.phases}
+
+        # Define batch generator
+        self.dataloaders = {}
+        for x in self.phases:
+            self.dataloaders[x] = torch.utils.data.DataLoader(self.dataset[x],
+                                                              batch_size=self.num_examples_per_batch,
+                                                              shuffle=True, num_workers=4)
+        self.classNames = self.dataset['train'].classes
+        self.numClasses = len(self.classNames)
+        
+        # Get class counts
+        self.classIndexes = list(range(self.numClasses))
+        self.classSizes = {}
+        for phase in self.phases:
+            self.classSizes[phase] = np.zeros(self.numClasses, dtype=int)
+            targets = self.dataset[phase].targets.numpy()
+            for i in self.classIndexes:
+                self.classSizes[phase][i] = np.sum(np.equal(targets, i))
+
         return self.dataloaders

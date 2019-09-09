@@ -5,19 +5,19 @@ from libs.dataset_utils     import extract_dataset
 
 if __name__ == "__main__":
     ## Dataset settings
-    datasetName = "test_dataset_indexed"
+    datasetName = "unlabeled_dataset_local"
+    newIndexPath  = Path(dirs.dataset) / datasetName / (datasetName+".csv")
+    # newIndexPath  = Path(dirs.root) / "index" / "test_index.csv"
 
     # Local dataset
     datasetPath   = dirs.base_videos
-    destFolder    = dirs.test_assets+datasetName
+    destFolder    = Path(dirs.dataset) / datasetName / "images"
     # Remote dataset
     # datasetPath   = dirs.febe_base_videos
     # destFolder    = dirs.febe_images+datasetName
 
-    newIndexPath  = Path(dirs.root) / "index" / "test_index.csv"
-
     unlabeledIndex = extract_dataset(datasetPath, destFolder,
-                                    datasetName="unlabeled_dataset_test",
+                                    datasetName=datasetName,
                                     indexPath=newIndexPath)
 
     print("Index shape: ", unlabeledIndex.index.shape)

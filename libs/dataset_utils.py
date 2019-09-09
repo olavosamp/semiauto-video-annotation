@@ -1,3 +1,4 @@
+import os
 import numpy                as np
 import pandas               as pd
 import shutil               as sh
@@ -14,7 +15,7 @@ from libs.get_frames_class  import GetFramesFull
 from libs.utils             import *
 
 
-def data_folder_split(datasetPath, split_percentages):
+def data_folder_split(datasetPath, split_percentages, seed=None):
     '''
         Split dataset images in train and validation sets. Move image files found
         at datasetPath to two folders: datasetPath/train/ and datasetPath/val/, according
@@ -32,6 +33,9 @@ def data_folder_split(datasetPath, split_percentages):
     '''
     def _add_set_name(x, name):
         return datasetPath / name / Path(x).relative_to(datasetPath)
+    
+    if seed:
+        np.random.seed(seed)
 
     assert len(split_percentages) == 2, "List must contain only train and val percentages."
     datasetPath = Path(datasetPath)
@@ -40,9 +44,11 @@ def data_folder_split(datasetPath, split_percentages):
     fileList   = make_path(get_file_list(str(datasetPath), ext_list=['jpg', 'png']))
 
     datasetLen = len(fileList)
+    print(datasetPath)
+    print(datasetLen)
 
     # Compute size of each set
-    setLengths = np.zeros(len(split_percentages), dtype=int)
+    setLengths      = np.zeros(len(split_percentages), dtype=int)
     setLengths[:-1] = np.multiply(split_percentages[:-1], datasetLen).astype(int)
     setLengths[-1]  = (datasetLen - setLengths.sum()) # Last size is the number of remaining examples
 
@@ -53,8 +59,8 @@ def data_folder_split(datasetPath, split_percentages):
     trainSourceList = fileList[:setLengths[0]]
     valSourceList   = fileList[setLengths[0]:]
     
-    trainDestList = list(map(_add_set_name, trainSourceList, ['train']*int(setLengths[0])))
-    valDestList   = list(map(_add_set_name, valSourceList, ['val']*int(setLengths[0])))
+    trainDestList   = list(map(_add_set_name, trainSourceList, ['train']*int(setLengths[0])))
+    valDestList     = list(map(_add_set_name, valSourceList, ['val']*int(setLengths[0])))
 
     sources = copy(trainSourceList)
     dests   = copy(trainDestList)
@@ -73,8 +79,12 @@ def data_folder_split(datasetPath, split_percentages):
     print("Moved files to train and val folders in ", datasetPath)
 
     # Remove old files
-    # for f in fileList:
-    #     sh.rmtree(f)
+    for f in fileList:
+        # print("Deleting ", f)
+        if Path(f).is_dir():
+            sh.rmtree(f)
+        else:
+            os.remove(f)
 
 
 def translate_interface_labels_file(filePath):
@@ -182,7 +192,7 @@ def extract_dataset(videoFolder, destFolder,
     mask = list(map(lambda x: not(x.match("VIDEO_TS.VOB")), allVideos))
     allVideos = np.array(allVideos)[mask]
 
-    allVideos = allVideos[:2] # Test run with x videos
+    # allVideos = allVideos[:2] # Test run with x videos
     numVideos = len(allVideos)
 
     if verbose:

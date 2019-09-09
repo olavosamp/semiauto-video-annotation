@@ -128,13 +128,14 @@ class SampleImages:
         Sampled images are copied to destFolder / 'sampled_images'/.
     '''
 
-    def __init__(self, source, destFolder, seed=None):
+    def __init__(self, source, destFolder, seed=None, verbose=True):
         self.date        = datetime.now()
         self.source      = Path(source)
         self.destFolder  = Path(destFolder)
         self.imageFolder = self.destFolder / "sampled_images"
         self.percentage  = None
         self.seed        = seed
+        self.verbose     = verbose
 
         np.random.seed(self.seed)
         dirs.create_folder(self.destFolder)
@@ -152,6 +153,9 @@ class SampleImages:
             self._sample_from_index()
         else:
             raise ValueError("Source must be a folder or csv index path.")
+        
+        if self.verbose:
+            print("{} images copied to \"{}\".".format(self.numSamples, self.destFolder))
 
 
     def _sample_routine(self):

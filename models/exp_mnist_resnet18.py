@@ -8,7 +8,7 @@ from torch.utils.data       import random_split
 
 import libs.dirs            as dirs
 from libs.utils             import *
-from models.trainer_class   import TrainModel
+from models.trainer_class   import MnistTrainer
 
 
 def tensor_to_3_channel_greyscale(tensor):
@@ -51,31 +51,6 @@ if __name__ == "__main__":
         ])
     }
 
-    # Dataset loaders for train and val sets
-    # imageDatasets = {
-    #     x: datasets.ImageFolder(str(datasetPath / x), dataTransforms[x]) for x in ['train', 'val']
-    # }
-
-    # # Load MNIST dataset
-    # imageDatasets = datasets.MNIST(datasetPath, train=True, transform=None, download=True)
-    # datasetLen = len(imageDatasets)
-
-    # # Split datasets in train and validation sets
-    # trainPercentage = 0.8
-    # valPercentage   = 0.2
-
-    # trainSize = int(datasetLen*trainPercentage)
-    # valSize   = int(datasetLen*valPercentage)
-
-    # trainSubset, valSubset = random_split(imageDatasets, [trainSize, valSize])
-
-    # dataset['train']  = trainSubset.dataset
-    # dataset['val']    = valSubset.dataset
-
-    # # Indexes of each image set in the original dataset
-    # trainIndexes      = trainSubset.indices
-    # valIndexes        = valSubset.indices
-
     dataset = {}
     dataset['train']  = datasets.MNIST(datasetPath, train=True, transform=dataTransforms['train'],
                                         download=True)
@@ -88,12 +63,12 @@ if __name__ == "__main__":
     # print(dataset['train'].targets.max())
     # print(dataset['train'].targets.min())
     # print(dataset['train'].__getitem__(0).size())
-    # # print(dataset['train'].size())
+    print(dataset['train'])
     # input()
     # exit()
 
     # Instantiate trainer object
-    trainer = TrainModel()
+    trainer = MnistTrainer()
 
     # Perform training
     trainer.load_data(dataset, num_examples_per_batch=numImgBatch)

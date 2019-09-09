@@ -14,7 +14,8 @@ from models.trainer_class   import TrainModel
 
 if __name__ == "__main__":
     # Dataset root folder
-    datasetPath = Path(dirs.iter_folder) / "test_loop/iteration_0/sample_images_sorted_test/"
+    # datasetPath = Path(dirs.iter_folder) / "test_loop/iteration_0/sample_images_sorted/"
+    datasetPath = Path(dirs.iter_folder) / "test_loop/iteration_0/sampled_images_sorted/"
     numImgBatch = 2
 
     # ImageNet statistics
@@ -40,20 +41,26 @@ if __name__ == "__main__":
                     transforms.Normalize(mean, std),
         ])
     }
-    # # Should run only once to split images in train and val folders
+    # Split datasets in train and validation sets
+    trainPercentage = 0.8
+    valPercentage   = 0.2
+
+    # # Should be run only once to split images in train and val folders
     # data_folder_split(datasetPath, [trainPercentage, valPercentage])
+    # exit()
 
     # Load Dataset objects for train and val sets from folder
     sets = ['train', 'val']
     imageDataset = {}
     for phase in sets:
-        imageDataset[phase] = datasets.ImageFolder(datasetPath / phase, transform=dataTransforms[phase])
+        f = datasetPath / phase
+        imageDataset[phase] = datasets.ImageFolder(str(f), transform=dataTransforms[phase])
 
     datasetLen = len(imageDataset['train']) + len(imageDataset['val'])
 
-    # Split datasets in train and validation sets
-    trainPercentage = 0.8
-    valPercentage   = 0.2
+    print(imageDataset['train'])
+    exit()
+
 
     # trainSize = int(datasetLen*trainPercentage)
     valSize   = int(datasetLen*valPercentage)
