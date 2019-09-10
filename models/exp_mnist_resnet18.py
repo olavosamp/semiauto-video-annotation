@@ -38,8 +38,9 @@ if __name__ == "__main__":
     # Set transforms
     dataTransforms = {
         'train': transforms.Compose([
-                    transforms.RandomResizedCrop(224),
-                    transforms.RandomHorizontalFlip(),
+                    transforms.Resize(224),
+                    # transforms.RandomResizedCrop(224),
+                    # transforms.RandomHorizontalFlip(),
                     transforms.ToTensor(),
                     transforms.Lambda(tensor_to_3_channel_greyscale),
                     transforms.Normalize(mean, std),
@@ -80,7 +81,9 @@ if __name__ == "__main__":
 
     # Set training parameters
     criterion = nn.CrossEntropyLoss()
-
+    # for param in modelFineTune.parameters():
+    #     print(param)
+    # input()
     optimizerFineTune = optim.SGD(modelFineTune.parameters(), lr=0.001, momentum=0.9)
 
     expLrScheduler = optim.lr_scheduler.StepLR(optimizerFineTune, step_size=7, gamma=0.1)

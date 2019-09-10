@@ -9,6 +9,7 @@ import sklearn.metrics      as skm
 from pathlib                import Path
 from torchvision            import models
 from torch.utils.data       import Sampler
+import matplotlib.pyplot    as plt
 
 import libs.dirs            as dirs
 from libs.utils             import *
@@ -140,6 +141,14 @@ class TrainModel:
                 for inputs, labels in self.dataloaders[phase]:
                     self.inputs = inputs.to(self.device)
                     self.labels = labels.to(self.device)
+                    
+                    # print(np.shape(self.inputs.cpu().numpy()[0,:,:,:]))
+                    # img = np.transpose(self.inputs.cpu().numpy()[0,:,:,:], (1, 2, 0))
+                    # print(np.shape(img))
+                    # print(self.labels.size())
+                    # print("Label: ", self.labels[0])
+                    # plt.imshow(img)
+                    # plt.show()
 
                     # Reset gradients
                     self.optimizer.zero_grad()
@@ -173,7 +182,7 @@ class TrainModel:
                                             self.totalLabels, self.totalPreds)
 
                 self.f1ScoreHist.append(self.epochF1)
-                if self.trainPhase:
+                if trainPhase:
                     self.lossTrainHist.append(self.epochLoss)
                 else:
                     self.lossValHist.append(self.epochLoss)
@@ -182,7 +191,7 @@ class TrainModel:
                 print("{} Phase\n\
                             \tLoss: {:.4f}\n\
                             \tAcc : {:.4f}\n\
-                            \tF1  : {:.4f}".format(
+                            \tF1  : {}".format(
                                             phase, self.epochLoss, self.epochAcc,
                                             self.epochF1))
 
