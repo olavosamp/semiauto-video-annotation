@@ -116,7 +116,6 @@ class TrainModel:
 
         self.start      = time.time()
         # Training loop
-        # TODO: Save train and val loss history per epoch
         for self.epoch in range(self.num_epochs):
             print("\n-----------------------")
             print("Epoch {}/{}".format(self.epoch+1, self.num_epochs))
@@ -130,8 +129,12 @@ class TrainModel:
 
                 self.runningLoss     = 0.
                 self.runningCorrects = np.zeros(self.numClasses)
+                self.accHist         = []
                 self.totalPreds      = []
                 self.totalLabels     = []
+                self.f1ScoreHist     = []
+                self.lossValHist     = []
+                self.lossTrainHist   = []
 
                 # Iterate over data
                 for inputs, labels in self.dataloaders[phase]:
@@ -162,12 +165,26 @@ class TrainModel:
 
                     self.runningLoss += self.loss.item() * self.inputs.size(0)
 
+                # Get epoch metrics
                 # self.epochAcc = self.runningCorrects.double() / self.datasetSizes[phase]
-                self.epochLoss = self.runningLoss / self.datasetSizes[phase]
                 self.epochAcc  = skm.accuracy_score(self.totalLabels, self.totalPreds)
+                self.epochLoss = self.runningLoss / self.datasetSizes[phase]
+                _, _, self.epochF1, _ = skm.precision_recall_fscore_support(
+                                            self.totalLabels, self.totalPreds)
 
-                print("{} Phase\n\tLoss: {:.4f}\n\tAcc : {:.4f}".format(
-                    phase, self.epochLoss, self.epochAcc))
+                self.f1ScoreHist.append(self.epochF1)
+                if self.trainPhase:
+                    self.lossTrainHist.append(self.epochLoss)
+                else:
+                    self.lossValHist.append(self.epochLoss)
+                self.accHist.append(self.epochAcc)
+
+                print("{} Phase\n\
+                            \tLoss: {:.4f}\n\
+                            \tAcc : {:.4f}\n\
+                            \tF1  : {:.4f}".format(
+                                            phase, self.epochLoss, self.epochAcc,
+                                            self.epochF1))
 
                 # Save model if there is an improvement in evaluation metric
                 if phase == 'val' and self.epochAcc > self.bestAcc:
@@ -183,6 +200,23 @@ class TrainModel:
         # Load best model weights
         self.model.load_state_dict(self.bestModelWeights)
         return self.model
+
+
+    def save_history(self, histPath=None):
+        if histPath == None:
+            self.histPath = "./history_metrics.pickle"
+        else:
+            self.histPath = histPath
+
+        self.history = {
+                    'loss-train':   self.epochLoss,
+                    'loss-val':     self.epochLoss,
+                    'f1':           self.f1ScoreHist,
+                    'acc':          self.accHist
+        }
+
+        save_pickle(self.history, self.histPath)
+        return self.history
 
 
     # def report_start(self):

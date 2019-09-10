@@ -18,9 +18,11 @@ def rgb_to_greyscale(img):
     return 0.299 *img[0] + 0.587 *img[1] + 0.114 * img[2]
 
 if __name__ == "__main__":
-
     datasetPath = Path(dirs.dataset) / "torch/mnist"
     numImgBatch = 128
+
+    modelPath   = dirs.saved_models + "test_mnist_resnet18.pt"
+    historyPath = dirs.saved_models + "test_mnist_resnet18_history.pickle"
 
     # ImageNet statistics
     # No need to normalize pixel range from [0, 255] to [0, 1] because
@@ -72,32 +74,20 @@ if __name__ == "__main__":
 
     # Perform training
     trainer.load_data(dataset, num_examples_per_batch=numImgBatch)
-    # print(trainer.dataloaders['train'])
-    # print(trainer.dataloaders['train'].__iter__())
-    # exit()
 
+    # Set resnet18 model
     modelFineTune = trainer.define_model_resnet18(finetune=True)
 
-    # Loss criterion
+    # Set training parameters
     criterion = nn.CrossEntropyLoss()
-    
-    # Set optimizer
+
     optimizerFineTune = optim.SGD(modelFineTune.parameters(), lr=0.001, momentum=0.9)
 
-    # Scheduler for learning rate decay
     expLrScheduler = optim.lr_scheduler.StepLR(optimizerFineTune, step_size=7, gamma=0.1)
 
-
+    # Train model
     modelFineTune = trainer.train(modelFineTune, criterion, optimizerFineTune, expLrScheduler, num_epochs=25)
+    history = trainer.save_history(historyPath)
 
     # Save model
-    modelPath = dirs.saved_models + "test_mnist_resnet18.pt"
     torch.save(modelFineTune.state_dict(), modelPath)
-
-    # print("Model state dict after:")
-    # for paramTensor in modelFineTune.state_dict():
-    #     print(str(paramTensor).ljust(16), modelFineTune.state_dict()[paramTensor].size())
-    
-    # print("Optimizer state dict after:")
-    # for varName in optimizerFineTune.state_dict():
-    #     print(str(varName).ljust(16), modelFineTune.state_dict()[varName])
