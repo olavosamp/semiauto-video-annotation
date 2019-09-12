@@ -13,6 +13,7 @@ hashtable           = root+"index"+sep+"localised_video_path_list.csv"
 iter_folder         = root+".."+sep+"annotation_loop"+sep
 iter_info           = iter_folder+"iter_info.txt"
 saved_models        = root+".."+sep+"saved_models"+sep
+results             = root+".."+sep+"results"+sep
 
 test                = root+sep+".."+sep+"test"+sep
 test_assets         = test+"test_assets"+sep
@@ -27,3 +28,4 @@ def create_folder(path, verbose=False):
 create_folder(images)
 create_folder(test)
 create_folder(saved_models)
+create_folder(results)

@@ -31,7 +31,7 @@ def show_inputs(inputs, labels):
 
 
 class TrainModel:
-    def __init__(self):
+    def __init__(self, model_path=None):
         self.model                  = None
         self.criterion              = None
         self.optimizer              = None
@@ -39,6 +39,7 @@ class TrainModel:
         self.finetune               = None
         self.num_examples_per_batch = None
         self.bestModelWeights       = None
+        self.model_path             = model_path
 
         self.phases = ['train', 'val']
 
@@ -47,7 +48,7 @@ class TrainModel:
             self.device = torch.device('cuda:0')
         else:
             self.device = torch.device('cpu')
-
+        
 
     def load_data(self, dataset, num_examples_per_batch=4):
         '''
@@ -114,6 +115,10 @@ class TrainModel:
 
         # Move model to device (must be done before constructing the optimizer)
         self.model.to(self.device)
+
+        # Load model weights, if provided
+        if self.model_path:
+            self.model.load_state_dict(self.model_path)
 
         return self.model
 
@@ -219,11 +224,8 @@ class TrainModel:
         return self.model
 
 
-    def save_history(self, histPath=None):
-        if histPath == None:
-            self.histPath = "./history_metrics.pickle"
-        else:
-            self.histPath = histPath
+    def save_history(self, histPath="./history_metrics.pickle"):
+        self.histPath = histPath
 
         self.history = {
                     'loss-train':   self.lossHist['train'],
@@ -237,6 +239,8 @@ class TrainModel:
         utils.save_pickle(self.history, self.histPath)
         return self.history
 
+    def model_inference(self, inputs):
+        self.model.eval()
 
     # def report_start(self):
     #     print
