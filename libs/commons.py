@@ -74,4 +74,7 @@ classes = { # This translation table follows the non-standard format described b
             'Enterramento': ["ente", "enterramento"],
             'Cruzamento':   ["cruz", "cruzamento"],
             'Flange':       ["flan", "flange"],
+
+            'Duvida':       ['Duvida', 'Dúvida']
 }
+no_translation = 'UNTRANSLATED'

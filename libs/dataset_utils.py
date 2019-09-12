@@ -1,4 +1,6 @@
 import os
+import math
+import warnings
 import numpy                as np
 import pandas               as pd
 import shutil               as sh
@@ -10,9 +12,34 @@ from datetime               import datetime
 
 import libs.dirs            as dirs
 import libs.commons         as commons
-from libs.index             import *
+import libs.utils           as utils
+from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
-from libs.utils             import *
+
+
+def move_to_class_folders(indexPath, imageFolder="sampled_images"):
+    iterationFolder = Path(indexPath).parent
+    imageFolder     = iterationFolder / imageFolder
+    assert imageFolder.is_dir(), "Folder argument must be a valid image folder."
+
+    targetNet = 'rede2'
+
+    imageIndex = pd.read_csv(indexPath)
+    numImages  = len(imageIndex)
+
+    # Get unique tags and create the respective folders
+    tags = set(imageIndex[targetNet])# - set("-")
+    for tag in tags:
+        tag = translate_labels(tag)
+        dirs.create_folder(imageFolder / tag)
+
+    print("Moving files to class folders...")
+    for i in tqdm(range(numImages)):
+        imgName = imageIndex.loc[i, 'imagem']
+        source  = imageFolder / imgName
+        dest    = imageFolder / translate_labels(imageIndex.loc[i, targetNet]) / imgName
+
+        sh.move(source, dest)
 
 
 def data_folder_split(datasetPath, split_percentages, seed=None):
@@ -38,10 +65,11 @@ def data_folder_split(datasetPath, split_percentages, seed=None):
         np.random.seed(seed)
 
     assert len(split_percentages) == 2, "List must contain only train and val percentages."
+    assert np.sum(split_percentages) <= 1.0, "Percentages must sum to less than 100%."
     datasetPath = Path(datasetPath)
 
     # Get file list as Path objects
-    fileList   = make_path(get_file_list(str(datasetPath), ext_list=['jpg', 'png']))
+    fileList   = utils.make_path(utils.get_file_list(str(datasetPath), ext_list=['jpg', 'png']))
 
     datasetLen = len(fileList)
     print(datasetPath)
@@ -68,11 +96,12 @@ def data_folder_split(datasetPath, split_percentages, seed=None):
     sources.extend(valSourceList)
     dests.extend(valDestList)
 
-    for source, dest in zip(sources, dests):
+    print("Moving files to set folders...")
+    for source, dest in tqdm(zip(sources, dests)):
         dirs.create_folder(source.parent)
         dirs.create_folder(dest.parent)
         
-        copy_files(source, dest)
+        sh.move(source, dest)
     
     print("Set lengths:\n\ttrain: {}\n\tval: {}".format(setLengths[0], setLengths[1]))
     print(setLengths)
@@ -83,12 +112,12 @@ def data_folder_split(datasetPath, split_percentages, seed=None):
         # print("Deleting ", f)
         if Path(f).is_dir():
             sh.rmtree(f)
-        else:
+        elif Path(f).is_file():
             os.remove(f)
 
 
 def translate_interface_labels_file(filePath):
-    assert file_exists(filePath), "File doesn't exist."
+    assert utils.file_exists(filePath), "File doesn't exist."
     
     # Read index
     newLabelsIndex = pd.read_csv(filePath)
@@ -122,8 +151,8 @@ def add_frame_hash_to_labels_file(labelsFile, framePathColumn='imagem'):
     labelsDf      = pd.read_csv(labelsFile)
     
     # Get filepaths of images in child directories
-    framePathList = get_file_list(str(labelsFile.parent), ext_list=['jpg'])
-    framePathList = list(map(func_make_path, framePathList))    # Make all filepaths Path objects
+    framePathList = utils.get_file_list(str(labelsFile.parent), ext_list=['jpg'])
+    framePathList = list(map(utils.func_make_path, framePathList))    # Make all filepaths Path objects
 
     labelsDf.set_index(framePathColumn, drop=False, inplace=True)
 
@@ -141,7 +170,7 @@ def add_frame_hash_to_labels_file(labelsFile, framePathColumn='imagem'):
     labelsDf.reset_index(drop=True, inplace=True)
 
     # Compute and add frame hashes
-    labelsDf[DEF_frameHashColumnName] = make_video_hash_list(labelsDf['FramePath'])['HashMD5']
+    labelsDf[DEF_frameHashColumnName] = utils.make_video_hash_list(labelsDf['FramePath'])['HashMD5']
 
     # Drop FramePath column
     labelsDf.drop('FramePath', axis=1, inplace=True)
@@ -165,11 +194,11 @@ def extract_dataset(videoFolder, destFolder,
     dateStart = datetime.now()
     if logFolder:
         # TODO: Fix double date log name bug
-        logName = "log_{}_{}".format(datasetName, get_time_string(dateStart))
+        logName = "log_{}_{}".format(datasetName, utils.get_time_string(dateStart))
         logPath = Path(logFolder) / (logName + ".txt")
 
     if indexPath == 'auto':
-        indexPath = dirs.root+"index/unlabeled_index_{}.csv".format(get_time_string(dateStart))
+        indexPath = dirs.root+"index/unlabeled_index_{}.csv".format(utils.get_time_string(dateStart))
     
     indexPath = Path(indexPath)
     dirs.create_folder(indexPath.parent)
@@ -182,10 +211,10 @@ def extract_dataset(videoFolder, destFolder,
     # Get video paths in dataset folder (all videos)
     # Also search for upper case formats for Linux compatibility
     # TODO: Replace with a simpler case-insensitive search
-    allVideos = get_file_list(videoFolder, ext_list=commons.videoFormats)
+    allVideos = utils.get_file_list(videoFolder, ext_list=commons.videoFormats)
 
     # Make every entry a Path object
-    allVideos = list(map(func_make_path, allVideos))
+    allVideos = list(map(utils.func_make_path, allVideos))
     # allVideos = list(map(func_relative_to, allVideos))
 
     # Delete DVD headers
@@ -212,7 +241,7 @@ def extract_dataset(videoFolder, destFolder,
     frameEntryList = []
     for i in tqdm(range(numVideos)):
         videoPath = allVideos[i]
-        videoDestFolder = destFolder / videoPath.relative_to(videoFolder)
+        # videoDestFolder = destFolder / videoPath.relative_to(videoFolder)
         
         gff = GetFramesFull(videoPath, videoFolder=videoFolder,
                             destPath=destFolder, interval=1, verbose=False)
@@ -265,16 +294,17 @@ def translate_labels(labels):
         if translatedLabel:
             return translatedLabel
         else:
-            raise KeyError("Translation not found for this label.")
-
+            warnings.warn("\nTranslation not found for label:\n\t{}".format(label))
+            # print("Translation not found for label:\n\t{}".format(label))
+            # input()
+            return commons.no_translation
 
     translationTable = commons.classes
-    if hasattr(labels, "__len__"):
+    if isinstance(labels, str):
+        # If not list, just translate input
+        translation = _translate(labels)
+    elif hasattr(labels, "__iter__"):
         # If list, apply translation subroutine to every element in list
         translation = list(map(_translate, labels))
-    else:
-        # If not list, just translate input
-        translation = _translate(labelList)
-    # print(translation)
-    # input()
+    
     return translation

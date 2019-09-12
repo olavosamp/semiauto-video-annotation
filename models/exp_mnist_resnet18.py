@@ -7,7 +7,7 @@ from torchvision            import models, transforms
 from torch.utils.data       import random_split
 
 import libs.dirs            as dirs
-from libs.utils             import *
+# from libs.utils             import *
 from models.trainer_class   import MnistTrainer
 
 
@@ -81,10 +81,8 @@ if __name__ == "__main__":
 
     # Set training parameters
     criterion = nn.CrossEntropyLoss()
-    # for param in modelFineTune.parameters():
-    #     print(param)
-    # input()
-    optimizerFineTune = optim.SGD(modelFineTune.parameters(), lr=0.001, momentum=0.9)
+
+    optimizerFineTune = optim.Adam(modelFineTune.parameters())
 
     expLrScheduler = optim.lr_scheduler.StepLR(optimizerFineTune, step_size=7, gamma=0.1)
 

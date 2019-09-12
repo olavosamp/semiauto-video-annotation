@@ -12,8 +12,22 @@ from torch.utils.data       import Sampler
 import matplotlib.pyplot    as plt
 
 import libs.dirs            as dirs
-from libs.utils             import *
+import libs.utils           as utils
 from libs.dataset_utils     import data_folder_split
+
+
+def show_inputs(inputs, labels):
+    '''
+        Function to visualize dataset inputs
+    '''
+    for i in range(inputs):
+        print(np.shape(inputs.cpu().numpy()[i,:,:,:]))
+        img = np.transpose(inputs.cpu().numpy()[i,:,:,:], (1, 2, 0))
+        print(np.shape(img))
+        print(labels.size())
+        print("Label: ", labels[i])
+        plt.imshow(img)
+        plt.show()
 
 
 class TrainModel:
@@ -21,7 +35,6 @@ class TrainModel:
         self.model                  = None
         self.criterion              = None
         self.optimizer              = None
-        self.scheduler              = None
         self.num_epochs             = None
         self.finetune               = None
         self.num_examples_per_batch = None
@@ -105,7 +118,7 @@ class TrainModel:
         return self.model
 
 
-    def train(self, model, criterion, optimizer, scheduler, num_epochs=25):
+    def train(self, model, criterion, optimizer, scheduler=None, num_epochs=25):
         self.model            = model
         self.criterion        = criterion
         self.optimizer        = optimizer
@@ -116,7 +129,14 @@ class TrainModel:
         self.bestModelWeights = copy.deepcopy(self.model.state_dict())
 
         self.start      = time.time()
+        
         # Training loop
+        self.accHist         = []
+        self.totalPreds      = []
+        self.totalLabels     = []
+        self.f1ScoreHist     = []
+        self.lossValHist     = []
+        self.lossTrainHist   = []
         for self.epoch in range(self.num_epochs):
             print("\n-----------------------")
             print("Epoch {}/{}".format(self.epoch+1, self.num_epochs))
@@ -130,26 +150,12 @@ class TrainModel:
 
                 self.runningLoss     = 0.
                 self.runningCorrects = np.zeros(self.numClasses)
-                self.accHist         = []
-                self.totalPreds      = []
-                self.totalLabels     = []
-                self.f1ScoreHist     = []
-                self.lossValHist     = []
-                self.lossTrainHist   = []
 
                 # Iterate over data
                 for inputs, labels in self.dataloaders[phase]:
                     self.inputs = inputs.to(self.device)
                     self.labels = labels.to(self.device)
                     
-                    # print(np.shape(self.inputs.cpu().numpy()[0,:,:,:]))
-                    # img = np.transpose(self.inputs.cpu().numpy()[0,:,:,:], (1, 2, 0))
-                    # print(np.shape(img))
-                    # print(self.labels.size())
-                    # print("Label: ", self.labels[0])
-                    # plt.imshow(img)
-                    # plt.show()
-
                     # Reset gradients
                     self.optimizer.zero_grad()
 
@@ -165,7 +171,8 @@ class TrainModel:
                         if trainPhase:
                             self.loss.backward()
                             self.optimizer.step()
-                            self.scheduler.step()
+                            if self.scheduler:
+                                self.scheduler.step()
 
                     # Get statistics
                     self.totalPreds.extend(self.predictions.cpu().numpy())
@@ -218,87 +225,18 @@ class TrainModel:
             self.histPath = histPath
 
         self.history = {
-                    'loss-train':   self.epochLoss,
-                    'loss-val':     self.epochLoss,
+                    'loss-train':   self.lossTrainHist,
+                    'loss-val':     self.lossValHist,
                     'f1':           self.f1ScoreHist,
                     'acc':          self.accHist
         }
 
-        save_pickle(self.history, self.histPath)
+        utils.save_pickle(self.history, self.histPath)
         return self.history
 
 
     # def report_start(self):
     #     print
-
-
-class IterLoopTrainer(TrainModel):
-    def load_data(self, dataset, split_percentages=[0.75, 0.15, 0.1], num_examples_per_batch=4):
-        '''
-            Generate dataloaders for input dataset.
-
-            dataset: dict-like dataset object
-                Dataset dict-like object that must contain 'train' and 'val' keys.
-
-            split_percentages: list of positive floats
-                List of dataset split percentages. Following the order [train, validation, test],
-                each number represents the percentage of examples that will be allocated to
-                the respective set.
-
-            num_examples_per_batch: int
-                Number of examples per batch.
-            
-            Returns:
-                self.dataloader:
-                    Torch DataLoader constructed with input dataset and parameters.
-        '''
-        def SubsetSampler(Sampler):
-            def __init__(self, mask):
-                self.mask = mask
-            def __iter__(self):
-                return (self.indexes[i] for i in torch.nonzero(self.mask))
-            def __len__(self):
-                return len(self.mask)
-
-        self.dataset = dataset
-        self.num_examples_per_batch = num_examples_per_batch
-
-        def data_split_indexes(data, split_percentages):
-            dataLen = len(data)
-
-            splitLen = [ceil(x) for x in split_percentages]
-
-            indexRef = np.random.shuffle(range(dataLen))
-            # TODO: Add support for split_percentages of arbitrary size
-            splitIndexes = []
-            valIndexes   = indexRef[:splitLen[1]]
-            trainIndexes = indexRef[splitLen[1]:]
-            splitIndexes.append(trainIndexes)
-            splitIndexes.append(valIndexes)
-        
-
-        self.dataloaders = {}
-        self.dataloaders['train'] = SubsetSampler(self.trainIndexes)
-        self.dataloaders['val']   = SubsetSampler(self.valIndexes)
-        self.dataloaders['test']  = SubsetSampler(self.testIndexes)
-
-        # To sample shuffling the data, use
-        # torch.utils.data.DataLoader(trainset, batch_size=4, sampler=SubsetRandomSampler(
-        #     np.where(mask)[0]), shuffle=False, num_workers=2)
-
-        self.datasetSizes = {
-            x: len(self.dataset[x]) for x in ['train', 'val']}
-
-        # Define batch generator
-        self.dataloaders = {}
-        for x in ['train', 'val']:
-            self.dataloaders[x] = torch.utils.data.DataLoader(self.dataset[x],
-                                                                batch_size=self.num_examples_per_batch,
-                                                                shuffle=True, num_workers=4)
-        self.classNames = dataset['train'].classes
-        self.numClasses = len(self.classNames)
-        
-        return self.dataloaders
 
 class MnistTrainer(TrainModel):
     def load_data(self, dataset, num_examples_per_batch=4):
@@ -337,3 +275,72 @@ class MnistTrainer(TrainModel):
                 self.classSizes[phase][i] = np.sum(np.equal(targets, i))
 
         return self.dataloaders
+
+
+# class IterLoopTrainer(TrainModel):
+#     def load_data(self, dataset, split_percentages=[0.75, 0.15, 0.1], num_examples_per_batch=4):
+#         '''
+#             Generate dataloaders for input dataset.
+
+#             dataset: dict-like dataset object
+#                 Dataset dict-like object that must contain 'train' and 'val' keys.
+
+#             split_percentages: list of positive floats
+#                 List of dataset split percentages. Following the order [train, validation, test],
+#                 each number represents the percentage of examples that will be allocated to
+#                 the respective set.
+
+#             num_examples_per_batch: int
+#                 Number of examples per batch.
+            
+#             Returns:
+#                 self.dataloader:
+#                     Torch DataLoader constructed with input dataset and parameters.
+#         '''
+#         def SubsetSampler(Sampler):
+#             def __init__(self, mask):
+#                 self.mask = mask
+#             def __iter__(self):
+#                 return (self.indexes[i] for i in torch.nonzero(self.mask))
+#             def __len__(self):
+#                 return len(self.mask)
+
+#         self.dataset = dataset
+#         self.num_examples_per_batch = num_examples_per_batch
+
+#         def data_split_indexes(data, split_percentages):
+#             dataLen = len(data)
+
+#             splitLen = [ceil(x) for x in split_percentages]
+
+#             indexRef = np.random.shuffle(range(dataLen))
+#             # TODO: Add support for split_percentages of arbitrary size
+#             splitIndexes = []
+#             valIndexes   = indexRef[:splitLen[1]]
+#             trainIndexes = indexRef[splitLen[1]:]
+#             splitIndexes.append(trainIndexes)
+#             splitIndexes.append(valIndexes)
+        
+
+#         self.dataloaders = {}
+#         self.dataloaders['train'] = SubsetSampler(self.trainIndexes)
+#         self.dataloaders['val']   = SubsetSampler(self.valIndexes)
+#         self.dataloaders['test']  = SubsetSampler(self.testIndexes)
+
+#         # To sample shuffling the data, use
+#         # torch.utils.data.DataLoader(trainset, batch_size=4, sampler=SubsetRandomSampler(
+#         #     np.where(mask)[0]), shuffle=False, num_workers=2)
+
+#         self.datasetSizes = {
+#             x: len(self.dataset[x]) for x in ['train', 'val']}
+
+#         # Define batch generator
+#         self.dataloaders = {}
+#         for x in ['train', 'val']:
+#             self.dataloaders[x] = torch.utils.data.DataLoader(self.dataset[x],
+#                                                                 batch_size=self.num_examples_per_batch,
+#                                                                 shuffle=True, num_workers=4)
+#         self.classNames = dataset['train'].classes
+#         self.numClasses = len(self.classNames)
+        
+#         return self.dataloaders
