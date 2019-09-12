@@ -131,16 +131,20 @@ class TrainModel:
         self.start      = time.time()
         
         # Training loop
-        self.accHist         = []
-        self.totalPreds      = []
-        self.totalLabels     = []
-        self.f1ScoreHist     = []
-        self.lossValHist     = []
-        self.lossTrainHist   = []
+        self.accHist         = {'train': [],
+                                'val':   []}
+        self.f1ScoreHist     = {'train': [],
+                                'val':   []}
+        self.lossHist        = {'train': [],
+                                'val':   []}
         for self.epoch in range(self.num_epochs):
             print("\n-----------------------")
             print("Epoch {}/{}".format(self.epoch+1, self.num_epochs))
 
+            self.totalPreds      = {'train': [],
+                                    'val':   []}
+            self.totalLabels     = {'train': [],
+                                    'val':   []}
             for phase in self.phases:
                 trainPhase = (phase == 'train')
                 if trainPhase:
@@ -149,9 +153,9 @@ class TrainModel:
                     self.model.eval()    # Set model to evaluate mode
 
                 self.runningLoss     = 0.
-                self.runningCorrects = np.zeros(self.numClasses)
+                # self.runningCorrects = np.zeros(self.numClasses)
 
-                # Iterate over data
+                # Iterate over minibatches
                 for inputs, labels in self.dataloaders[phase]:
                     self.inputs = inputs.to(self.device)
                     self.labels = labels.to(self.device)
@@ -159,8 +163,8 @@ class TrainModel:
                     # Reset gradients
                     self.optimizer.zero_grad()
 
-                    # Forward propagation
                     with torch.set_grad_enabled(trainPhase):
+                        # Forward propagation
                         self.outputs = self.model(self.inputs)
                         
                         # Get predictions as numerical class indexes
@@ -175,25 +179,22 @@ class TrainModel:
                                 self.scheduler.step()
 
                     # Get statistics
-                    self.totalPreds.extend(self.predictions.cpu().numpy())
-                    self.totalLabels.extend(self.labels.cpu().numpy())
+                    self.totalPreds[phase].extend(self.predictions.cpu().numpy())
+                    self.totalLabels[phase].extend(self.labels.cpu().numpy())
                     # self.runningCorrects += torch.sum(self.predictions == self.labels.data)
 
                     self.runningLoss += self.loss.item() * self.inputs.size(0)
 
                 # Get epoch metrics
                 # self.epochAcc = self.runningCorrects.double() / self.datasetSizes[phase]
-                self.epochAcc  = skm.accuracy_score(self.totalLabels, self.totalPreds)
+                self.epochAcc  = skm.accuracy_score(self.totalLabels[phase], self.totalPreds[phase])
                 self.epochLoss = self.runningLoss / self.datasetSizes[phase]
                 _, _, self.epochF1, _ = skm.precision_recall_fscore_support(
-                                            self.totalLabels, self.totalPreds)
+                                            self.totalLabels[phase], self.totalPreds[phase])
 
-                self.f1ScoreHist.append(self.epochF1)
-                if trainPhase:
-                    self.lossTrainHist.append(self.epochLoss)
-                else:
-                    self.lossValHist.append(self.epochLoss)
-                self.accHist.append(self.epochAcc)
+                self.f1ScoreHist[phase].append(self.epochF1)
+                self.lossHist[phase].append(self.epochLoss)
+                self.accHist[phase].append(self.epochAcc)
 
                 print("{} Phase\n\
                             \tLoss: {:.4f}\n\
@@ -225,10 +226,12 @@ class TrainModel:
             self.histPath = histPath
 
         self.history = {
-                    'loss-train':   self.lossTrainHist,
-                    'loss-val':     self.lossValHist,
-                    'f1':           self.f1ScoreHist,
-                    'acc':          self.accHist
+                    'loss-train':   self.lossHist['train'],
+                    'loss-val':     self.lossHist['val'],
+                    'f1-train':     self.f1ScoreHist['train'],
+                    'f1-val':       self.f1ScoreHist['val'],
+                    'acc-train':    self.accHist['train'],
+                    'acc-val':      self.accHist['val']
         }
 
         utils.save_pickle(self.history, self.histPath)
