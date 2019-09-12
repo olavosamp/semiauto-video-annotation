@@ -14,14 +14,15 @@ from models.trainer_class   import TrainModel
 
 
 if __name__ == "__main__":
+    modelPath   = dirs.saved_models + "full_dataset_no_finetune.pt"
+    historyPath = dirs.saved_models + "full_dataset_history_no_finetune.pickle"
+
     # Dataset root folder
     # datasetPath = Path(dirs.iter_folder) / "test_loop/iteration_0/sample_images_sorted/"
     datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/"
-    numImgBatch = 4
-    numEpochs   = 15
+    numImgBatch = 64
+    numEpochs   = 25
 
-    modelPath   = dirs.saved_models + "full_dataset_no_finetune.pt"
-    historyPath = dirs.saved_models + "full_dataset_history_no_finetune.pickle"
 
     # ImageNet statistics
     # No need to normalize pixel range from [0, 255] to [0, 1] because
