@@ -6,6 +6,7 @@ import torchvision
 import numpy                as np
 import torch.nn             as nn
 import sklearn.metrics      as skm
+from tqdm                   import tqdm
 from pathlib                import Path
 from torchvision            import models
 from torch.utils.data       import Sampler
@@ -50,7 +51,7 @@ class TrainModel:
             self.device = torch.device('cpu')
         
 
-    def load_data(self, dataset, num_examples_per_batch=4):
+    def load_data(self, dataset, num_examples_per_batch=4,):
         '''
             Generate dataloaders for input dataset.
 
@@ -239,8 +240,28 @@ class TrainModel:
         utils.save_pickle(self.history, self.histPath)
         return self.history
 
-    def model_inference(self, inputs):
+
+    def model_inference(self, input_loader, save_path="inference_results.pickle"):
+        print("Evaluating inputs...")
+
         self.model.eval()
+        self.outputs = []
+        for inputs, _ in tqdm(input_loader):
+            self.inputs = inputs.to(self.device)
+
+            with torch.set_grad_enabled(False):
+                self.batchOutput = self.model(self.inputs)
+                
+            # Save outputs
+            self.outputs.extend(self.batchOutput.cpu().numpy())
+
+        print(np.shape(self.outputs))
+
+        # Get predictions as numerical class indexes
+        self.predictions = np.max(self.outputs, 1)
+
+        return self.outputs, self.predictions
+
 
     # def report_start(self):
     #     print
