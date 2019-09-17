@@ -252,13 +252,11 @@ class TrainModel:
             with torch.set_grad_enabled(False):
                 self.batchOutput = self.model(self.inputs)
                 
-            # Save outputs
+            # Store outputs in list
             self.outputs.extend(self.batchOutput.cpu().numpy())
 
-        print(np.shape(self.outputs))
-
         # Get predictions as numerical class indexes
-        self.predictions = np.max(self.outputs, 1)
+        self.predictions = np.argmax(self.outputs, 1)
 
         return self.outputs, self.predictions
 
