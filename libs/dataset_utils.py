@@ -82,7 +82,7 @@ class IndexLoader:
 
             if self.label_list != None:
                 label = self.label_list[self.current_index]
-                labelList.append(label)
+                labelList.extend(label)
             
             imgList.append(img)
             imgHashList.append(imgHash)
