@@ -1,9 +1,11 @@
 import os
 import math
 import warnings
+import torch
 import numpy                as np
 import pandas               as pd
 import shutil               as sh
+from PIL                    import Image
 from copy                   import copy
 from tqdm                   import tqdm
 from glob                   import glob
@@ -15,6 +17,84 @@ import libs.commons         as commons
 import libs.utils           as utils
 from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
+
+
+class IndexLoader:
+    '''
+        Iterator to load and transform an image and its file hash.
+        
+        Construtctor arguments:
+
+            imagePathList: list of strings
+
+            label_list: list of ints
+
+            transform: Torchvision transform
+
+
+        Returns img, imgHash, label (optional)
+        
+            img: Tensor of a Pillow Image
+                Torch tensor of a Pillow Image. The input transforms are applied and it has shape (channels, h, w)
+            imgHash: string
+                MD5 hash of input image.
+            label: int
+                Numeric class label associated with img. Will only be returned if InputLoader received label_list as input.
+    '''
+    def __init__(self, imagePathList, label_list=None, batch_size=4, transform=None):
+        self.imagePathList  = imagePathList
+        self.batch_size     = batch_size
+        self.transform      = transform
+        self.label_list     = label_list
+        
+        self.current_index  = 0
+        self.datasetLen     = len(self.imagePathList)
+
+        if self.label_list != None:
+            assert len(self.label_list) == self.datasetLen, "Image path and label lists must be of same size."
+
+        # TODO: (maybe) add default Compose transform with ToTensor
+        # and Transpose to return a Tensor image with shape (channel, width, height)
+        # if self.transform != None:
+        #     self.transform = transforms.ToTensor()
+
+    def __len__(self):
+        return math.ceil((self.datasetLen - self.current_index) / self.batch_size)
+
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        while self.current_index+self.batch_size > self.datasetLen:
+            self.batch_size -= 1
+            if self.batch_size == 0:
+                raise StopIteration
+
+        imgList     = [] 
+        imgHashList = []
+        labelList   = []
+        for _ in range(self.batch_size):
+            imgHash = utils.file_hash(self.imagePathList[self.current_index])
+            img = Image.open(self.imagePathList[self.current_index])
+
+            if self.transform:
+                img = self.transform(img)
+
+            if self.label_list != None:
+                label = self.label_list[self.current_index]
+                labelList.append(label)
+            
+            imgList.append(img)
+            imgHashList.append(imgHash)
+
+            self.current_index += 1
+        
+        imgList = torch.stack(imgList, dim=0)
+
+        if self.label_list == None:
+            return imgList, imgHashList
+        else:
+            return imgList, imgHashList, labelList
 
 
 def move_to_class_folders(indexPath, imageFolder="sampled_images"):

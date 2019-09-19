@@ -242,11 +242,15 @@ class TrainModel:
 
 
     def model_inference(self, input_loader, save_path="inference_results.pickle"):
+        torch.random.manual_seed(42)
         print("Evaluating inputs...")
-
+        print("Random state:\n", torch.random.get_rng_state())
         self.model.eval()
-        self.outputs = []
-        for inputs, _ in tqdm(input_loader):
+
+        self.outputs   = []
+        self.imgHashes = []
+        self.labelList = []
+        for inputs, imgHash, labels in tqdm(input_loader):
             self.inputs = inputs.to(self.device)
 
             with torch.set_grad_enabled(False):
@@ -254,11 +258,13 @@ class TrainModel:
                 
             # Store outputs in list
             self.outputs.extend(self.batchOutput.cpu().numpy())
+            self.imgHashes.extend(imgHash)
+            self.labelList.append(labels)
 
         # Get predictions as numerical class indexes
         self.predictions = np.argmax(self.outputs, 1)
 
-        return self.outputs, self.predictions
+        return self.outputs, self.imgHashes, self.labelList
 
 
     # def report_start(self):
