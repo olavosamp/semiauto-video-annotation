@@ -1,10 +1,12 @@
 import os
 import torch
 import math
+import random
 import numpy                as np
 import torchvision.datasets as datasets
 import torch.nn             as nn
 import torch.optim          as optim
+from PIL                    import Image
 from pathlib                import Path
 from torchvision            import models, transforms
 from torch.utils.data       import DataLoader
@@ -20,10 +22,13 @@ def check_empty_file(path):
 
 
 if __name__ == "__main__":
+    seed = 42
+    dutils.set_torch_random_seeds(seed)
+
     datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/val/"
     savePath    = Path(dirs.saved_models)/ "results_full_dataset_iteration_0.pickle"
     
-    batchSize = 32
+    batchSize = 1
 
     # ImageNet statistics
     # No need to normalize pixel range from [0, 255] to [0, 1] because
@@ -45,10 +50,17 @@ if __name__ == "__main__":
     datasetLen      = len(imageTupleList)
     
     imagePathList  = np.array(dataset.imgs)[:, 0]
+
     
     # dataloader = torch.utils.data.DataLoader(dataset,
     #                                         batch_size=batchSize,
     #                                         shuffle=False, num_workers=4)
+
+    print("\nDataset information: ")
+    print("\t", datasetLen, "images.")
+    print("\nClasses: ")
+    for key in dataset.class_to_idx.keys():
+        print("\t{}: {}".format(dataset.class_to_idx[key], key))
 
     imgLoader = dutils.IndexLoader(imagePathList, batch_size=batchSize, transform=dataTransforms, label_list=labelList)
     
@@ -63,15 +75,35 @@ if __name__ == "__main__":
     trainer.numClasses = 2
 
     # Set model
-    modelFineTune = trainer.define_model_resnet18(finetune=False)
-
+    trainer.define_model_resnet18(finetune=False)
+    # exit()
+    
     # Perform inference
+    # ------------------
+    # img = Image.open(imagePathList[0])
+    # img = torch.stack([dataTransforms(img)], dim=0)
+    # img = img.to('cuda:0')
+
+    # trainer.model.eval()
+    # with torch.set_grad_enabled(False):
+    #     output1 = trainer.model(img)
+    # print("Op 1: ", output1)
+    # dutils.show_inputs(img, output1)
+
+    # with torch.set_grad_enabled(False):
+    #     output2 = trainer.model(img)
+    # print("Op 2: ", output2)
+    # dutils.show_inputs(img, output2)
+    # -------------------
     outputs, imgHashes, labels = trainer.model_inference(imgLoader)
 
-    outputTuple = (outputs, imgHashes, labels)
+    outputTuple = np.array((outputs, imgHashes, labels))
 
-    print()
-    print(outputTuple[0][:20])
+    # print()
+    # for out in outputs[:20]:
+    #     print(out)
+    # exit()
+    # print(outputTuple[0][:20])
     # print(outputTuple[1][:20])
     print(np.shape(outputTuple))
     # input()

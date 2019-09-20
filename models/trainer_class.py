@@ -3,6 +3,7 @@ import copy
 import torch
 import matplotlib
 import torchvision
+import random
 import numpy                as np
 import torch.nn             as nn
 import sklearn.metrics      as skm
@@ -10,29 +11,19 @@ from tqdm                   import tqdm
 from pathlib                import Path
 from torchvision            import models
 from torch.utils.data       import Sampler
-import matplotlib.pyplot    as plt
+from torchsummary           import summary
 
 import libs.dirs            as dirs
 import libs.utils           as utils
-from libs.dataset_utils     import data_folder_split
-
-
-def show_inputs(inputs, labels):
-    '''
-        Function to visualize dataset inputs
-    '''
-    for i in range(inputs):
-        print(np.shape(inputs.cpu().numpy()[i,:,:,:]))
-        img = np.transpose(inputs.cpu().numpy()[i,:,:,:], (1, 2, 0))
-        print(np.shape(img))
-        print(labels.size())
-        print("Label: ", labels[i])
-        plt.imshow(img)
-        plt.show()
+import libs.dataset_utils   as dutils
 
 
 class TrainModel:
-    def __init__(self, model_path=None):
+    def __init__(self, model_path=None, seed=None):
+        self.seed = seed
+        if self.seed:
+            dutils.set_torch_random_seeds(self.seed)
+
         self.model                  = None
         self.criterion              = None
         self.optimizer              = None
@@ -112,11 +103,16 @@ class TrainModel:
         self.model.fc = nn.Linear(self.numFeatures, self.numClasses)
         
         # Use Softmax layer for other loss functions
-        # self.model.fc = nn.Softmax(dim=-1) 
+        # self.model.fc = nn.Softmax(dim=-1)
 
         # Move model to device (must be done before constructing the optimizer)
         self.model.to(self.device)
 
+        # summary(self.model, (3, 224, 224), batch_size=128)
+        # for idx, mod in enumerate(self.model.modules()):
+        #     print(idx, "->", mod, " || ", mod.in_features())
+        #     # print()
+        
         # Load model weights, if provided
         if self.model_path:
             self.model.load_state_dict(self.model_path)
@@ -162,7 +158,7 @@ class TrainModel:
                 # self.runningCorrects = np.zeros(self.numClasses)
 
                 # Iterate over minibatches
-                for inputs, labels in self.dataloaders[phase]:
+                for inputs, labels in tqdm(self.dataloaders[phase]):
                     self.inputs = inputs.to(self.device)
                     self.labels = labels.to(self.device)
                     
@@ -242,7 +238,6 @@ class TrainModel:
 
 
     def model_inference(self, input_loader, save_path="inference_results.pickle"):
-        torch.random.manual_seed(42)
         print("Evaluating inputs...")
         print("Random state:\n", torch.random.get_rng_state())
         self.model.eval()
@@ -255,7 +250,11 @@ class TrainModel:
 
             with torch.set_grad_enabled(False):
                 self.batchOutput = self.model(self.inputs)
-                
+            
+            # print()
+            # dutils.show_inputs(self.inputs, self.batchOutput[0])
+            # print(self.batchOutput)
+
             # Store outputs in list
             self.outputs.extend(self.batchOutput.cpu().numpy())
             self.imgHashes.extend(imgHash)

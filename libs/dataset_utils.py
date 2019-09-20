@@ -2,9 +2,11 @@ import os
 import math
 import warnings
 import torch
+import random
 import numpy                as np
 import pandas               as pd
 import shutil               as sh
+import matplotlib.pyplot    as plt
 from PIL                    import Image
 from copy                   import copy
 from tqdm                   import tqdm
@@ -17,6 +19,39 @@ import libs.commons         as commons
 import libs.utils           as utils
 from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
+
+
+def set_torch_random_seeds(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.random.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+
+def show_inputs(inputs, labels):
+    '''
+        Function to visualize dataset inputs
+    '''
+    for i in range(len(inputs)):
+        print(np.shape(inputs.cpu().numpy()[i,:,:,:]))
+        img = np.transpose(inputs.cpu().numpy()[i,:,:,:], (1, 2, 0))
+        print(np.shape(img))
+        print(labels.size())
+        print("Label: ", labels[i])
+        plt.imshow(img)
+        plt.title("Label: {}".format(labels[i]))
+        plt.show()
+
+
+def show_image(image, title_string=None):
+    '''
+        Show input image.
+    '''
+    print("Title: ", title_string)
+    plt.imshow(image)
+    if title_string:
+        plt.title(title_string)
+    plt.show()
 
 
 class IndexLoader:
@@ -82,7 +117,7 @@ class IndexLoader:
 
             if self.label_list != None:
                 label = self.label_list[self.current_index]
-                labelList.extend(label)
+                labelList.append(label)
             
             imgList.append(img)
             imgHashList.append(imgHash)

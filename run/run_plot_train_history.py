@@ -6,7 +6,7 @@ from pathlib                import Path
 import libs.utils           as utils
 import libs.dirs            as dirs
 
-historyPath = Path(dirs.saved_models) / "full_dataset_history_no_finetune_100epochs.pickle"
+historyPath = Path(dirs.saved_models) / "full_dataset_history_no_finetune_1000epochs.pickle"
 # historyPath = Path(dirs.saved_models) / "test_mnist_resnet18_history_no_finetune.pickle"
 
 resultsFolder = Path(dirs.results) / historyPath.stem
@@ -36,7 +36,7 @@ plt.ylabel("Loss")
 plt.xlabel("Epochs")
 plt.title("Training Loss history")
 # plt.show()
-fig.savefig(resultsFolder / "loss_history.jpg", orientation='portrait', bbox_inches='tight')
+fig.savefig(resultsFolder / "loss_history.pdf", orientation='portrait', bbox_inches='tight')
 
 fig = plt.figure(figsize=(24, 18))
 plt.plot(x, valAcc, 'r.-', label="valAcc")
@@ -46,7 +46,7 @@ plt.ylabel("Acc")
 plt.xlabel("Epochs")
 plt.title("Training Acc history")
 # plt.show()
-fig.savefig(resultsFolder / "accuracy_history.jpg", orientation='portrait', bbox_inches='tight')
+fig.savefig(resultsFolder / "accuracy_history.pdf", orientation='portrait', bbox_inches='tight')
 
 
 fig = plt.figure(figsize=(24, 18))
@@ -57,7 +57,7 @@ plt.ylabel("Loss")
 plt.xlabel("Epochs")
 plt.title("Training F1 history, class 0")
 # plt.show()
-fig.savefig(resultsFolder / "f1_history.jpg", orientation='portrait', bbox_inches='tight')
+fig.savefig(resultsFolder / "f1_history.pdf", orientation='portrait', bbox_inches='tight')
 
 # total 3918 imagens
 # Treino 85%

@@ -9,8 +9,8 @@ indexPath = iterPath / "olavo_uniformsampling_4676_corrections.csv"
 
 splitPercentages = [0.85, 0.15]
 
-# dutils.move_to_class_folders(indexPath, imageFolder="sampled_images")
+dutils.move_to_class_folders(indexPath, imageFolder="sampled_images")
 
-input("\nDelete unwanted class folders and press Enter to continue.")
+# input("\nDelete unwanted class folders and press Enter to continue.")
 
-dutils.data_folder_split(iterPath / "sampled_images", splitPercentages)
+# dutils.data_folder_split(iterPath / "sampled_images", splitPercentages)
