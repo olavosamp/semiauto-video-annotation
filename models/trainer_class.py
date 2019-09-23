@@ -242,6 +242,7 @@ class TrainModel:
         print("Random state:\n", torch.random.get_rng_state())
         self.model.eval()
 
+        corrects = 0
         self.outputs   = []
         self.imgHashes = []
         self.labelList = []
@@ -255,13 +256,20 @@ class TrainModel:
             # dutils.show_inputs(self.inputs, self.batchOutput[0])
             # print(self.batchOutput)
 
+            # print(torch.max(self.batchOutput, 1))
+            # print(labels)
+            corrects += np.sum(torch.max(self.batchOutput, 1) == labels)
             # Store outputs in list
             self.outputs.extend(self.batchOutput.cpu().numpy())
             self.imgHashes.extend(imgHash)
-            self.labelList.append(labels)
+            self.labelList.extend(labels)
 
-        # Get predictions as numerical class indexes
-        self.predictions = np.argmax(self.outputs, 1)
+        # print(self.labelList)
+        print(corrects/len(self.labelList))
+        # # Get predictions as numerical class indexes
+        # self.predictions = np.argmax(self.outputs, 1)
+        # acc = np.sum(np.equal(self.predictions, self.labelList))/len(self.labelList)
+        # print(acc)
 
         return self.outputs, self.imgHashes, self.labelList
 

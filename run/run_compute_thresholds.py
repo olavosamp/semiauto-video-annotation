@@ -16,28 +16,21 @@ def check_inside_threshold(output, upper_thresh, lower_thresh):
     return np.logical_or( np.greater(output, upper_thresh), np.less(output, lower_thresh))
 
 
-def normalize_array(array):
-    maxVal = np.max(array)
-    minVal = np.min(array)
-    dif = np.abs(maxVal - minVal)
-
-    return (array - minVal)/(dif)
-
-def compute_upper_lower_metrics(outputs, labels, upperThresh, lowerThresh):
+def compute_upper_precision(outputs, labels, upperThresh):
     upperMask = np.greater(outputs, upperThresh)
-    lowerMask = np.less(outputs, lowerThresh)
-
     upperIndexes  = np.arange(datasetLen)[upperMask]
-    lowerIndexes  = np.arange(datasetLen)[lowerMask]
 
     upperPrecision = skm.precision_score(labels[upperIndexes],
                                          np.zeros(len(upperIndexes), dtype=int), pos_label=0)
-    
+    return upperPrecision
+
+def compute_lower_recall(outputs, labels, lowerThresh):
+    lowerMask = np.less(outputs, lowerThresh)
+    lowerIndexes  = np.arange(datasetLen)[lowerMask]
+
     lowerRecall    = skm.recall_score(labels[lowerIndexes],
                                       np.ones(len(lowerIndexes), dtype=int), pos_label=0)
-
-    return upperPrecision, lowerRecall
-
+    return lowerRecall
 
 
 indexPath   = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images_iteration_1.csv"
@@ -49,18 +42,17 @@ indexDf.set_index("FrameHash", drop=False)
 
 # print("Scores for two class outputs")
 
-print(pickleData.shape)
-outputs   = np.stack(pickleData[0, :])[:, 0]
-imgHashes = np.array(pickleData[1, :])
-labels = []
-# labels    = np.array(pickleData[2, :])
-
+print(pickleData)
+# exit()
+outputs   = np.stack(pickleData["Outputs"])[:, 0]
+imgHashes = pickleData["ImgHashes"]
+# labels = []
+labels    = pickleData["Labels"]
+orderedIndex = np.argsort(outputs)
 datasetLen = len(outputs)
 
-for elem in pickleData[2, :]:
-    labels.extend(elem)
-labels    = np.array(labels)
-
+print(outputs[:20])
+print(pickleData[:20])
 # print(outputs.shape)
 # print(imgHashes.shape)
 # print(labels.shape)
@@ -73,7 +65,7 @@ print("min : ", np.min(outputs))
 print("mean: ", np.mean(outputs))
 print("std : ", np.std(outputs))
 
-outputs = normalize_array(outputs)
+outputs = utils.normalize_array(outputs)
 
 print("\nStatistics after normalization")
 print("max : ", np.max(outputs))
@@ -83,7 +75,7 @@ print("std : ", np.std(outputs))
 print()
 # input()
 
-upperThresh = .8
+upperThresh = .85
 lowerThresh = .2
 limit = 50
 
@@ -107,40 +99,46 @@ lowerSelected = outputs[lowerIndexes]
 upperCorrects = np.sum(np.equal(0, labels[upperIndexes]))
 lowerCorrects = np.sum(np.equal(1, labels[lowerIndexes]))
 
-upperPrecision= skm.precision_score(labels[upperIndexes], np.zeros(upperLen, dtype=int), pos_label=0)
-lowerRecall   = skm.recall_score(labels[lowerIndexes], np.ones(lowerLen, dtype=int), pos_label=0)
+# upperPrecision= skm.precision_score(labels[upperIndexes], np.zeros(upperLen, dtype=int), pos_label=0)
+# lowerRecall   = skm.recall_score(labels[lowerIndexes], np.ones(lowerLen, dtype=int), pos_label=0)
 
 
-# for i in range(upperLen):
-#     print
-
-print("\nupperCorrects:")
-print("Labels:     ", labels[upperIndexes])
-print("Predictions:", np.zeros(upperLen, dtype=int))
-# print(upperSelected, labels[upperIndexes])
-print("Corrects : ", upperCorrects)
-print("Precision: ", upperPrecision)
-print("\nlowerCorrects:")
-print("Labels:     ", labels[lowerIndexes])
-print("Predictions:", np.ones(lowerLen, dtype=int))
-# print(lowerSelected, labels[lowerIndexes])
-print("Corrects: ", lowerCorrects)
-print("Recall:   ", lowerRecall)
+upperPrecision = compute_upper_precision(outputs, labels, upperThresh)
+lowerRecall    = compute_lower_recall(outputs, labels, lowerThresh)
+accuracy       = skm.accuracy_score(labels, np.where(outputs > .5, 0, 1))
 
 
-# print("\nUpper Threshold: ", upperThresh)
-# # print(upperSelected[:limit])
-# print(upperIndexes[:limit])
+# print("\nupperCorrects:")
+# print("Labels:     ", labels[upperIndexes])
+# print("Predictions:", np.zeros(upperLen, dtype=int))
+# # print(upperSelected, labels[upperIndexes])
+# print("Corrects : ", upperCorrects)
+# print("Precision: ", upperPrecision)
+# print("\nlowerCorrects:")
+# print("Labels:     ", labels[lowerIndexes])
+# print("Predictions:", np.ones(lowerLen, dtype=int))
+# # print(lowerSelected, labels[lowerIndexes])
+# print("Corrects: ", lowerCorrects)
+# print("Recall:   ", lowerRecall)
 
-# print("Score\tPrediction\tGround Truth")
+
+# # print("\nUpper Threshold: ", upperThresh)
+# # # print(upperSelected[:limit])
+# # print(upperIndexes[:limit])
+
+# ------------
+# 
+print("Score\tGround Truth\tPrediction")
 # for i in upperIndexes:
-#     print("{:.4f}\t {} \t\t {}".format(outputs[i], 0, labels[i]))
+for i in orderedIndex:
+    print("{:.4f}\t {} \t\t {}".format(outputs[i], labels[i], np.NaN))
 # print(len(upperSelected))
 # print(len(upperIndexes))
+print("Accuracy: ", accuracy)
 
-# for ind in upperIndexes:
-#     imgHash = imgHashes[ind]
-#     img = indexDf.loc[imgHash]
+# # for ind in upperIndexes:
+# #     imgHash = imgHashes[ind]
+# #     img = indexDf.loc[imgHash]
 #     title = "output: {:.2f}".format(outputs[ind])
 #     dutils.show_image(img, title_string=title)
 
@@ -149,3 +147,12 @@ print("Recall:   ", lowerRecall)
 # for i in range(limit):
 #     if lowerMask[i]:
 #         print("{:.4f}: {}".format(outputs[i], lowerMask[i]))
+
+##----------
+## Variando threshold superior
+# upperThreshList = np.arange(1., 0., -0.01)
+
+# print("Threshold\tPrecision")
+# for upperThresh in upperThreshList:
+#     precision = compute_upper_precision(outputs, labels, upperThresh)
+#     print("{:.2f}\t\t{:.2f}".format(upperThresh, precision))

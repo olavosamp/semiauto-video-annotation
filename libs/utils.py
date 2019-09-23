@@ -21,6 +21,38 @@ def func_make_path(x):   return Path(x)
 def func_strip(x):       return Path(str(x).strip())
 
 
+# Numeric functions
+def normalize_array(array):
+    maxVal = np.max(array)
+    minVal = np.min(array)
+    dif = np.abs(maxVal - minVal)
+
+    return (array - minVal)/(dif)
+
+
+def get_perfect_square(number, round='down'):
+    if round == 'down':
+        return int(math.sqrt(number))**2
+    else:
+        return round(math.sqrt(number))**2
+
+
+def timeConverter( strTime ):
+    # int seconds = timeConverter( string strTime )
+    # Converts HHMMSS input string to integer seconds
+    #
+    length = len(strTime)
+    if length > 6:
+        seconds = 0
+    else:
+        h = int(strTime[0:2])
+        m = int(strTime[2:4])
+        s = int(strTime[4:6])
+
+        seconds = s + m*60 + h*3600
+    return seconds
+
+
 ## Pickle functions
 def save_pickle(object, filePath):
     with open(filePath, 'wb') as fileHandle:
@@ -35,6 +67,33 @@ def load_pickle(filePath):
 
 
 ## Filepath and string processing
+def make_video_hash_list(fileList, columnName='FilePath', verbose=True):
+    '''
+        Find and save video paths in a file tree in a list,
+         calculate their MD5 hashes and save both lists as a Pandas DataFrame.
+
+        Argument:
+            fileList: list of strings. List of paths of the files to hash.
+            columnName: name of the DataFrame columns where the filepath list
+             will be saved.
+
+        Returns:
+            table: Pandas DataFrame with two columns: columnName and HashMD5.
+    '''    
+    # hashList = list(map(file_hash, fileList))
+    numVideos = len(fileList)
+    if verbose:
+        print("Processing MD5 hash of {} files...".format(numVideos))
+    
+    hashList = []
+    for i in tqdm(range(numVideos)):
+        # print("{}".format(i).ljust(5), "/{} :\n{}".format(numVideos, fileList[i]))
+        hashList.append(file_hash(fileList[i]))
+
+    table = pd.DataFrame({str(columnName): fileList, 'HashMD5': hashList})
+    return table
+    
+
 def file_exists(x):
     return Path(x).is_file()
     # return os.path.isfile(x)
@@ -217,33 +276,6 @@ def file_hash(filePath):
 
 
 ## Video and image processing
-def make_video_hash_list(fileList, columnName='FilePath', verbose=True):
-    '''
-        Find and save video paths in a file tree in a list,
-         calculate their MD5 hashes and save both lists as a Pandas DataFrame.
-
-        Argument:
-            fileList: list of strings. List of paths of the files to hash.
-            columnName: name of the DataFrame columns where the filepath list
-             will be saved.
-
-        Returns:
-            table: Pandas DataFrame with two columns: columnName and HashMD5.
-    '''    
-    # hashList = list(map(file_hash, fileList))
-    numVideos = len(fileList)
-    if verbose:
-        print("Processing MD5 hash of {} files...".format(numVideos))
-    
-    hashList = []
-    for i in tqdm(range(numVideos)):
-        # print("{}".format(i).ljust(5), "/{} :\n{}".format(numVideos, fileList[i]))
-        hashList.append(file_hash(fileList[i]))
-
-    table = pd.DataFrame({str(columnName): fileList, 'HashMD5': hashList})
-    return table
-
-
 def convert_video(video_input, video_output):
     print("\nProcessing video: ", video_input)
     print("Saving to : ", video_output)
@@ -256,29 +288,6 @@ def convert_video(video_input, video_output):
 
     print("Video saved to : ", video_output)
     return 0
-
-
-def get_perfect_square(number, round='down'):
-    if round == 'down':
-        return int(math.sqrt(number))**2
-    else:
-        return round(math.sqrt(number))**2
-
-
-def timeConverter( strTime ):
-    # int seconds = timeConverter( string strTime )
-    # Converts HHMMSS input string to integer seconds
-    #
-    length = len(strTime)
-    if length > 6:
-        seconds = 0
-    else:
-        h = int(strTime[0:2])
-        m = int(strTime[2:4])
-        s = int(strTime[4:6])
-
-        seconds = s + m*60 + h*3600
-    return seconds
 
 
 def color_filter(image, filter='r', filter_strenght=1.5):

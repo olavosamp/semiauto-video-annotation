@@ -3,12 +3,11 @@ import torch
 import math
 import random
 import numpy                as np
+import pandas               as pd
 import torchvision.datasets as datasets
-import torch.nn             as nn
-import torch.optim          as optim
 from PIL                    import Image
 from pathlib                import Path
-from torchvision            import models, transforms
+from torchvision            import transforms
 from torch.utils.data       import DataLoader
 
 import libs.dirs            as dirs
@@ -22,13 +21,13 @@ def check_empty_file(path):
 
 
 if __name__ == "__main__":
-    seed = 42
+    seed = 33
     dutils.set_torch_random_seeds(seed)
 
     datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/val/"
     savePath    = Path(dirs.saved_models)/ "results_full_dataset_iteration_0.pickle"
     
-    batchSize = 1
+    batchSize = 128
 
     # ImageNet statistics
     # No need to normalize pixel range from [0, 255] to [0, 1] because
@@ -48,6 +47,8 @@ if __name__ == "__main__":
     imageTupleList  = dataset.imgs
     labelList       = dataset.targets
     datasetLen      = len(imageTupleList)
+
+    # labelList       = list(range(datasetLen)) # Test with sequential labels
     
     imagePathList  = np.array(dataset.imgs)[:, 0]
 
@@ -97,17 +98,27 @@ if __name__ == "__main__":
     # -------------------
     outputs, imgHashes, labels = trainer.model_inference(imgLoader)
 
-    outputTuple = np.array((outputs, imgHashes, labels))
+    predictions = np.argmax(np.array(outputs), axis=1)
+    accuracy = np.equal(predictions, labels).sum()/datasetLen
+    # print(labels[:20])
+    # print(predictions[:20])
+
+    # print(accuracy)
+    exit()
+    outputDf = pd.DataFrame({"Outputs":   outputs,
+                             "ImgHashes": imgHashes,
+                             "Labels":    labels})
 
     # print()
     # for out in outputs[:20]:
     #     print(out)
     # exit()
-    # print(outputTuple[0][:20])
-    # print(outputTuple[1][:20])
-    print(np.shape(outputTuple))
+    # print(outputDf[0][:20])
+    # print(outputDf[1][:20])
+    print(np.shape(outputDf))
     # input()
 
     # Save output to pickle file
     print("\nSaving outputs file to ", savePath)
-    utils.save_pickle(outputTuple, savePath)
+    # utils.save_pickle(outputDf, savePath)
+    outputDf.to_pickle(savePath)
