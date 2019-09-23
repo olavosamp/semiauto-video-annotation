@@ -26,8 +26,9 @@ if __name__ == "__main__":
 
     datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/val/"
     savePath    = Path(dirs.saved_models)/ "results_full_dataset_iteration_0.pickle"
+    modelPath   = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000epochs.pt"
     
-    batchSize = 128
+    batchSize = 64
 
     # ImageNet statistics
     # No need to normalize pixel range from [0, 255] to [0, 1] because
@@ -72,11 +73,11 @@ if __name__ == "__main__":
     #     # break
 
     # Instantiate trainer object
-    trainer = TrainModel()
+    trainer = TrainModel(model_path=modelPath)
     trainer.numClasses = 2
 
     # Set model
-    trainer.define_model_resnet18(finetune=False)
+    trainer.define_model_resnet18(finetune=False, print_summary=True)
     # exit()
     
     # Perform inference
@@ -100,25 +101,14 @@ if __name__ == "__main__":
 
     predictions = np.argmax(np.array(outputs), axis=1)
     accuracy = np.equal(predictions, labels).sum()/datasetLen
-    # print(labels[:20])
-    # print(predictions[:20])
 
-    # print(accuracy)
-    exit()
     outputDf = pd.DataFrame({"Outputs":   outputs,
                              "ImgHashes": imgHashes,
                              "Labels":    labels})
 
-    # print()
-    # for out in outputs[:20]:
-    #     print(out)
-    # exit()
-    # print(outputDf[0][:20])
-    # print(outputDf[1][:20])
     print(np.shape(outputDf))
-    # input()
 
     # Save output to pickle file
     print("\nSaving outputs file to ", savePath)
-    # utils.save_pickle(outputDf, savePath)
     outputDf.to_pickle(savePath)
+    # utils.save_pickle(outputDf, savePath)

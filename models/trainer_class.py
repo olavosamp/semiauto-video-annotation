@@ -31,7 +31,7 @@ class TrainModel:
         self.finetune               = None
         self.num_examples_per_batch = None
         self.bestModelWeights       = None
-        self.model_path             = model_path
+        self.model_path             = str(model_path)
 
         self.phases = ['train', 'val']
 
@@ -80,7 +80,7 @@ class TrainModel:
         return self.dataloaders
 
 
-    def define_model_resnet18(self, finetune=False):
+    def define_model_resnet18(self, finetune=False, print_summary=False):
         '''
             Define Resnet18 pretrained model.
 
@@ -108,14 +108,17 @@ class TrainModel:
         # Move model to device (must be done before constructing the optimizer)
         self.model.to(self.device)
 
-        # summary(self.model, (3, 224, 224), batch_size=128)
-        # for idx, mod in enumerate(self.model.modules()):
-        #     print(idx, "->", mod, " || ", mod.in_features())
-        #     # print()
+        if print_summary:
+            print("\nNetwork Summary")
+            summary(self.model, (3, 224, 224), batch_size=128)
+            print()
+            # for idx, mod in enumerate(self.model.modules()):
+            #     print(idx, "->", mod, " || ", mod.in_features())
+            #     # print()
         
         # Load model weights, if provided
         if self.model_path:
-            self.model.load_state_dict(self.model_path)
+            self.model.load_state_dict(torch.load(self.model_path))
 
         return self.model
 
