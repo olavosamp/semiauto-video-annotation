@@ -109,7 +109,7 @@ class TrainModel:
         self.model.to(self.device)
 
         if print_summary:
-            print("\nNetwork Summary")
+            print("\n\t\tNetwork Summary")
             summary(self.model, (3, 224, 224), batch_size=128)
             print()
             # for idx, mod in enumerate(self.model.modules()):

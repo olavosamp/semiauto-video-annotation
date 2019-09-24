@@ -99,8 +99,10 @@ if __name__ == "__main__":
     # -------------------
     outputs, imgHashes, labels = trainer.model_inference(imgLoader)
 
+
     predictions = np.argmax(np.array(outputs), axis=1)
     accuracy = np.equal(predictions, labels).sum()/datasetLen
+    
 
     outputDf = pd.DataFrame({"Outputs":   outputs,
                              "ImgHashes": imgHashes,
@@ -108,7 +110,30 @@ if __name__ == "__main__":
 
     print(np.shape(outputDf))
 
-    # Save output to pickle file
+    ## Save output to pickle file
     print("\nSaving outputs file to ", savePath)
     outputDf.to_pickle(savePath)
-    # utils.save_pickle(outputDf, savePath)
+
+    # # Find upper threshold
+    # upperThreshList = np.arange(1., 0., -0.001)
+    # idealUpperThresh = dutils.find_ideal_upper_thresh(outputs, labels, upperThreshList)
+
+    # # Find lower threshold
+    # lowerThreshList = np.arange(0., 1., 0.001)
+    # idealLowerThresh = dutils.find_ideal_lower_thresh(outputs, labels, lowerThreshList)
+
+    outputs = np.stack(outputs)[:, 0]
+    outputs = utils.normalize_array(outputs)
+
+    idealUpperThresh = 0.392
+    idealLowerThresh = 0.224
+
+    indexes = np.arange(datasetLen, dtype=int)
+    upperClassified = indexes[np.greater(outputs, idealUpperThresh)]
+    lowerClassified = indexes[np.less(outputs, idealLowerThresh)]
+    totalClassified = len(upperClassified) + len(lowerClassified)
+
+    print("upperClassified: ", len(upperClassified))
+    print("lowerClassified: ", len(lowerClassified))
+    print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
+                                                                (totalClassified)/datasetLen*100))

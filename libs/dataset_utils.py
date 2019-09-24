@@ -21,13 +21,85 @@ from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
 
-def set_torch_random_seeds(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.random.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+## Threshold finding
+def upper_positive_relative_ratio(outputs, labels, threshold):
+    '''
+        Compute ratio of ground truth positive examples above given threshold relative only
+        to the examples above the threshold.
+    '''
+    datasetLen     = len(outputs)
+    mask      = np.greater(outputs, threshold)
+    indexes   = np.arange(datasetLen)[mask]
+    
+    posPercent = np.sum(labels[indexes] == 0)/len(indexes) # Positive class index is 0
+    return posPercent
 
 
+def lower_positive_ratio(outputs, labels, threshold):
+    '''
+        Compute ratio of ground truth positive examples below a given threshold relative
+        to the entire dataset.
+    '''
+    datasetLen     = len(outputs)
+    mask      = np.less(outputs, threshold)
+    indexes   = np.arange(datasetLen)[mask]
+
+    posPercent = np.sum(labels[indexes] == 0)/datasetLen # Positive class index is 0
+    return posPercent
+
+
+def find_ideal_lower_thresh(outputs, labels, threshold_list=None, verbose=False):
+    if verbose:
+        print("\nThreshold\tLower Pos Ratio")
+    
+    if threshold_list is None:
+        threshold_list = np.arange(0., 1., 0.001)
+    
+    for i in range(len(threshold_list)):
+        lowerThresh = threshold_list[i]
+        posRatio = lower_positive_ratio(outputs, labels, lowerThresh)
+
+        if verbose:
+            print("{:.2f}\t\t{:.2f}".format(lowerThresh, posRatio)) # Print search progress
+
+        if posRatio > .01:
+            if i-1 < 0:
+                print("\nThreshold could not be found.")
+                return None
+            idealThresh = threshold_list[i-1]
+            posRatio = lower_positive_ratio(outputs, labels, idealThresh)
+
+            print("\nFound ideal Lower threshold {:.3f} with {:.2f} % ground truth positives.".format(idealThresh, posRatio*100))
+            return idealThresh
+
+
+def find_ideal_upper_thresh(outputs, labels, threshold_list=None, verbose=False):
+    if verbose:
+        print("\nThreshold\tUpper Pos Ratio")
+    
+    if threshold_list is None:
+        threshold_list = np.arange(1., 0., -0.001)
+    
+    for i in range(len(threshold_list)):
+        upperThresh = threshold_list[i]
+        posRatio = upper_positive_relative_ratio(outputs, labels, upperThresh)
+
+        if verbose:
+            print("{:.2f}\t\t{:.2f}".format(upperThresh, posRatio)) # Print search progress
+
+        if posRatio < .95:
+            if i-1 < 0:
+                print("\nThreshold could not be found.")
+                return None
+            idealThresh = threshold_list[i-1]
+            posRatio = upper_positive_relative_ratio(outputs, labels, idealThresh)
+
+            print("\nFound ideal Upper threshold {:.3f} with {:.2f} % ground truth positives.".format(idealThresh, posRatio*100))
+            return idealThresh
+
+
+
+## Image processing
 def show_inputs(inputs, labels):
     '''
         Function to visualize dataset inputs
@@ -52,6 +124,14 @@ def show_image(image, title_string=None):
     if title_string:
         plt.title(title_string)
     plt.show()
+
+
+## Pytorch utilities
+def set_torch_random_seeds(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.random.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
 
 
 class IndexLoader:
