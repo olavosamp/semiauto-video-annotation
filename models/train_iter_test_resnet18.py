@@ -9,20 +9,22 @@ from torch.utils.data       import random_split, TensorDataset
 
 import libs.dirs            as dirs
 # from libs.utils             import *
-from libs.dataset_utils     import data_folder_split
 from models.trainer_class   import TrainModel
 
 
 if __name__ == "__main__":
-    modelPath   = dirs.saved_models + "full_dataset_no_finetune.pt"
-    historyPath = dirs.saved_models + "full_dataset_history_no_finetune.pickle"
-
-    # Dataset root folder
-    # datasetPath = Path(dirs.iter_folder) / "test_loop/iteration_0/sample_images_sorted/"
-    datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/"
     numImgBatch = 64
     numEpochs   = 25
 
+    modelPath   = dirs.saved_models + "full_dataset_no_finetune_{}_epochs.pt".format(numEpochs)
+    historyPath = dirs.saved_models + "history_full_dataset_no_finetune{}_epochs.pickle".format(numEpochs)
+
+    # Dataset root folder
+    # Images should have paths following
+    #   root/classA/img.jpg
+    #   root/classB/img.jpg
+    #   ...
+    datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/"
 
     # ImageNet statistics
     # No need to normalize pixel range from [0, 255] to [0, 1] because
@@ -47,13 +49,6 @@ if __name__ == "__main__":
                     transforms.Normalize(mean, std),
         ])
     }
-    # # Split datasets in train and validation sets
-    # trainPercentage = 0.8
-    # valPercentage   = 0.2
-
-    # # Should be run only once to split images in train and val folders
-    # data_folder_split(datasetPath, [trainPercentage, valPercentage])
-    # exit()
 
     # Load Dataset objects for train and val sets from folder
     sets = ['train', 'val']

@@ -264,7 +264,7 @@ class IndexManager:
         self.report_changes()
 
 
-    def move_files(self, imagesDestFolder='auto', write=True):
+    def move_files(self, imagesDestFolder='auto', write=True, mode='copy'):
         '''
             Try to move all files in index to a new folder specified by destFolder input.
         '''
@@ -284,10 +284,13 @@ class IndexManager:
         f = lambda x: self.imagesDestFolder / x
         self.frameDestPaths = self.index.loc[:, 'FrameName'].apply(f)
 
-        self.moveResults = list(map(copy_files, self.index.loc[:, 'OriginalFramePath'], self.frameDestPaths))
+        if mode == 'copy':
+            self.moveResults = list(map(copy_files, self.index.loc[:, 'OriginalFramePath'], self.frameDestPaths))
+        else:
+            raise NotImplementedError
 
         for i in range(self.get_index_len()):
-            self.index.loc[i, "OriginalFramePath"] = self.index.loc[i, "FramePath"].copy()
+            self.index.loc[i, "OriginalFramePath"] = copy(self.index.loc[i, "FramePath"])
             self.index.loc[i, "FramePath"] = self.frameDestPaths[i]
 
         if write:
