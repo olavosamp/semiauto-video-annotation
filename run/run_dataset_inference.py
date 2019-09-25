@@ -25,7 +25,7 @@ if __name__ == "__main__":
     seed = 33
     dutils.set_torch_random_seeds(seed)
 
-    datasetPath      = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/val/"
+    datasetPath      = Path(dirs.images) / "full_dataset_1s"
     unlabelIndexPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
     savePath         = Path(dirs.saved_models)/ "results_full_dataset_iteration_0_1000_epochs.pickle"
     modelPath        = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000epochs.pt"
@@ -46,24 +46,26 @@ if __name__ == "__main__":
                         transforms.ToTensor(),
                         transforms.Normalize(mean, std),
                     ])
-
-    # Get list of image paths from dataset folder
-    dataset = datasets.ImageFolder(str(datasetPath), transform=dataTransforms, is_valid_file=check_empty_file)
-    imageTupleList  = dataset.imgs
-    labelList       = dataset.targets
-    datasetLen      = len(imageTupleList)
-
-    # labelList       = list(range(datasetLen)) # Test with sequential labels
     
-    imagePathList  = np.array(dataset.imgs)[:, 0]
-
-    print("img path len: ", len(imagePathList))
-    unlabelIndex.index.drop(labels=unlabelIndex.index["FramePath"].map(check_empty_file),
+    # Get list of images from image index
+    unlabelIndex.index.drop(labels=unlabelIndex.index.index[np.logical_not(unlabelIndex.index["FramePath"].map(check_empty_file))],
                             axis=0,
                             inplace=True)
     imagePathList  = unlabelIndex.index["FramePath"].values
-    print("img path len: ", len(imagePathList))
-    # exit()
+    datasetLen      = len(imageTupleList)
+    print("img path len: ", datasetLen)
+
+    # # Get list of image paths from dataset folder
+    # dataset = datasets.ImageFolder(str(datasetPath), transform=dataTransforms, is_valid_file=check_empty_file)
+    # imageTupleList  = dataset.imgs
+    # datasetLen      = len(imageTupleList)
+
+    ## Label list for a labeled dataset
+    # labelList       = list(range(datasetLen)) # Test with sequential labels
+    # labelList      = dataset.targets
+    # imagePathList  = np.array(dataset.imgs)[:, 0]
+    # print("img path len: ", len(imagePathList))
+    
 
     # dataloader = torch.utils.data.DataLoader(dataset,
     #                                         batch_size=batchSize,
@@ -71,9 +73,12 @@ if __name__ == "__main__":
 
     print("\nDataset information: ")
     print("\t", datasetLen, "images.")
-    print("\nClasses: ")
-    for key in dataset.class_to_idx.keys():
-        print("\t{}: {}".format(dataset.class_to_idx[key], key))
+    # print("\nClasses: ")
+    # for key in dataset.class_to_idx.keys():
+    #     print("\t{}: {}".format(dataset.class_to_idx[key], key))
+    
+    # Label list for an unlabeled dataset
+    labelList       = np.zeros(datasetLen)
 
     imgLoader = dutils.IndexLoader(imagePathList, batch_size=batchSize, transform=dataTransforms, label_list=labelList)
     
@@ -85,7 +90,7 @@ if __name__ == "__main__":
 
     # Instantiate trainer object
     trainer = TrainModel(model_path=modelPath)
-    trainer.numClasses = 2
+    trainer.numClasses = 2      # Sloppily set model's number of output units
 
     # Set model
     trainer.define_model_resnet18(finetune=False, print_summary=True)

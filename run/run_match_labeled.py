@@ -7,7 +7,6 @@ import libs.utils           as utils
 import libs.dataset_utils   as dutils
 from libs.index             import IndexManager
 
-# savePath            = Path(dirs.saved_models)/ "results_full_dataset_iteration_0_1000_epochs.pickle"
 unlabelIndexPath    = Path(dirs.index) / "unlabeled_index_2019-8-18_19-32-37_HASHES.csv"
 sampledIndexPath    = Path(dirs.iter_folder)/ "full_dataset/iteration_0/sampled_images_iteration_1.csv"
 newUnlabelIndexPath = Path(dirs.iter_folder)/ "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
