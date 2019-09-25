@@ -14,6 +14,7 @@ import libs.dirs            as dirs
 import libs.utils           as utils
 import libs.dataset_utils   as dutils
 from models.trainer_class   import TrainModel
+from libs.index             import IndexManager
 
 
 def check_empty_file(path):
@@ -24,11 +25,14 @@ if __name__ == "__main__":
     seed = 33
     dutils.set_torch_random_seeds(seed)
 
-    datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/val/"
-    savePath    = Path(dirs.saved_models)/ "results_full_dataset_iteration_0.pickle"
-    modelPath   = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000epochs.pt"
+    datasetPath      = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/val/"
+    unlabelIndexPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
+    savePath         = Path(dirs.saved_models)/ "results_full_dataset_iteration_0_1000_epochs.pickle"
+    modelPath        = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000epochs.pt"
     
     batchSize = 64
+
+    unlabelIndex = IndexManager(unlabelIndexPath)
 
     # ImageNet statistics
     # No need to normalize pixel range from [0, 255] to [0, 1] because
@@ -53,7 +57,14 @@ if __name__ == "__main__":
     
     imagePathList  = np.array(dataset.imgs)[:, 0]
 
-    
+    print("img path len: ", len(imagePathList))
+    unlabelIndex.index.drop(labels=unlabelIndex.index["FramePath"].map(check_empty_file),
+                            axis=0,
+                            inplace=True)
+    imagePathList  = unlabelIndex.index["FramePath"].values
+    print("img path len: ", len(imagePathList))
+    # exit()
+
     # dataloader = torch.utils.data.DataLoader(dataset,
     #                                         batch_size=batchSize,
     #                                         shuffle=False, num_workers=4)

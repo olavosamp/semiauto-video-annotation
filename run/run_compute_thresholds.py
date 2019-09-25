@@ -13,10 +13,10 @@ def check_inside_threshold(output, upper_thresh, lower_thresh):
     return np.logical_or( np.greater(output, upper_thresh), np.less(output, lower_thresh))
 
 
-indexPath   = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images_iteration_1.csv"
-outputPaths = Path(dirs.saved_models)/ "results_full_dataset_iteration_0.pickle"
+indexPath   = Path(dirs.iter_folder) / "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
+outputPath  = Path(dirs.saved_models)/ "results_full_dataset_iteration_0_1000_epochs.pickle"
 
-pickleData = utils.load_pickle(outputPaths)
+pickleData = utils.load_pickle(outputPath)
 indexDf    = pd.read_csv(indexPath)
 indexDf.set_index("FrameHash", drop=False)
 
@@ -72,6 +72,10 @@ upperClassified = indexes[np.greater(outputs, idealUpperThresh)]
 lowerClassified = indexes[np.less(outputs, idealLowerThresh)]
 totalClassified = len(upperClassified) + len(lowerClassified)
 
+print("\nIdeal Upper Threshold: ", idealUpperThresh)
+print("Ideal Lower Threshold: ", idealLowerThresh)
+
+print|("\nResults in Validation set:")
 print("upperClassified: ", len(upperClassified))
 print("lowerClassified: ", len(lowerClassified))
 print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
