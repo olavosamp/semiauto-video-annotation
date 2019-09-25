@@ -49,6 +49,6 @@ ind2.add_entry(frameEntryList)
 # ind2.add_entry(frameEntryList)
 
 ind2.write_index(prompt=False)
-ind2.move_files()
+ind2.copy_files()
 
 ind2.report_changes()

@@ -98,7 +98,6 @@ def find_ideal_upper_thresh(outputs, labels, threshold_list=None, verbose=False)
             return idealThresh
 
 
-
 ## Image processing
 def show_inputs(inputs, labels):
     '''

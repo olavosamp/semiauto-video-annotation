@@ -264,7 +264,7 @@ class IndexManager:
         self.report_changes()
 
 
-    def move_files(self, imagesDestFolder='auto', write=True, mode='copy'):
+    def copy_files(self, imagesDestFolder='auto', write=False, mode='copy'):
         '''
             Try to move all files in index to a new folder specified by destFolder input.
         '''
@@ -279,11 +279,12 @@ class IndexManager:
 
         dirs.create_folder(self.imagesDestFolder, verbose=True)
 
-        print("Moving {} files.".format(self.index.shape[0]))
+        print("Copying {} files.".format(self.index.shape[0]))
 
-        f = lambda x: self.imagesDestFolder / x
-        self.frameDestPaths = self.index.loc[:, 'FrameName'].apply(f)
+        def _add_folder_path(x): return self.imagesDestFolder / x
+        self.frameDestPaths = self.index.loc[:, 'FrameName'].apply(_add_folder_path)
 
+        # Select copy or move mode
         if mode == 'copy':
             self.moveResults = list(map(copy_files, self.index.loc[:, 'OriginalFramePath'], self.frameDestPaths))
         else:
