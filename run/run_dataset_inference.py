@@ -52,7 +52,7 @@ if __name__ == "__main__":
                             axis=0,
                             inplace=True)
     imagePathList  = unlabelIndex.index["FramePath"].values
-    datasetLen      = len(imageTupleList)
+    datasetLen      = len(imagePathList)
     print("img path len: ", datasetLen)
 
     # # Get list of image paths from dataset folder

@@ -8,7 +8,7 @@ import libs.dataset_utils   as dutils
 from libs.index             import IndexManager
 
 savePath            = Path(dirs.saved_models)/ "results_full_dataset_iteration_0_1000_epochs.pickle"
-indexPath           = Path(dirs.index) / "unlabeled_index_2019-8-18_19-32-37_HASHES.csv"
+indexPath           = Path(dirs.iter_folder) / "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
 sampledImagesPath   = Path(dirs.images)/ "full_dataset_results_samples"
 
 # Load model outputs and unlabeled images index
@@ -35,13 +35,13 @@ print("upperClassIndex: ", len(upperClassIndex))
 print("lowerClassIndex: ", len(lowerClassIndex))
 print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
                                                             (totalClassified)/datasetLen*100))
-
+# exit()
 # Randomly sample images
 samplePercent = 0.1
 # upperNum = round(len(upperClassIndex)*samplePercent)
 # lowerNum = round(len(lowerClassIndex)*samplePercent)
-upperNum = 7881
-lowerNum = 9192
+upperNum = 7866
+lowerNum = 9187
 
 print("\nSampling {} images.".format(upperNum+lowerNum))
 # exit()

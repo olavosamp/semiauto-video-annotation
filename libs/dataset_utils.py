@@ -164,7 +164,7 @@ class IndexLoader:
         self.current_index  = 0
         self.datasetLen     = len(self.imagePathList)
 
-        if self.label_list != None:
+        if self.label_list is not None:
             assert len(self.label_list) == self.datasetLen, "Image path and label lists must be of same size."
 
         # TODO: (maybe) add default Compose transform with ToTensor
@@ -194,7 +194,7 @@ class IndexLoader:
             if self.transform:
                 img = self.transform(img)
 
-            if self.label_list != None:
+            if self.label_list is not None:
                 label = self.label_list[self.current_index]
                 labelList.append(label)
             
@@ -205,7 +205,7 @@ class IndexLoader:
         
         imgList = torch.stack(imgList, dim=0)
 
-        if self.label_list == None:
+        if self.label_list is None:
             return imgList, imgHashList
         else:
             return imgList, imgHashList, labelList

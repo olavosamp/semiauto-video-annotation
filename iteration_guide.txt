@@ -1,0 +1,5 @@
+dataset_inference on val set
+compute_thresholds
+new_unlabeled_set -> Complement of current labeled set and last iteration unlabeled. Creates new and smaller unlabeled set
+dataset_inference on unlabeled set
+sampe_auto_labeled
