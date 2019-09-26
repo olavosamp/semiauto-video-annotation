@@ -1,11 +1,11 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: win-64
-cudatoolkit=10.0
+cudatoolkit
 matplotlib
-numpy=1.16
+numpy
 opencv=3.4.2
-pandas=0.24
+pandas
 pillow
 python=3.7
 pytorch
