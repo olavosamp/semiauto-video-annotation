@@ -35,7 +35,6 @@ print("upperClassIndex: ", len(upperClassIndex))
 print("lowerClassIndex: ", len(lowerClassIndex))
 print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
                                                             (totalClassified)/datasetLen*100))
-# exit()
 # Randomly sample images
 samplePercent = 0.1
 # upperNum = round(len(upperClassIndex)*samplePercent)
@@ -44,8 +43,7 @@ upperNum = 7866
 lowerNum = 9187
 
 print("\nSampling {} images.".format(upperNum+lowerNum))
-# exit()
-np.random.shuffle(upperClassIndex)
+np.random.shuffle(upperClassIndex) # Is shuffling indexes equivalent to uniform sampling?
 np.random.shuffle(lowerClassIndex)
 
 upperClassIndexSampled = upperClassIndex[:upperNum]

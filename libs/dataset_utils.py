@@ -22,6 +22,47 @@ from libs.get_frames_class  import GetFramesFull
 
 
 ## Threshold finding
+def compute_thresholds(val_outputs, labels, upper_ratio=0.95, lower_ratio=0.01, resolution=0.001, verbose=True):
+    val_outputs = np.squeeze(utils.normalize_array(val_outputs))
+    val_outputs = val_outputs[:, 0]
+    resBits = len(str(resolution)) -2
+
+    # Find upper threshold
+    upperThreshList = np.arange(1., 0., -resolution)
+    idealUpperThresh = find_ideal_upper_thresh(
+                                    val_outputs, labels, upperThreshList, ratio=upper_ratio)#, verbose=True)
+
+    # Find lower threshold
+    lowerThreshList = np.arange(0., 1., resolution)
+    idealLowerThresh = find_ideal_lower_thresh(
+                                    val_outputs, labels, lowerThreshList, ratio=lower_ratio)
+
+    idealLowerThresh = np.around(idealLowerThresh, decimals=resBits)
+    idealUpperThresh = np.around(idealUpperThresh, decimals=resBits)
+    if verbose:
+        automatic_labeling(val_outputs, idealUpperThresh, idealLowerThresh)
+
+    return idealUpperThresh, idealLowerThresh
+
+
+def automatic_labeling(outputs, upper_thresh, lower_thresh):
+    datasetLen      = len(outputs)
+    indexes         = np.arange(datasetLen, dtype=int)
+    upperIndexes    = indexes[np.greater(outputs, upper_thresh)]
+    lowerIndexes    = indexes[np.less(outputs, lower_thresh)]
+    totalClassified = len(upperIndexes) + len(lowerIndexes)
+
+    print("\nIdeal Upper Threshold: ", upper_thresh)
+    print("Ideal Lower Threshold: ", lower_thresh)
+
+    print("\nResults in Validation set:")
+    print("upperIndexes: ", len(upperIndexes))
+    print("lowerIndexes: ", len(lowerIndexes))
+    print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
+                                                                (totalClassified)/datasetLen*100))
+    return upperIndexes, lowerIndexes
+
+
 def upper_positive_relative_ratio(outputs, labels, threshold):
     '''
         Compute ratio of ground truth positive examples above given threshold relative only
@@ -40,29 +81,29 @@ def lower_positive_ratio(outputs, labels, threshold):
         Compute ratio of ground truth positive examples below a given threshold relative
         to the entire dataset.
     '''
-    datasetLen     = len(outputs)
-    mask      = np.less(outputs, threshold)
-    indexes   = np.arange(datasetLen)[mask]
+    datasetLen = len(outputs)
+    mask       = np.less(outputs, threshold)
+    indexes    = np.arange(datasetLen)[mask]
 
     posPercent = np.sum(labels[indexes] == 0)/datasetLen # Positive class index is 0
     return posPercent
 
 
-def find_ideal_lower_thresh(outputs, labels, threshold_list=None, verbose=False):
+def find_ideal_lower_thresh(outputs, labels, threshold_list=None, ratio=0.01, resolution=0.001, verbose=False):
     if verbose:
         print("\nThreshold\tLower Pos Ratio")
     
     if threshold_list is None:
-        threshold_list = np.arange(0., 1., 0.001)
+        threshold_list = np.arange(0., 1., resolution)
     
-    for i in range(len(threshold_list)):
+    for i in tqdm(range(len(threshold_list))):
         lowerThresh = threshold_list[i]
         posRatio = lower_positive_ratio(outputs, labels, lowerThresh)
 
         if verbose:
             print("{:.2f}\t\t{:.2f}".format(lowerThresh, posRatio)) # Print search progress
 
-        if posRatio > .01:
+        if posRatio > ratio:
             if i-1 < 0:
                 print("\nThreshold could not be found.")
                 return None
@@ -73,21 +114,21 @@ def find_ideal_lower_thresh(outputs, labels, threshold_list=None, verbose=False)
             return idealThresh
 
 
-def find_ideal_upper_thresh(outputs, labels, threshold_list=None, verbose=False):
+def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, resolution=0.001, verbose=False):
     if verbose:
         print("\nThreshold\tUpper Pos Ratio")
     
     if threshold_list is None:
-        threshold_list = np.arange(1., 0., -0.001)
+        threshold_list = np.arange(1., 0., -resolution)
     
-    for i in range(len(threshold_list)):
+    for i in tqdm(range(len(threshold_list))):
         upperThresh = threshold_list[i]
         posRatio = upper_positive_relative_ratio(outputs, labels, upperThresh)
 
         if verbose:
             print("{:.2f}\t\t{:.2f}".format(upperThresh, posRatio)) # Print search progress
 
-        if posRatio < .95:
+        if posRatio < ratio:
             if i-1 < 0:
                 print("\nThreshold could not be found.")
                 return None

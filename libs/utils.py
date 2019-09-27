@@ -23,8 +23,8 @@ def func_strip(x):       return Path(str(x).strip())
 
 # Numeric functions
 def normalize_array(array):
-    maxVal = np.max(array)
-    minVal = np.min(array)
+    maxVal = np.max(array, axis=0)
+    minVal = np.min(array, axis=0)
     dif = np.abs(maxVal - minVal)
 
     return (array - minVal)/(dif)

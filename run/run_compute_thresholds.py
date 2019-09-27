@@ -2,6 +2,7 @@ import pandas               as pd
 import numpy                as np
 import sklearn.metrics      as skm
 from pathlib                import Path
+import matplotlib.pyplot       as plt
 
 import libs.dirs            as dirs
 import libs.utils           as utils
@@ -12,16 +13,13 @@ def check_inside_threshold(output, upper_thresh, lower_thresh):
     ''' Checks if output in (-inf, lower_thresh] U [upper_thresh, +inf) '''
     return np.logical_or( np.greater(output, upper_thresh), np.less(output, lower_thresh))
 
-
-indexPath   = Path(dirs.iter_folder) / "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
-outputPath  = Path(dirs.saved_models)/ "results_full_dataset_iteration_0_1000_epochs.pickle"
-
+outputPath  = Path(dirs.saved_models)/ "results_full_dataset_validation_iteration_0.pickle"
 pickleData = utils.load_pickle(outputPath)
-indexDf    = pd.read_csv(indexPath)
-indexDf.set_index("FrameHash", drop=False)
 
-# print(pickleData[:20])
-# exit()
+# indexPath   = Path(dirs.iter_folder) / "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
+# indexDf    = pd.read_csv(indexPath)
+# indexDf.set_index("FrameHash", drop=False)
+
 outputs      = np.stack(pickleData["Outputs"])#[:, 0]
 imgHashes    = pickleData["ImgHashes"]
 labels       = pickleData["Labels"]
@@ -38,48 +36,80 @@ datasetLen   = len(outputs)
 # print("Accuracy (max of pair): {:.2f} %".format(accuracyMax*100))
 
 # Keep only target class scores
-outputs = outputs[:, 0]
-orderedIndex = np.argsort(outputs)
+# outputs = outputs[:, 0]
+# orderedIndex = np.argsort(outputs)
 
-print("\nStatistics before normalization")
-print("max : ", np.max(outputs, axis=0))
-print("min : ", np.min(outputs, axis=0))
-print("mean: ", np.mean(outputs, axis=0))
-print("std : ", np.std(outputs, axis=0))
-
-outputs = np.squeeze(utils.normalize_array(outputs))
-
-print("\nStatistics after normalization")
-print("max : ", np.max(outputs, axis=0))
-print("min : ", np.min(outputs, axis=0))
-print("mean: ", np.mean(outputs, axis=0))
-print("std : ", np.std(outputs, axis=0))
+idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(
+                                                            outputs,
+                                                            labels,
+                                                            upper_ratio=0.99,
+                                                            lower_ratio=0.01,
+                                                            verbose=True)
 
 
-# Find upper threshold
-upperThreshList = np.arange(1., 0., -0.001)
-idealUpperThresh = dutils.find_ideal_upper_thresh(outputs, labels, upperThreshList)
 
-# Find lower threshold
-lowerThreshList = np.arange(0., 1., 0.001)
-idealLowerThresh = dutils.find_ideal_lower_thresh(outputs, labels, lowerThreshList)
+# print("\nStatistics before normalization")
+# print("max : ", np.max(outputs, axis=0))
+# print("min : ", np.min(outputs, axis=0))
+# print("mean: ", np.mean(outputs, axis=0))
+# print("std : ", np.std(outputs, axis=0))
 
-indexes = np.arange(datasetLen, dtype=int)
-# print(np.greater(outputs, idealUpperThresh))
-# print(np.less(outputs, idealLowerThresh))
-# exit()
-upperClassified = indexes[np.greater(outputs, idealUpperThresh)]
-lowerClassified = indexes[np.less(outputs, idealLowerThresh)]
-totalClassified = len(upperClassified) + len(lowerClassified)
+# outputs = outputs[:, 0]
+# outputs = np.squeeze(utils.normalize_array(outputs))
 
-print("\nIdeal Upper Threshold: ", idealUpperThresh)
-print("Ideal Lower Threshold: ", idealLowerThresh)
+# print("\nStatistics after normalization")
+# print("max : ", np.max(outputs, axis=0))
+# print("min : ", np.min(outputs, axis=0))
+# print("mean: ", np.mean(outputs, axis=0))
+# print("std : ", np.std(outputs, axis=0))
 
-print|("\nResults in Validation set:")
-print("upperClassified: ", len(upperClassified))
-print("lowerClassified: ", len(lowerClassified))
-print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
-                                                              (totalClassified)/datasetLen*100))
+# idealUpperThresh = 0.392
+# idealLowerThresh = 0.224
+# datasetLen      = len(outputs)
+# indexes         = np.arange(datasetLen, dtype=int)
+# upperClassified = indexes[np.greater(outputs, idealUpperThresh)]
+# lowerClassified = indexes[np.less(outputs, idealLowerThresh)]
+# totalClassified = len(upperClassified) + len(lowerClassified)
+
+# print("\nIdeal Upper Threshold: ", idealUpperThresh)
+# print("Ideal Lower Threshold: ", idealLowerThresh)
+
+# print("\nResults in Validation set:")
+# print("upperClassified: ", len(upperClassified))
+# print("lowerClassified: ", len(lowerClassified))
+# print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
+#                                                             (totalClassified)/datasetLen*100))
+
+
+# # print(outputs[:20])
+# # plt.hist(outputs, bins=100)
+# # plt.show()
+# # exit()
+
+# # Find upper threshold
+# upperThreshList = np.arange(1., 0., -0.001)
+# idealUpperThresh = dutils.find_ideal_upper_thresh(outputs, labels, upperThreshList, verbose=True)
+
+# # Find lower threshold
+# lowerThreshList = np.arange(0., 1., 0.001)
+# idealLowerThresh = dutils.find_ideal_lower_thresh(outputs, labels, lowerThreshList)
+
+# indexes = np.arange(datasetLen, dtype=int)
+# # print(np.greater(outputs, idealUpperThresh))
+# # print(np.less(outputs, idealLowerThresh))
+# # exit()
+# upperClassified = indexes[np.greater(outputs, idealUpperThresh)]
+# lowerClassified = indexes[np.less(outputs, idealLowerThresh)]
+# totalClassified = len(upperClassified) + len(lowerClassified)
+
+# print("\nIdeal Upper Threshold: ", idealUpperThresh)
+# print("Ideal Lower Threshold: ", idealLowerThresh)
+
+# print("\nResults in Validation set:")
+# print("upperClassified: ", len(upperClassified))
+# print("lowerClassified: ", len(lowerClassified))
+# print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
+#                                                               (totalClassified)/datasetLen*100))
 
 # upperThresh = .85
 # lowerThresh = .2
