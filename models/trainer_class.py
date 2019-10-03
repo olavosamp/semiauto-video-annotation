@@ -130,6 +130,7 @@ class TrainModel:
         self.scheduler        = scheduler
         self.num_epochs       = num_epochs
         self.bestAcc          = 0.
+        self.bestLoss         = np.inf
 
         self.bestModelWeights = copy.deepcopy(self.model.state_dict())
 
@@ -209,15 +210,18 @@ class TrainModel:
                                             self.epochF1))
 
                 # Save model if there is an improvement in evaluation metric
-                if phase == 'val' and self.epochAcc > self.bestAcc:
-                    self.bestAcc = self.epochAcc
+                # if phase == 'val' and self.epochAcc > self.bestAcc:
+                if phase == 'val' and self.epochLoss > self.bestLoss:
+                    self.bestLoss = self.epochLoss
+                    self.bestAcc  = self.epochAcc
                     self.bestModelWeights = copy.deepcopy(self.model.state_dict())
 
         self.elapsedTime = time.time() - self.start
         print("\nTraining completed. Elapsed time: {:.0f}min{:.0f}".format(
                                             self.elapsedTime / 60, self.elapsedTime % 60))
 
-        print("Best val accuracy: {:.4f}".format(self.bestAcc))
+        print("Best val loss:     {:.4f}".format(self.bestLoss))
+        print("Best val accuracy: {:.4f} %".format(self.bestAcc*100))
 
         # Load best model weights
         self.model.load_state_dict(self.bestModelWeights)

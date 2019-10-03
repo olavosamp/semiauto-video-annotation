@@ -253,7 +253,8 @@ class IndexLoader:
 
 
 def move_to_class_folders(indexPath, imageFolder="sampled_images"):
-    iterationFolder = Path(indexPath).parent
+    indexPath       = Path(indexPath)
+    iterationFolder = indexPath.parent
     imageFolder     = iterationFolder / imageFolder
     assert imageFolder.is_dir(), "Folder argument must be a valid image folder."
 
@@ -270,11 +271,14 @@ def move_to_class_folders(indexPath, imageFolder="sampled_images"):
 
     print("Moving files to class folders...")
     for i in tqdm(range(numImages)):
-        imgName = imageIndex.loc[i, 'imagem']
-        source  = imageFolder / imgName
-        dest    = imageFolder / translate_labels(imageIndex.loc[i, targetNet]) / imgName
-
+        imgName  = imageIndex.loc[i, 'imagem']
+        source   = imageFolder / imgName
+        destName = Path(translate_labels(imageIndex.loc[i, targetNet])) / imgName
+        dest     = imageFolder / destName
+        
+        imageIndex.loc[i, 'imagem'] = destName
         sh.move(source, dest)
+    return imageIndex
 
 
 def data_folder_split(datasetPath, split_percentages, seed=None):

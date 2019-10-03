@@ -90,7 +90,8 @@ print("\n")
 # allVideos = format_video_list(allVideosList)
 
 # # Get list from *Unlabeled Index*
-allVideosPath = Path("index/unlabeled_index_2019-7-11_2-36-59.csv")
+# allVideosPath = Path("index/unlabeled_index_2019-7-11_2-36-59.csv")
+allVideosPath = Path(dirs.index) / "unlabeled_index_2019-8-18_19-32-37_HASHES_ATUAL_2019-9-24_18-25-55"
 indAll = IndexManager(path=allVideosPath)
 
 allVideosRaw = indAll.index.VideoPath

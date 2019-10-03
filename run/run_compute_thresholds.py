@@ -46,8 +46,6 @@ idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(
                                                             lower_ratio=0.01,
                                                             verbose=True)
 
-
-
 # print("\nStatistics before normalization")
 # print("max : ", np.max(outputs, axis=0))
 # print("min : ", np.min(outputs, axis=0))
@@ -55,7 +53,12 @@ idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(
 # print("std : ", np.std(outputs, axis=0))
 
 # outputs = outputs[:, 0]
-# outputs = np.squeeze(utils.normalize_array(outputs))
+outputs = np.squeeze(utils.normalize_array(outputs))
+
+print(outputs[:20])
+plt.hist(outputs, bins=100)
+plt.show()
+exit()
 
 # print("\nStatistics after normalization")
 # print("max : ", np.max(outputs, axis=0))
@@ -79,12 +82,6 @@ idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(
 # print("lowerClassified: ", len(lowerClassified))
 # print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
 #                                                             (totalClassified)/datasetLen*100))
-
-
-# # print(outputs[:20])
-# # plt.hist(outputs, bins=100)
-# # plt.show()
-# # exit()
 
 # # Find upper threshold
 # upperThreshList = np.arange(1., 0., -0.001)

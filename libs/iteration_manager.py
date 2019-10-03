@@ -205,7 +205,7 @@ class SampleImages:
 
             Optional Argument:
                 indexPath: filepath. The index csv file is saved to indexPath. If indexPath is 'auto',
-                use destFolder / sample_index + date string. 
+                it will save to destFolder / 'sample_index_' + <date string> + '.csv'. 
         '''
         if self.index is None:
             # Index does not exist: assemble new index
