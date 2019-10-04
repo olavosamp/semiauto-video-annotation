@@ -252,19 +252,17 @@ class IndexLoader:
             return imgList, imgHashList, labelList
 
 
-def move_to_class_folders(indexPath, imageFolder="sampled_images"):
+def move_to_class_folders(indexPath, imageFolder="sampled_images", target_net="rede1"):
     indexPath       = Path(indexPath)
     iterationFolder = indexPath.parent
     imageFolder     = iterationFolder / imageFolder
     assert imageFolder.is_dir(), "Folder argument must be a valid image folder."
 
-    targetNet = 'rede2'
-
     imageIndex = pd.read_csv(indexPath)
     numImages  = len(imageIndex)
 
     # Get unique tags and create the respective folders
-    tags = set(imageIndex[targetNet])# - set("-")
+    tags = set(imageIndex[target_net])# - set("-")
     for tag in tags:
         tag = translate_labels(tag)
         dirs.create_folder(imageFolder / tag)
@@ -273,7 +271,7 @@ def move_to_class_folders(indexPath, imageFolder="sampled_images"):
     for i in tqdm(range(numImages)):
         imgName  = imageIndex.loc[i, 'imagem']
         source   = imageFolder / imgName
-        destName = Path(translate_labels(imageIndex.loc[i, targetNet])) / imgName
+        destName = Path(translate_labels(imageIndex.loc[i, target_net])) / imgName
         dest     = imageFolder / destName
         
         imageIndex.loc[i, 'imagem'] = destName

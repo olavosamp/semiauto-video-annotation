@@ -6,14 +6,15 @@ import libs.dataset_utils     as dutils
 
 iterPath  = Path(dirs.iter_folder) / "full_dataset/iteration_0/"
 indexPath = iterPath / "olavo_uniformsampling_4676_corrections.csv"
+savePath  = indexPath.parent / (indexPath.stem + "_train_val_split.csv")
+imageFolder = "sampled_images"
 
-splitPercentages = [0.85, 0.15]
+splitPercentages = [0.8, 0.2]
 
-imageIndex = dutils.move_to_class_folders(indexPath, imageFolder="sampled_images")
-
-savePath = indexPath.parent / (indexPath.stem + "_train_val_split.csv")
+imageIndex = dutils.move_to_class_folders(indexPath, imageFolder=imageFolder)
 imageIndex.to_csv(savePath, index=False)
 
-# input("\nDelete unwanted class folders and press Enter to continue.")
-## Split dataset in train and validation sets
-# dutils.data_folder_split(iterPath / "sampled_images", splitPercentages)
+input("\nDelete unwanted class folders and press Enter to continue.")
+
+# Split dataset in train and validation sets
+dutils.data_folder_split(iterPath / imageFolder, splitPercentages)
