@@ -8,7 +8,7 @@ from torchvision            import models, transforms
 from torch.utils.data       import random_split, TensorDataset
 
 import libs.dirs            as dirs
-# from libs.utils             import *
+import libs.utils           as utils
 from models.trainer_class   import TrainModel
 
 
@@ -55,7 +55,8 @@ if __name__ == "__main__":
     imageDataset = {}
     for phase in sets:
         f = datasetPath / phase
-        imageDataset[phase] = datasets.ImageFolder(str(f), transform=dataTransforms[phase])
+        imageDataset[phase] = datasets.ImageFolder(
+            str(f), transform=dataTransforms[phase], is_valid_file=utils.check_empty_file)
 
     datasetLen = len(imageDataset['train']) + len(imageDataset['val'])
 

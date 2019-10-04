@@ -367,7 +367,7 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
     if index is not None: # Update frame paths in index
         print("\nSaving to index...")
         def get_name(x): return str(x.name)
-        def get_parts(x): return "/".join([x.parts[-3:]])
+        def get_parts(x): return "/".join(x.parts[-3:])
         trainSourceList = list(map(get_name, trainSourceList))
         valSourceList   = list(map(get_name, valSourceList))
         trainDestList   = list(map(get_parts, trainDestList))

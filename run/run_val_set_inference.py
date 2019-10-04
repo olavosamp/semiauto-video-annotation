@@ -17,10 +17,6 @@ from models.trainer_class   import TrainModel
 from libs.index             import IndexManager
 
 
-def check_empty_file(path):
-    return os.path.getsize(path) > 0
-
-
 if __name__ == "__main__":
     seed = 33
     dutils.set_torch_random_seeds(seed)
@@ -45,7 +41,7 @@ if __name__ == "__main__":
                     ])
 
     # Get list of image paths from dataset folder
-    dataset = datasets.ImageFolder(str(datasetPath), transform=dataTransforms, is_valid_file=check_empty_file)
+    dataset = datasets.ImageFolder(str(datasetPath), transform=dataTransforms, is_valid_file=utils.check_empty_file)
     imageTupleList  = dataset.imgs
     labelList       = dataset.targets
     datasetLen      = len(imageTupleList)

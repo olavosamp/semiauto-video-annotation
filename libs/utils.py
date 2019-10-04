@@ -67,6 +67,13 @@ def load_pickle(filePath):
 
 
 ## Filepath and string processing
+def check_empty_file(path):
+    if os.path.isfile(path):
+        return os.path.getsize(path) > 0
+    else:
+        return False
+
+
 def make_video_hash_list(fileList, columnName='FilePath', verbose=True):
     '''
         Find and save video paths in a file tree in a list,

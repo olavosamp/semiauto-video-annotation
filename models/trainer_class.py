@@ -31,7 +31,7 @@ class TrainModel:
         self.finetune               = None
         self.num_examples_per_batch = None
         self.bestModelWeights       = None
-        self.model_path             = str(model_path)
+        self.model_path             = model_path
 
         self.phases = ['train', 'val']
 
@@ -117,7 +117,7 @@ class TrainModel:
             #     # print()
         
         # Load model weights, if provided
-        if self.model_path:
+        if self.model_path is not None:
             self.model.load_state_dict(torch.load(self.model_path))
 
         return self.model
@@ -241,6 +241,7 @@ class TrainModel:
         }
 
         utils.save_pickle(self.history, self.histPath)
+        print("\nSaved train history to ", self.histPath)
         return self.history
 
 
