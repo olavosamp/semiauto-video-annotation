@@ -262,20 +262,26 @@ def move_to_class_folders(indexPath, imageFolder="sampled_images", target_net="r
     numImages  = len(imageIndex)
 
     # Get unique tags and create the respective folders
-    unprocessedTags = set(imageIndex[target_net])# - set("-")
-    tags = [commons.net_classes_table[target_net][x] for x in unprocessedTags]
+    tags = set(imageIndex[target_net])# - set("-")
+    # tags = set([commons.net_classes_table[target_net][x] for x in unprocessedTags])
+    print("Found tags ", tags)
     for tag in tags:
-        tag = translate_labels(tag)
+        tag = translate_labels(tag, target_net)
         dirs.create_folder(imageFolder / tag)
+        # print("Created folder ", (imageFolder / tag))
 
     print("Moving files to class folders...")
     for i in tqdm(range(numImages)):
         imgName  = imageIndex.loc[i, 'imagem']
         source   = imageFolder / imgName
-        destName = Path(translate_labels(imageIndex.loc[i, target_net])) / imgName
-        dest     = imageFolder / destName
         
+        tag      = translate_labels(imageIndex.loc[i, target_net], target_net)
+        destName = Path(tag) / imgName
+        dest     = imageFolder / destName
+
         imageIndex.loc[i, 'imagem'] = destName
+        # print("Moving\n{}\nto\n{}".format(source, dest))
+        # input()
         sh.move(source, dest)
     return imageIndex
 
@@ -303,7 +309,7 @@ def data_folder_split(datasetPath, split_percentages, seed=None):
         np.random.seed(seed)
 
     assert len(split_percentages) == 2, "List must contain only train and val percentages."
-    assert np.sum(split_percentages) <= 1.0, "Percentages must sum to less than 100%."
+    assert np.sum(split_percentages) <= 1.0, "Percentages must sum to less or equal to 100%."
     datasetPath = Path(datasetPath)
 
     # Get file list as Path objects
@@ -346,8 +352,13 @@ def data_folder_split(datasetPath, split_percentages, seed=None):
     print("Moved files to train and val folders in ", datasetPath)
 
     # Remove old files
+    # TODO: Currently doesn't remove source folders.
+    #       Could fix by getting 
+    fileList.extend([x.parent for x in fileList])
+    fileList = set(fileList)
+    print("\nDeleting temporary files...")
     for f in fileList:
-        # print("Deleting ", f)
+        # print(f)
         if Path(f).is_dir():
             sh.rmtree(f)
         elif Path(f).is_file():
@@ -508,7 +519,7 @@ def extract_dataset(videoFolder, destFolder,
     return index
 
 
-def translate_labels(labels):
+def translate_labels(labels, target_net):
     '''
         Translate interface-generated labels to the index standard, following commons.classes
          class list.
@@ -530,7 +541,7 @@ def translate_labels(labels):
                 if label.lower() == value.lower():
                     translatedLabel = str(tup[0])
         if translatedLabel:
-            return translatedLabel
+            return commons.net_classes_table[target_net][translatedLabel]
         else:
             warnings.warn("\nTranslation not found for label:\n\t{}".format(label))
             # print("Translation not found for label:\n\t{}".format(label))
