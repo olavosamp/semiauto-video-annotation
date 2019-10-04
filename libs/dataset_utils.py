@@ -262,7 +262,8 @@ def move_to_class_folders(indexPath, imageFolder="sampled_images", target_net="r
     numImages  = len(imageIndex)
 
     # Get unique tags and create the respective folders
-    tags = set(imageIndex[target_net])# - set("-")
+    unprocessedTags = set(imageIndex[target_net])# - set("-")
+    tags = [commons.net_classes_table[target_net][x] for x in unprocessedTags]
     for tag in tags:
         tag = translate_labels(tag)
         dirs.create_folder(imageFolder / tag)
