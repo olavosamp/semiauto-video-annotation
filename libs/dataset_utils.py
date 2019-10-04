@@ -279,14 +279,14 @@ def move_to_class_folders(indexPath, imageFolder="sampled_images", target_net="r
         destName = Path(tag) / imgName
         dest     = imageFolder / destName
 
-        imageIndex.loc[i, 'imagem'] = destName
+        # imageIndex.loc[i, 'imagem'] = destName # Unnecessary and possibly harmful
         # print("Moving\n{}\nto\n{}".format(source, dest))
         # input()
         sh.move(source, dest)
     return imageIndex
 
 
-def data_folder_split(datasetPath, split_percentages, seed=None):
+def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
     '''
         Split dataset images in train and validation sets. Move image files found
         at datasetPath to two folders: datasetPath/train/ and datasetPath/val/, according
@@ -342,7 +342,7 @@ def data_folder_split(datasetPath, split_percentages, seed=None):
 
     print("Moving files to set folders...")
     for source, dest in tqdm(zip(sources, dests)):
-        dirs.create_folder(source.parent)
+        # dirs.create_folder(source.parent)
         dirs.create_folder(dest.parent)
         
         sh.move(source, dest)
@@ -357,12 +357,50 @@ def data_folder_split(datasetPath, split_percentages, seed=None):
     fileList.extend([x.parent for x in fileList])
     fileList = set(fileList)
     print("\nDeleting temporary files...")
-    for f in fileList:
+    for f in tqdm(fileList):
         # print(f)
         if Path(f).is_dir():
             sh.rmtree(f)
         elif Path(f).is_file():
             os.remove(f)
+    
+    if index is not None: # Update frame paths in index
+        print("\nSaving to index...")
+        def get_name(x): return str(x.name)
+        def get_parts(x): return "/".join([x.parts[-3:]])
+        trainSourceList = list(map(get_name, trainSourceList))
+        valSourceList   = list(map(get_name, valSourceList))
+        trainDestList   = list(map(get_parts, trainDestList))
+        valDestList     = list(map(get_parts, valDestList))
+
+        index.set_index('imagem', drop=False, inplace=True)
+        # print(index.index.duplicated())
+        # print(index.head())
+        # index = index[~index.index.duplicated()]
+        # print(index.head())
+        # print(trainDestList[2])
+        # print(trainSourceList[2])
+        for i in tqdm(range(setLengths[0])):
+            # print("\n",trainSourceList[i])
+            # print(index.index[3101])
+            # input()
+            # print(index.loc[trainSourceList[i], 'imagem'])
+            # print(index.loc[trainSourceList[i]])
+            index.loc[trainSourceList[i], 'imagem'] = trainDestList[i]
+            index.loc[trainSourceList[i], 'set']    = 'train'
+            # print(index.loc[trainSourceList[i], 'set'])
+            # input()
+        for i in tqdm(range(setLengths[1])):
+            index.loc[valSourceList[i], 'imagem']   = valDestList[i]
+            index.loc[valSourceList[i], 'set']      = 'val'
+        # print(index.head())
+        # input()
+        
+        index.reset_index(drop=True, inplace=True)
+        print("reset index")
+        print(index.head())
+
+    return index
 
 
 def translate_interface_labels_file(filePath):

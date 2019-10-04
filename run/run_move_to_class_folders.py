@@ -13,9 +13,11 @@ seed = 42
 splitPercentages = [0.8, 0.2]
 
 imageIndex = dutils.move_to_class_folders(indexPath, imageFolder=imageFolder)
-imageIndex.to_csv(savePath, index=False)
 
-input("\nDelete unwanted class folders and press Enter to continue.")
+# input("\nDelete unwanted class folders and press Enter to continue.")
 
 # Split dataset in train and validation sets
-dutils.data_folder_split(iterPath / imageFolder, splitPercentages, seed=seed)
+otherIndex = dutils.data_folder_split(iterPath / imageFolder,
+                                      splitPercentages, index=imageIndex.copy(), seed=seed)
+print(otherIndex.head())
+otherIndex.to_csv(savePath, index=False)
