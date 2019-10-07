@@ -1,11 +1,9 @@
 import torch
 import numpy                as np
 import torchvision.datasets as datasets
-import torch.nn             as nn
 import torch.optim          as optim
 from pathlib                import Path
-from torchvision            import models, transforms
-from torch.utils.data       import random_split, TensorDataset
+from torchvision            import transforms
 
 import libs.dirs            as dirs
 import libs.utils           as utils
@@ -13,11 +11,11 @@ from models.trainer_class   import TrainModel
 
 
 if __name__ == "__main__":
-    numImgBatch = 64
-    numEpochs   = 25
+    numImgBatch = 256
+    numEpochs   = 500
 
-    modelPath   = dirs.saved_models + "full_dataset_no_finetune_{}_epochs.pt".format(numEpochs)
-    historyPath = dirs.saved_models + "history_full_dataset_no_finetune{}_epochs.pickle".format(numEpochs)
+    modelPath   = dirs.saved_models + "full_dataset_no_finetune_{}_epochs_rede1.pt".format(numEpochs)
+    historyPath = dirs.saved_models + "history_full_dataset_no_finetune_{}_epochs_rede1.pickle".format(numEpochs)
 
     # Dataset root folder
     # Images should have paths following
@@ -43,7 +41,7 @@ if __name__ == "__main__":
                     transforms.Normalize(mean, std),
         ]),
         'val': transforms.Compose([
-                    transforms.Resize(256), # Pq 256?
+                    transforms.Resize(256),
                     transforms.CenterCrop(224),
                     transforms.ToTensor(),
                     transforms.Normalize(mean, std),
@@ -55,8 +53,9 @@ if __name__ == "__main__":
     imageDataset = {}
     for phase in sets:
         f = datasetPath / phase
-        imageDataset[phase] = datasets.ImageFolder(
-            str(f), transform=dataTransforms[phase], is_valid_file=utils.check_empty_file)
+        imageDataset[phase] = datasets.ImageFolder(str(f),
+                                                   transform=dataTransforms[phase],
+                                                   is_valid_file=utils.check_empty_file)
 
     datasetLen = len(imageDataset['train']) + len(imageDataset['val'])
 
@@ -68,14 +67,12 @@ if __name__ == "__main__":
 
     modelFineTune = trainer.define_model_resnet18(finetune=False)
 
-    # Loss criterion
+    # Set optimizer and Loss criterion
     criterion = nn.CrossEntropyLoss()
-    
-    # Set optimizer
     optimizerFineTune = optim.Adam(modelFineTune.parameters())
 
-    # Scheduler for learning rate decay
-    expLrScheduler = optim.lr_scheduler.StepLR(optimizerFineTune, step_size=7, gamma=0.1)
+    # # Scheduler for learning rate decay
+    # expLrScheduler = optim.lr_scheduler.StepLR(optimizerFineTune, step_size=7, gamma=0.1)
 
     modelFineTune = trainer.train(modelFineTune, criterion, optimizerFineTune, scheduler=None, num_epochs=numEpochs)
     history = trainer.save_history(historyPath)

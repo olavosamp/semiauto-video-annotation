@@ -17,14 +17,18 @@ from models.trainer_class   import TrainModel
 from libs.index             import IndexManager
 
 
+def check_empty_file(path):
+    return os.path.getsize(path) > 0
+
+
 if __name__ == "__main__":
     seed = 33
     dutils.set_torch_random_seeds(seed)
 
     datasetPath      = Path(dirs.images) / "full_dataset_1s"
     unlabelIndexPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
-    savePath         = Path(dirs.saved_models)/ "outputs_full_dataset_iteration_0_1000_epochs_rede1.pickle"
-    modelPath        = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000_epochs_rede1.pt"
+    savePath         = Path(dirs.saved_models)/ "results_full_dataset_iteration_0_1000_epochs.pickle"
+    modelPath        = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000_epochs.pt"
     
     batchSize = 64
 
@@ -44,16 +48,34 @@ if __name__ == "__main__":
                     ])
     
     # Get list of images from image index
-    labelsToDrop  = unlabelIndex.index.index[~unlabelIndex.index["FramePath"].map(utils.check_empty_file)]
-    unlabelIndex.index.drop(labels=labelsToDrop,
+    unlabelIndex.index.drop(labels=unlabelIndex.index.index[np.logical_not(unlabelIndex.index["FramePath"].map(check_empty_file))],
                             axis=0,
                             inplace=True)
+    imagePathList  = unlabelIndex.index["FramePath"].values
+    datasetLen      = len(imagePathList)
+    print("img path len: ", datasetLen)
+
+    # # Get list of image paths from dataset folder
+    # dataset = datasets.ImageFolder(str(datasetPath), transform=dataTransforms, is_valid_file=check_empty_file)
+    # imageTupleList  = dataset.imgs
+    # datasetLen      = len(imageTupleList)
+
+    ## Label list for a labeled dataset
+    # labelList       = list(range(datasetLen)) # Test with sequential labels
+    # labelList      = dataset.targets
+    # imagePathList  = np.array(dataset.imgs)[:, 0]
+    # print("img path len: ", len(imagePathList))
     
-    imagePathList = unlabelIndex.index["FramePath"].values
-    datasetLen    = len(imagePathList)
+
+    # dataloader = torch.utils.data.DataLoader(dataset,
+    #                                         batch_size=batchSize,
+    #                                         shuffle=False, num_workers=4)
 
     print("\nDataset information: ")
     print("\t", datasetLen, "images.")
+    # print("\nClasses: ")
+    # for key in dataset.class_to_idx.keys():
+    #     print("\t{}: {}".format(dataset.class_to_idx[key], key))
     
     # Label list for an unlabeled dataset
     labelList = np.zeros(datasetLen)
@@ -74,7 +96,7 @@ if __name__ == "__main__":
     # Set model
     trainer.define_model_resnet18(finetune=False, print_summary=True)
     
-    # Perform inference here for testing
+    # Perform inference
     # ------------------
     # img = Image.open(imagePathList[0])
     # img = torch.stack([dataTransforms(img)], dim=0)
@@ -91,8 +113,12 @@ if __name__ == "__main__":
     # print("Op 2: ", output2)
     # dutils.show_inputs(img, output2)
     # -------------------
-    
     outputs, imgHashes, labels = trainer.model_inference(imgLoader)
+
+
+    predictions = np.argmax(np.array(outputs), axis=1)
+    accuracy = np.equal(predictions, labels).sum()/datasetLen
+    
 
     outputDf = pd.DataFrame({"Outputs":   outputs,
                              "ImgHashes": imgHashes,
@@ -112,18 +138,18 @@ if __name__ == "__main__":
     # lowerThreshList = np.arange(0., 1., 0.001)
     # idealLowerThresh = dutils.find_ideal_lower_thresh(outputs, labels, lowerThreshList)
 
-    # outputs = np.stack(outputs)[:, 0]
-    # outputs = utils.normalize_array(outputs)
+    outputs = np.stack(outputs)[:, 0]
+    outputs = utils.normalize_array(outputs)
 
-    # idealUpperThresh = 0.392
-    # idealLowerThresh = 0.224
+    idealUpperThresh = 0.392
+    idealLowerThresh = 0.224
 
-    # indexes = np.arange(datasetLen, dtype=int)
-    # upperClassified = indexes[np.greater(outputs, idealUpperThresh)]
-    # lowerClassified = indexes[np.less(outputs, idealLowerThresh)]
-    # totalClassified = len(upperClassified) + len(lowerClassified)
+    indexes = np.arange(datasetLen, dtype=int)
+    upperClassified = indexes[np.greater(outputs, idealUpperThresh)]
+    lowerClassified = indexes[np.less(outputs, idealLowerThresh)]
+    totalClassified = len(upperClassified) + len(lowerClassified)
 
-    # print("upperClassified: ", len(upperClassified))
-    # print("lowerClassified: ", len(lowerClassified))
-    # print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
-    #                                                             (totalClassified)/datasetLen*100))
+    print("upperClassified: ", len(upperClassified))
+    print("lowerClassified: ", len(lowerClassified))
+    print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
+                                                                (totalClassified)/datasetLen*100))

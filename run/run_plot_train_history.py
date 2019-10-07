@@ -1,12 +1,12 @@
 import torch
 import numpy                as np
-import matplotlib.pyplot           as plt
+import matplotlib.pyplot    as plt
 from pathlib                import Path
 
 import libs.utils           as utils
 import libs.dirs            as dirs
 
-historyPath = Path(dirs.saved_models) / "full_dataset_history_no_finetune_1000epochs.pickle"
+historyPath = Path(dirs.saved_models) / "history_full_dataset_no_finetune_1000_epochs_rede1.pickle"
 # historyPath = Path(dirs.saved_models) / "test_mnist_resnet18_history_no_finetune.pickle"
 
 resultsFolder = Path(dirs.results) / historyPath.stem

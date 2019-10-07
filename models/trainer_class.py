@@ -211,7 +211,7 @@ class TrainModel:
 
                 # Save model if there is an improvement in evaluation metric
                 # if phase == 'val' and self.epochAcc > self.bestAcc:
-                if phase == 'val' and self.epochLoss > self.bestLoss:
+                if phase == 'val' and self.epochLoss < self.bestLoss:
                     self.bestLoss = self.epochLoss
                     self.bestAcc  = self.epochAcc
                     self.bestModelWeights = copy.deepcopy(self.model.state_dict())
