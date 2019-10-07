@@ -65,6 +65,19 @@ def load_pickle(filePath):
         pickledInfo = pickle.load(fileHandle)
     return pickledInfo
 
+## Index and DataFrames
+def subset_column(main_index, frame_hash_list, target_column):
+    '''
+        Opens the DataFrame main_index, selects entries corresponding to FrameHash indexes in 
+        frame_hash_list and return only the column given by target_column.
+    '''
+    # Select index entries by ImgHash
+    main_index = main_index.set_index('FrameHash', drop=False, inplace=False)
+    subsetColumn = main_index.loc[frame_hash_list, target_column].copy()
+
+    print(subsetColumn.shape)
+    return subsetColumn
+
 
 ## Filepath and string processing
 def check_empty_file(path):

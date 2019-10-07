@@ -9,21 +9,74 @@ import libs.utils           as utils
 import libs.dataset_utils   as dutils
 
 
+def plot_outputs_histogram(normalized_outputs,
+                           labels=None,
+                           lower_thresh=None,
+                           upper_thresh=None,
+                           title="Outputs Histogram",
+                           show=True,
+                           save_path=None):
+    if labels is not None:
+        posOutputs = normalized_outputs[labels == 0]
+        negOutputs = normalized_outputs[labels == 1]
+
+        plt.hist(posOutputs, bins=100, label="Positive Examples")
+        plt.hist(negOutputs, bins=100, label="Negative Examples")
+        plt.gca().vlines(lower_thresh, plt.ylim()[0], plt.ylim()[1], colors='b', label="Lower Thresh")
+        plt.gca().vlines(upper_thresh, plt.ylim()[0], plt.ylim()[1], colors='r', label="Upper Thresh")
+    else:
+        plt.hist(normalized_outputs, bins=100, label="Positive Examples")
+    
+    plt.xlim(0., 1.)
+    plt.title(title)
+    plt.legend()
+    plt.xlabel("Normalized Score")
+    plt.ylabel("Number of Examples")
+    
+    if save_path is not None:
+        plt.savefig(save_path)
+    if show:
+        plt.show()
+
 # def check_inside_threshold(output, upper_thresh, lower_thresh):
 #     ''' Checks if output in (-inf, lower_thresh] U [upper_thresh, +inf) '''
 #     return np.logical_or(np.greater(output, upper_thresh), np.less(output, lower_thresh))
-
-outputPath  = Path(dirs.saved_models)/ "outputs_full_dataset_validation_iteration_0.pickle"
-pickleData = utils.load_pickle(outputPath)
 
 # indexPath   = Path(dirs.iter_folder) / "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
 # indexDf    = pd.read_csv(indexPath)
 # indexDf.set_index("FrameHash", drop=False)
 
+outputPath = Path(dirs.saved_models) / "outputs_full_dataset_validation_iteration_0_rede1.pickle"
+pickleData = utils.load_pickle(outputPath)
+
 outputs      = np.stack(pickleData["Outputs"])#[:, 0]
 imgHashes    = pickleData["ImgHashes"]
 labels       = pickleData["Labels"]
-datasetLen   = len(outputs)
+# datasetLen   = len(outputs)
+
+idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(outputs,
+                                                               labels,
+                                                               upper_ratio=0.99,
+                                                               lower_ratio=0.01,
+                                                               resolution=0.0001,
+                                                               verbose=True)
+
+# Plot outputs histogram
+outputs = outputs[:, 0]
+outputs = np.squeeze(utils.normalize_array(outputs))
+plot_outputs_histogram(outputs, labels, idealLowerThresh, idealUpperThresh,
+                       save_path=Path(dirs.results)/"histogram_val_set_output_thresholds.png")
+# posOutputs = outputs[labels == 0]
+# negOutputs = outputs[labels == 1]
+
+# plt.hist(posOutputs, bins=100, label="Positive Examples")
+# plt.hist(negOutputs, bins=100, label="Negative Examples")
+# plt.gca().vlines([idealLowerThresh, idealUpperThresh], plt.ylim()[0], plt.ylim()[1], colors=['b', 'r'])
+# plt.xlim(0., 1.)
+# plt.title("Outputs Histogram")
+# plt.xlabel("Normalized Score")
+# plt.ylabel("Number of Examples")
+# plt.show()
 
 ## Compute predictions comparing the greater score of the output pair
 # predictionsMax = np.argmax(outputs, axis=1)
@@ -35,24 +88,14 @@ datasetLen   = len(outputs)
 # print("Measuring max output of the score pair")
 # print("Accuracy (max of pair): {:.2f} %".format(accuracyMax*100))
 
-# Keep only target class scores
-# outputs = outputs[:, 0]
-# orderedIndex = np.argsort(outputs)
-
-idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(outputs,
-                                                               labels,
-                                                               upper_ratio=0.95,
-                                                               lower_ratio=0.01,
-                                                               verbose=True)
-
 # print("\nStatistics before normalization")
 # print("max : ", np.max(outputs, axis=0))
 # print("min : ", np.min(outputs, axis=0))
 # print("mean: ", np.mean(outputs, axis=0))
 # print("std : ", np.std(outputs, axis=0))
 
-outputs = outputs[:, 0]
-outputs = np.squeeze(utils.normalize_array(outputs))
+# # Keep only target class scores
+# # orderedIndex = np.argsort(outputs)
 
 # print("\nStatistics after normalization")
 # print("max : ", np.max(outputs, axis=0))
@@ -60,25 +103,22 @@ outputs = np.squeeze(utils.normalize_array(outputs))
 # print("mean: ", np.mean(outputs, axis=0))
 # print("std : ", np.std(outputs, axis=0))
 
-datasetLen      = len(outputs)
-indexes         = np.arange(datasetLen, dtype=int)
-upperClassified = indexes[np.greater(outputs, idealUpperThresh)]
-lowerClassified = indexes[np.less(outputs, idealLowerThresh)]
-totalClassified = len(upperClassified) + len(lowerClassified)
 
-print("\nIdeal Upper Threshold: ", idealUpperThresh)
-print("Ideal Lower Threshold: ", idealLowerThresh)
+# datasetLen      = len(outputs)
+# indexes         = np.arange(datasetLen, dtype=int)
+# upperClassified = indexes[np.greater(outputs, idealUpperThresh)]
+# lowerClassified = indexes[np.less(outputs, idealLowerThresh)]
+# totalClassified = len(upperClassified) + len(lowerClassified)
 
-print("\nResults in Validation set:")
-print("upperClassified: ", len(upperClassified))
-print("lowerClassified: ", len(lowerClassified))
-print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
-                                                            (totalClassified)/datasetLen*100))
+# print("\nIdeal Upper Threshold: ", idealUpperThresh)
+# print("Ideal Lower Threshold: ", idealLowerThresh)
 
-# Plot outputs histogram
-print(outputs[:20])
-plt.hist(outputs, bins=100)
-plt.show()
+# print("\nResults in Validation set:")
+# print("upperClassified: ", len(upperClassified))
+# print("lowerClassified: ", len(lowerClassified))
+# print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
+#                                                             (totalClassified)/datasetLen*100))
+
 
 # upperThresh = .85
 # lowerThresh = .2

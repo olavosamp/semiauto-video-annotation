@@ -7,6 +7,18 @@ import libs.utils           as utils
 import libs.dataset_utils   as dutils
 from libs.index             import IndexManager
 
+def subset_index(main_index, subset_index):
+    # Select index entries by ImgHash
+    main_index.set_index('FrameHash', drop=False, inplace=True)
+    # main_index.drop(labels=subset_index["FrameHash"], axis=0, inplace=True)
+    resultIndex = main_index.loc[subset_index["FrameHash"], :].copy()
+
+    print(resultIndex.shape)
+
+    # main_index.reset_index(drop=True, inplace=True)
+    # main_index.write_index(newUnlabelIndexPath, prompt=False)
+    return resultIndex
+
 unlabelIndexPath    = Path(dirs.index) / "unlabeled_index_2019-8-18_19-32-37_HASHES.csv"
 sampledIndexPath    = Path(dirs.iter_folder)/ "full_dataset/iteration_0/sampled_images_iteration_1.csv"
 newUnlabelIndexPath = Path(dirs.iter_folder)/ "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"

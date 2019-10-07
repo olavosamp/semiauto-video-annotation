@@ -22,7 +22,11 @@ from libs.get_frames_class  import GetFramesFull
 
 
 ## Threshold finding
-def compute_thresholds(val_outputs, labels, upper_ratio=0.95, lower_ratio=0.01, resolution=0.001, verbose=True):
+def compute_thresholds(val_outputs, labels,
+                        upper_ratio=0.95,
+                        lower_ratio=0.01,
+                        resolution=0.001,
+                        verbose=True):
     val_outputs = np.squeeze(utils.normalize_array(val_outputs))
     val_outputs = val_outputs[:, 0]
     resBits = len(str(resolution)) -2
