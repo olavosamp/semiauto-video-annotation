@@ -7,52 +7,15 @@ import matplotlib.pyplot       as plt
 import libs.dirs            as dirs
 import libs.utils           as utils
 import libs.dataset_utils   as dutils
+from libs.vis_functions     import plot_outputs_histogram
 
-
-def plot_outputs_histogram(normalized_outputs,
-                           labels=None,
-                           lower_thresh=None,
-                           upper_thresh=None,
-                           title="Outputs Histogram",
-                           show=True,
-                           save_path=None):
-    if labels is not None:
-        posOutputs = normalized_outputs[labels == 0]
-        negOutputs = normalized_outputs[labels == 1]
-
-        plt.hist(posOutputs, bins=100, label="Positive Examples")
-        plt.hist(negOutputs, bins=100, label="Negative Examples")
-        plt.gca().vlines(lower_thresh, plt.ylim()[0], plt.ylim()[1], colors='b', label="Lower Thresh")
-        plt.gca().vlines(upper_thresh, plt.ylim()[0], plt.ylim()[1], colors='r', label="Upper Thresh")
-    else:
-        plt.hist(normalized_outputs, bins=100, label="Positive Examples")
-    
-    plt.xlim(0., 1.)
-    plt.title(title)
-    plt.legend()
-    plt.xlabel("Normalized Score")
-    plt.ylabel("Number of Examples")
-    
-    if save_path is not None:
-        plt.savefig(save_path)
-    if show:
-        plt.show()
-
-# def check_inside_threshold(output, upper_thresh, lower_thresh):
-#     ''' Checks if output in (-inf, lower_thresh] U [upper_thresh, +inf) '''
-#     return np.logical_or(np.greater(output, upper_thresh), np.less(output, lower_thresh))
-
-# indexPath   = Path(dirs.iter_folder) / "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
-# indexDf    = pd.read_csv(indexPath)
-# indexDf.set_index("FrameHash", drop=False)
 
 outputPath = Path(dirs.saved_models) / "outputs_full_dataset_validation_iteration_0_rede1.pickle"
 pickleData = utils.load_pickle(outputPath)
 
-outputs      = np.stack(pickleData["Outputs"])#[:, 0]
+outputs      = np.stack(pickleData["Outputs"])
 imgHashes    = pickleData["ImgHashes"]
 labels       = pickleData["Labels"]
-# datasetLen   = len(outputs)
 
 idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(outputs,
                                                                labels,
@@ -66,17 +29,6 @@ outputs = outputs[:, 0]
 outputs = np.squeeze(utils.normalize_array(outputs))
 plot_outputs_histogram(outputs, labels, idealLowerThresh, idealUpperThresh,
                        save_path=Path(dirs.results)/"histogram_val_set_output_thresholds.png")
-# posOutputs = outputs[labels == 0]
-# negOutputs = outputs[labels == 1]
-
-# plt.hist(posOutputs, bins=100, label="Positive Examples")
-# plt.hist(negOutputs, bins=100, label="Negative Examples")
-# plt.gca().vlines([idealLowerThresh, idealUpperThresh], plt.ylim()[0], plt.ylim()[1], colors=['b', 'r'])
-# plt.xlim(0., 1.)
-# plt.title("Outputs Histogram")
-# plt.xlabel("Normalized Score")
-# plt.ylabel("Number of Examples")
-# plt.show()
 
 ## Compute predictions comparing the greater score of the output pair
 # predictionsMax = np.argmax(outputs, axis=1)

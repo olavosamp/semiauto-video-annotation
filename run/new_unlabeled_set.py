@@ -8,7 +8,10 @@ import libs.dataset_utils   as dutils
 from libs.index             import IndexManager
 
 def subset_index(main_index, subset_index):
-    # Select index entries by ImgHash
+    '''
+        Select entries from main_index DataFrame corresponding to the indexes of
+        subset_index DataFrame. Index column is FrameHash.
+    '''
     main_index.set_index('FrameHash', drop=False, inplace=True)
     # main_index.drop(labels=subset_index["FrameHash"], axis=0, inplace=True)
     resultIndex = main_index.loc[subset_index["FrameHash"], :].copy()
