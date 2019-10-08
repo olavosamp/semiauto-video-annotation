@@ -59,7 +59,7 @@ def automatic_labeling(outputs, upper_thresh, lower_thresh):
     print("\nIdeal Upper Threshold: ", upper_thresh)
     print("Ideal Lower Threshold: ", lower_thresh)
 
-    print("\nResults in Validation set:")
+    print("\nImages in:")
     print("upperIndexes: ", len(upperIndexes))
     print("lowerIndexes: ", len(lowerIndexes))
     print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
