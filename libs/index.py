@@ -10,8 +10,10 @@ from   pathlib              import Path
 from   glob                 import glob
 
 import libs.dirs            as dirs
-from libs.utils             import *
-from libs.dataset_utils     import *
+import libs.utils           as utils
+import libs.dataset_utils   as dutils
+# from libs.utils             import *
+# from libs.dataset_utils     import *
 
 
 def hyphenated_string_to_list(hyphenString):
@@ -252,7 +254,7 @@ class IndexManager:
             self.make_backup()
 
         if dest_path == 'auto':
-            newName = str(self.path.stem) + "_" + get_time_string(self.date)
+            newName = str(self.path.stem) + "_" + utils.get_time_string(self.date)
             self.indexPath = self.path.with_name( newName + str(self.path.suffix))
         else:
             self.indexPath = Path(dest_path)
@@ -286,7 +288,7 @@ class IndexManager:
 
         # Select copy or move mode
         if mode == 'copy':
-            self.moveResults = list(map(copy_files, self.index.loc[:, 'OriginalFramePath'], self.frameDestPaths))
+            self.moveResults = list(map(utils.copy_files, self.index.loc[:, 'OriginalFramePath'], self.frameDestPaths))
         else:
             raise NotImplementedError
 
@@ -390,7 +392,7 @@ class IndexManager:
 
             numVideos = self.hashDf.shape[0]
             for i in tqdm(range(numVideos)):
-                self.hashDf.loc[i, 'VideoHash'] = file_hash(self.hashDf.loc[i, 'VideoPath'])
+                self.hashDf.loc[i, 'VideoHash'] = utils.file_hash(self.hashDf.loc[i, 'VideoPath'])
         else:
             self.hashDf = None
         
@@ -429,7 +431,7 @@ class IndexManager:
             start = time.time()
 
             print("Calculating hashes of {} images...".format(self.get_index_len()))
-            self.index["FrameHash"] = self.index.loc[:, reference_column].apply(file_hash)
+            self.index["FrameHash"] = self.index.loc[:, reference_column].apply(utils.file_hash)
 
             elapsedTime = time.time() - start
             return elapsedTime
@@ -443,7 +445,7 @@ class IndexManager:
              points to an existing image.
         '''
         print("\nVerifying file path integrity.")
-        fileCheck = self.index.loc[:, 'FramePath'].apply(file_exists)
+        fileCheck = self.index.loc[:, 'FramePath'].apply(utils.file_exists)
 
         mask = np.logical_not(fileCheck)
         notFound = np.extract(mask, self.index.loc[:, 'FramePath'])

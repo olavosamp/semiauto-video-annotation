@@ -8,8 +8,8 @@ from datetime       import datetime
 
 import libs.dirs    as dirs
 import libs.commons as commons
-from libs.index     import IndexManager
-from libs.utils     import *
+# from libs.index     import IndexManager
+import libs.utils   as utils
 
 
 class IterInfo:
@@ -48,12 +48,12 @@ class IterationManager:
 
     def load_info(self):
         if self.iterInfoPath.is_file():
-            self.iterInfo = load_pickle(self.iterInfoPath)
+            self.iterInfo = utils.load_pickle(self.iterInfoPath)
         else:
             self.iterInfo = IterInfo(self.unlabeledFolder, self.unlabeledIndexPath, self.loopFolder)
             dirs.create_folder(self.loopFolder)
 
-            save_pickle(self.iterInfo, self.iterInfoPath)
+            utils.save_pickle(self.iterInfo, self.iterInfoPath)
 
         return self.iterInfo
 
@@ -155,7 +155,9 @@ class SampleImages:
             raise ValueError("Source must be a folder or csv index path.")
         
         if self.verbose:
-            print("{} images copied to \"{}\".".format(self.numSamples, self.destFolder))
+            print("{}/{} images copied to \"{}\".".format(self.numSuccess, self.numSamples, self.destFolder))
+            if self.numSuccess != self.numSamples:
+                print("{} image paths did not exist and were not copied.".format(self.numSamples-self.numSuccess))
 
 
     def _sample_routine(self):
@@ -169,11 +171,13 @@ class SampleImages:
         print("Copying images...")
         self.imageSourcePaths = np.array(self.imageList)[self.sampleIndexes]
         self.imageDestPaths   = []
+        self.numSuccess       = 0
         for i in tqdm(range(self.numSamples)):
             imagePath = self.imageSourcePaths[i]
             destPath = self.get_image_dest_path(imagePath)
 
-            copy_files(imagePath, destPath)
+            success = utils.copy_files(imagePath, destPath)
+            self.numSuccess += success
             self.imageDestPaths.append(destPath)
 
         print("\nImage copying finished.")
@@ -184,7 +188,7 @@ class SampleImages:
 
         # Get video paths in dataset folder (all videos)
         self.imageList = glob(str(self.source) + "/**" + "/*.jpg", recursive=True)
-        self.imageList = list(map(func_strip, self.imageList))
+        self.imageList = list(map(utils.func_strip, self.imageList))
 
         self._sample_routine()
         return self.imageSourcePaths
@@ -193,7 +197,7 @@ class SampleImages:
     def _sample_from_index(self):
         self.index = pd.read_csv(self.source, dtype=str)
         self.imageList = self.index.loc[:, 'FramePath'].values
-        self.imageList = list(map(func_strip, self.imageList))
+        self.imageList = list(map(utils.func_strip, self.imageList))
 
         self._sample_routine()
         return self.imageSourcePaths
@@ -218,7 +222,7 @@ class SampleImages:
         
         if indexPath is 'auto':
             # indexPath has not been passed: create a destination path
-            self.indexPath = self.destFolder / ("sample_index_" + get_time_string(self.date) + ".csv")
+            self.indexPath = self.destFolder / ("sample_index_" + utils.get_time_string(self.date) + ".csv")
         else:
             # indexPath has been passed: use it as destination path
             self.indexPath = indexPath
