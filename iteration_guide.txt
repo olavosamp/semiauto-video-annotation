@@ -13,5 +13,6 @@ new_unlabeled_set -> Complement of current labeled set and last iteration unlabe
                      Creates new and smaller unlabeled set represented by a csv file
 * dataset_inference on unlabeled set -> automatic annotation
 (sampe_auto_labeled) -> optional, used only to measure automatic annotation error percentage
-merge_labeled_sets  # TODO
+merge_labeled_sets
+new_unlabeled_set -> Get remaining unlabeled set for next iteration
 start_new_iteration # TODO
