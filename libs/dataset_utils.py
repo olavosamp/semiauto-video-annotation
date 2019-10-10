@@ -256,14 +256,46 @@ class IndexLoader:
             return imgList, imgHashList, labelList
 
 
-def remove_duplicates(target_df, index_column):
+def fill_index_information(reference_index, to_fill_index, index_column):
+    reference_index.set_index(index_column, drop=False, inplace=True)
+    to_fill_index.set_index(index_column, drop=False, inplace=True)
+
+    complete_index = reference_index.loc[to_fill_index.index, :]
+    # complete_index = pd.concat([to_fill_index, subset_index], axis=1, sort=False)
+    for col in to_fill_index.columns:
+        print(col)
+        if col != "FramePath":
+            complete_index[col] = to_fill_index[col].copy()
+
+    complete_index.reset_index(drop=True, inplace=True)
+    reference_index.reset_index(drop=True, inplace=True)
+    to_fill_index.reset_index(drop=True, inplace=True)
+    return complete_index.copy()
+
+
+def merge_manual_auto_sets(auto_df, manual_df):
+    manual_df["Annotation"] = [commons.manual_annotation]*len(manual_df)
+    auto_df["Annotation"]   = [commons.auto_annotation]*len(auto_df)
+
+    mergedIndex = pd.concat([manual_df, auto_df], axis=0, sort=False)
+    return mergedIndex.copy()
+
+
+def remove_duplicates(target_df, index_column, verbose=False):
     '''
         Drop duplicated entries from target_df DataFrame. Entries are dropped if they have 
         duplicated values in index_column column.
     '''
     target_df.set_index(index_column, drop=False, inplace=True)
+    
+    numDups = np.sum(target_df.index.duplicated())
+    
     target_df = target_df[~target_df.index.duplicated()]
     target_df.reset_index(drop=True, inplace=True)
+
+    if verbose:
+        print("\nFound and removed {} duplicated entries in unlabeled images Index.".format(numDups))
+
     return target_df.copy()
 
 

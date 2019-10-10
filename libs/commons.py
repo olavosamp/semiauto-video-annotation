@@ -79,7 +79,7 @@ classes = { # This translation table follows the non-standard format described b
 }
 no_translation = 'UNTRANSLATED'
 
-net_classes_table = {   # Dict to translate class tags in binary problem tags
+net_classes_table = {   # Dict to translate class tags into binary problem tags
                         'rede1':{
                             'Duto':         'Duto',
                             'Nada':         'NaoDuto',
@@ -104,3 +104,13 @@ net_classes_table = {   # Dict to translate class tags in binary problem tags
                             'Duvida':       'Duvida'
                         }
 }
+
+# Defines of positive and negative class labels for rede1 and rede2
+rede1_positive = "Duto"
+rede1_negative = "NaoDuto"
+rede2_positive = "Evento"
+rede2_negative = "NaoEvento"
+
+# Annotation type names
+manual_annotation = "manual"
+auto_annotation   = "auto"
