@@ -48,12 +48,14 @@ indexUnlabel = pd.read_csv(unlabelIndexPath)
 indexSampled = pd.read_csv(sampledIndexPath)
 print(indexUnlabel.index.shape)
 
+indexUnlabel = dutils.remove_duplicates(indexUnlabel, "FrameHash")
+
 indexUnlabel.set_index("FrameHash", drop=False, inplace=True)
 indexSampled.set_index("FrameHash", drop=False, inplace=True)
 
 print(indexUnlabel.index.duplicated().sum())
 print(indexSampled.index.duplicated().sum())
-exit()
+
 newIndex = index_complement(indexUnlabel, indexSampled, "FrameHash")
 print(newIndex.shape)
 

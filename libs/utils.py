@@ -37,6 +37,19 @@ def get_perfect_square(number, round='down'):
         return round(math.sqrt(number))**2
 
 
+## Pickle functions
+def save_pickle(object, filePath):
+    with open(filePath, 'wb') as fileHandle:
+        pickle.dump(object, fileHandle)
+    return 0
+
+
+def load_pickle(filePath):
+    with open(filePath, 'rb') as fileHandle:
+        pickledInfo = pickle.load(fileHandle)
+    return pickledInfo
+
+## Time and Date
 def timeConverter( strTime ):
     # int seconds = timeConverter( string strTime )
     # Converts HHMMSS input string to integer seconds
@@ -53,17 +66,16 @@ def timeConverter( strTime ):
     return seconds
 
 
-## Pickle functions
-def save_pickle(object, filePath):
-    with open(filePath, 'wb') as fileHandle:
-        pickle.dump(object, fileHandle)
-    return 0
+def get_time_string(date):
+    ''' 
+        Argument: datetime object
 
+        Returns:  Formatted string with year, month, day, hour, minute and seconds.
+    '''
+    timeString = "{:.0f}-{:.0f}-{:.0f}_{:.0f}-{:.0f}-{:.0f}".format(date.year, date.month,\
+        date.day, date.hour, date.minute, date.second)
+    return timeString
 
-def load_pickle(filePath):
-    with open(filePath, 'rb') as fileHandle:
-        pickledInfo = pickle.load(fileHandle)
-    return pickledInfo
 
 ## Index and DataFrames
 def subset_column(main_index, frame_hash_list, target_column):
@@ -196,17 +208,6 @@ def remove_video_ts(videoList):
     videoList = np.array(videoList)[mask]                           # Make path list into numpy array and
                                                                     # apply index mask
     return list(videoList)
-
-
-def get_time_string(date):
-    ''' 
-        Argument: datetime object
-
-        Returns:  Formatted string with year, month, day, hour, minute and seconds.
-    '''
-    timeString = "{:.0f}-{:.0f}-{:.0f}_{:.0f}-{:.0f}-{:.0f}".format(date.year, date.month,\
-        date.day, date.hour, date.minute, date.second)
-    return timeString
 
 
 def copy_files(source, destination):

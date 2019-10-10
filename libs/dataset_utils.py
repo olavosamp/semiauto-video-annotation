@@ -256,7 +256,21 @@ class IndexLoader:
             return imgList, imgHashList, labelList
 
 
+def remove_duplicates(target_df, index_column):
+    '''
+        Drop duplicated entries from target_df DataFrame. Entries are dropped if they have 
+        duplicated values in index_column column.
+    '''
+    target_df.set_index(index_column, drop=False, inplace=True)
+    target_df = target_df[~target_df.index.duplicated()]
+    target_df.reset_index(drop=True, inplace=True)
+    return target_df.copy()
+
+
 def move_to_class_folders(indexPath, imageFolder="sampled_images", target_net="rede1"):
+    '''
+        Sort labeled images in class folders according to index file with labels and filepaths.
+    '''
     indexPath       = Path(indexPath)
     iterationFolder = indexPath.parent
     imageFolder     = iterationFolder / imageFolder
@@ -423,7 +437,8 @@ def translate_interface_labels_file(filePath):
                                         newLabelsIndex.loc[i, 'rede3']]))
         if newTags.count("-") > 0:
             newTags.remove("-")
-        tagList.append(translate_labels(newTags))
+        # TODO: Replace with right function call
+        tagList.append(translate_labels(newTags)) 
     
     newLabelsIndex['Tags'] = tagList
     return newLabelsIndex
