@@ -26,7 +26,7 @@ def index_complement(reference_df, to_drop_df, column_label):
     '''
     reference_df.set_index(column_label, drop=False, inplace=True)
     reference_df.drop(labels=to_drop_df[column_label], axis=0, inplace=True)
-
+    
     # print(reference_df.shape)
 
     reference_df.reset_index(drop=True, inplace=True)
@@ -34,10 +34,10 @@ def index_complement(reference_df, to_drop_df, column_label):
 
 
 # unlabelIndexPath    = Path(dirs.index) / "unlabeled_index_2019-8-18_19-32-37_HASHES.csv"
-# sampledIndexPath    = Path(dirs.iter_folder)/ "full_dataset/iteration_0/sampled_images_iteration_0.csv"
+# sampledIndexPath    = Path(dirs.iter_folder)/ "full_dataset/iteration_1/sampled_images_iteration_1.csv"
 
 unlabelIndexPath    = Path(dirs.index) / "unlabeled_index_2019-8-18_19-32-37_HASHES.csv"
-sampledIndexPath    = Path(dirs.iter_folder)/ "full_dataset/iteration_0/final_annotated_images_iteration_1.csv"
+sampledIndexPath    = Path(dirs.iter_folder)/ "full_dataset/iteration_1/final_annotated_images_iteration_1.csv"
 
 newUnlabelIndexPath = Path(dirs.iter_folder)/ "full_dataset/iteration_2/unlabeled_images_iteration_2.csv"
 
@@ -48,6 +48,12 @@ indexUnlabel = pd.read_csv(unlabelIndexPath)
 indexSampled = pd.read_csv(sampledIndexPath)
 print(indexUnlabel.index.shape)
 
+indexUnlabel.set_index("FrameHash", drop=False, inplace=True)
+indexSampled.set_index("FrameHash", drop=False, inplace=True)
+
+print(indexUnlabel.index.duplicated().sum())
+print(indexSampled.index.duplicated().sum())
+exit()
 newIndex = index_complement(indexUnlabel, indexSampled, "FrameHash")
 print(newIndex.shape)
 

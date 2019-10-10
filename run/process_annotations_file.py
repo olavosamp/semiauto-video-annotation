@@ -9,9 +9,9 @@ from libs.index             import IndexManager
 ''' Add FrameHash and FramePath to a interface-style csv annotations file.'''
 
 folderPath          = Path()
-datasetPath         = Path(dirs.iter_folder)/ "full_dataset/iteration_0/sampled_images"
-sampledIndexPath    = Path(dirs.iter_folder)/ "full_dataset/iteration_0/olavo_uniformsampling_4676_corrections_train_val_split.csv"
-newLabeledIndexPath = Path(dirs.iter_folder)/ "full_dataset/iteration_0/sampled_images_iteration_0.csv"
+datasetPath         = Path(dirs.iter_folder)/ "full_dataset/iteration_1/sampled_images"
+sampledIndexPath    = Path(dirs.iter_folder)/ "full_dataset/iteration_1/olavo_uniformsampling_4676_corrections_train_val_split.csv"
+newLabeledIndexPath = Path(dirs.iter_folder)/ "full_dataset/iteration_1/sampled_images_iteration_1.csv"
 
 # Add folder path
 def _add_folder_path(path):

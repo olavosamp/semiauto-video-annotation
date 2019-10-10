@@ -14,7 +14,7 @@ locale      = dirs.images       # Local path
 # destFolder  = Path(locale + "sampled_images_temp2/")
 
 # sourcePath = Path(dirs.dataset) / "compiled_dataset_2019-8-2_16-30-1"
-# destFolder  = Path(dirs.iter_folder) / "test_loop/iteration_0/"
+# destFolder  = Path(dirs.iter_folder) / "test_loop/iteration_1/"
 
 # Source: index file
 sourcePath = Path(dirs.iter_folder)/ "full_dataset/iteration_2/unlabeled_images_iteration_2.csv"

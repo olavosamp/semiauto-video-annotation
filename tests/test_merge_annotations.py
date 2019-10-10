@@ -15,9 +15,9 @@ class Test_merge_annotations:
         '''
             Check if test assets are in place and move files to active test folder.
         '''
-        self.assetsFolder        = Path(dirs.test_assets) / "test_loop/iteration_0/"
+        self.assetsFolder        = Path(dirs.test_assets) / "test_loop/iteration_1/"
 
-        self.testFolder          = Path(dirs.test) / "test_loop/iteration_0/"
+        self.testFolder          = Path(dirs.test) / "test_loop/iteration_1/"
         self.indexPath           = self.testFolder / "sampled_images.csv"
         self.newLabelsPath       = self.testFolder / "sampled_images_labels.csv"
 
@@ -34,7 +34,7 @@ class Test_merge_annotations:
 
     def test_add_frame_hash(self):
         ''' Test if function adds FrameHash columns with correct hash. '''
-        self.testFolder     = Path(dirs.test) / "test_loop/iteration_0/"
+        self.testFolder     = Path(dirs.test) / "test_loop/iteration_1/"
         self.newLabelsPath  = self.testFolder / "sampled_images_labels.csv"
 
         add_frame_hash_to_labels_file(self.newLabelsPath, framePathColumn='imagem')
@@ -44,7 +44,7 @@ class Test_merge_annotations:
 
 
     def test_translate_interface_labels(self):
-        self.testFolder          = Path(dirs.test) / "test_loop/iteration_0/"
+        self.testFolder          = Path(dirs.test) / "test_loop/iteration_1/"
         self.indexPath           = self.testFolder / "sampled_images.csv"
         self.newLabelsPath       = self.testFolder / "sampled_images_labels.csv"
 
@@ -54,8 +54,8 @@ class Test_merge_annotations:
 
     def test_merge_annotations(self):
         #TODO: Finish this test when there are example labeled index csvs.
-        self.testFolder          = Path(dirs.test) / "test_loop/iteration_0/"
-        self.assetsFolder        = Path(dirs.test_assets) / "test_loop/iteration_0/"
+        self.testFolder          = Path(dirs.test) / "test_loop/iteration_1/"
+        self.assetsFolder        = Path(dirs.test_assets) / "test_loop/iteration_1/"
         self.indexPath           = self.assetsFolder / "index_merge_annotations.csv"
         self.newLabelsPath       = self.testFolder / "sampled_images_labels.csv"
         self.newLabelsTranslated = self.testFolder / "sampled_images_labels_translated.csv"
@@ -72,5 +72,5 @@ class Test_merge_annotations:
 
 
     def test_tear_down(self):
-        self.testFolder         = Path(dirs.test) / "test_loop/iteration_0/"
+        self.testFolder         = Path(dirs.test) / "test_loop/iteration_1/"
         sh.rmtree(self.testFolder)

@@ -21,8 +21,8 @@ if __name__ == "__main__":
     seed = 33
     dutils.set_torch_random_seeds(seed)
 
-    datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/val/"
-    savePath    = Path(dirs.saved_models)/ "outputs_full_dataset_validation_iteration_0_rede1.pickle"
+    datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_1/sampled_images/val/"
+    savePath    = Path(dirs.saved_models)/ "outputs_full_dataset_validation_iteration_1_rede1.pickle"
     modelPath   = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000_epochs_rede1.pt"
     
     batchSize = 64

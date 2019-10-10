@@ -9,8 +9,8 @@ import libs.utils           as utils
 import libs.dataset_utils   as dutils
 
 unlabeledPath  = Path(dirs.index)       / "unlabeled_index_2019-8-18_19-32-37_HASHES.csv"
-manualPath     = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images_iteration_0.csv"
-autoPath       = Path(dirs.iter_folder) / "full_dataset/iteration_0/automatic_labeled_images_iteration_1.csv"
+manualPath     = Path(dirs.iter_folder) / "full_dataset/iteration_1/sampled_images_iteration_1.csv"
+autoPath       = Path(dirs.iter_folder) / "full_dataset/iteration_1/automatic_labeled_images_iteration_1.csv"
 
 def fill_index_information(reference_index, to_fill_index):
     reference_index.set_index("FrameHash", drop=False, inplace=True)

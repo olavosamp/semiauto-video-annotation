@@ -3,7 +3,7 @@ from libs.index             import IndexManager
 
 import libs.dirs            as dirs
 
-iterFolder          = Path(dirs.iter_folder) / "test_loop/iteration_0/"
+iterFolder          = Path(dirs.iter_folder) / "test_loop/iteration_1/"
 indexPath           = testFolder / "sampled_images.csv"
 newLabelsPath       = testFolder / "sampled_images_labels.csv"
 

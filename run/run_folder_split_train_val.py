@@ -3,7 +3,7 @@ from pathlib                import Path
 from libs.dataset_utils     import data_folder_split
 
 
-datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_0/sampled_images/"
+datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_1/sampled_images/"
 
 # Split datasets in train and validation sets
 trainPercentage = 0.8

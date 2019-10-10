@@ -4,7 +4,7 @@ import libs.commons           as commons
 import libs.utils             as utils
 import libs.dataset_utils     as dutils
 
-iterPath    = Path(dirs.iter_folder) / "full_dataset/iteration_0/"
+iterPath    = Path(dirs.iter_folder) / "full_dataset/iteration_1/"
 indexPath   = iterPath / "olavo_uniformsampling_4676_corrections.csv"
 savePath    = indexPath.parent / (indexPath.stem + "_train_val_split.csv")
 imageFolder = "sampled_images"

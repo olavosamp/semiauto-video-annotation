@@ -9,9 +9,9 @@ import libs.utils           as utils
 import libs.dataset_utils   as dutils
 from libs.vis_functions     import plot_outputs_histogram
 
-outputPath      = Path(dirs.saved_models)/ "outputs_full_dataset_iteration_0_1000_epochs_rede1.pickle"
-indexPath       = Path(dirs.iter_folder) / "full_dataset/iteration_0/unlabeled_images_iteration_1.csv"
-newIndexPath    = Path(dirs.iter_folder) / "full_dataset/iteration_0/automatic_labeled_images_iteration_1.csv"
+outputPath      = Path(dirs.saved_models)/ "outputs_full_dataset_iteration_1_1000_epochs_rede1.pickle"
+indexPath       = Path(dirs.iter_folder) / "full_dataset/iteration_1/unlabeled_images_iteration_1.csv"
+newIndexPath    = Path(dirs.iter_folder) / "full_dataset/iteration_1/automatic_labeled_images_iteration_1.csv"
 
 indexDf    = pd.read_csv(indexPath)
 pickleData = utils.load_pickle(outputPath)
