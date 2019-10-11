@@ -217,6 +217,7 @@ def copy_files(source, destination):
         Copy file at source to destination path.
     '''
     if os.path.isfile(source):
+        dirs.create_folder(Path(destination).parent)
         shutil.copy2(source, destination)
         return True
     else:

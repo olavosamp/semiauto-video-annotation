@@ -59,6 +59,7 @@ classes = { # This translation table follows the non-standard format described b
             'Duto':         ["tubo", "duto"],
             'Nada':         ["nada"],
             'Confuso':      ["conf", "confuso"],
+            'NaoDuto':      ["NaoDuto", "NãoDuto", "Nao-Duto", "Não-Duto", "Nao_Duto", "Não_Duto"],
 
             'Evento':       ["evnt", "evento"],
             'NaoEvento':    ["nevt", "Nao_Evento"],
@@ -84,6 +85,7 @@ net_classes_table = {   # Dict to translate class tags into binary problem tags
                             'Duto':         'Duto',
                             'Nada':         'NaoDuto',
                             'Confuso':      'NaoDuto',
+                            'NaoDuto':      'NaoDuto',
                         },
                         'rede2':{   # No translation needed
                             'Evento':       'Evento',

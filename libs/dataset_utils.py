@@ -299,17 +299,15 @@ def remove_duplicates(target_df, index_column, verbose=False):
     return target_df.copy()
 
 
-def move_to_class_folders(indexPath, imageFolder="sampled_images", target_net="rede1"):
+def move_to_class_folders(indexPath, imageFolderPath, target_net="rede1", verbose=True):
     '''
         Sort labeled images in class folders according to index file with labels and filepaths.
     '''
     indexPath       = Path(indexPath)
-    iterationFolder = indexPath.parent
-    imageFolder     = iterationFolder / imageFolder
-    assert imageFolder.is_dir(), "Folder argument must be a valid image folder."
+    assert imageFolderPath.is_dir(), "Folder argument must be a valid image folder."
 
     imageIndex = pd.read_csv(indexPath)
-    numImages  = len(imageIndex)
+    numImages     = len(imageIndex)
 
     # Get unique tags and create the respective folders
     tags = set(imageIndex[target_net])# - set("-")
@@ -317,22 +315,28 @@ def move_to_class_folders(indexPath, imageFolder="sampled_images", target_net="r
     print("Found tags ", tags)
     for tag in tags:
         tag = translate_labels(tag, target_net)
-        dirs.create_folder(imageFolder / tag)
-        # print("Created folder ", (imageFolder / tag))
+        dirs.create_folder(imageFolderPath / tag)
+        if verbose:
+            print("Created folder ", (imageFolderPath / tag))
 
+    destList = []
     print("Moving files to class folders...")
     for i in tqdm(range(numImages)):
-        imgName  = imageIndex.loc[i, 'imagem']
-        source   = imageFolder / imgName
+        imageName  = imageIndex.loc[i, 'FrameName']
+        # print(imageFolderPath)
+        # print(imageName)
+        source   = imageFolderPath / imageName
         
         tag      = translate_labels(imageIndex.loc[i, target_net], target_net)
-        destName = Path(tag) / imgName
-        dest     = imageFolder / destName
+        destName = Path(tag) / imageName
+        dest     = imageFolderPath / destName
 
         # imageIndex.loc[i, 'imagem'] = destName # Unnecessary and possibly harmful
         # print("Moving\n{}\nto\n{}".format(source, dest))
         # input()
         sh.move(source, dest)
+        destList.append(dest)
+    imageIndex["TrainPath"] = destList
     return imageIndex
 
 
@@ -402,8 +406,6 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
     print("Moved files to train and val folders in ", datasetPath)
 
     # Remove old files
-    # TODO: Currently doesn't remove source folders.
-    #       Could fix by getting 
     fileList.extend([x.parent for x in fileList])
     fileList = set(fileList)
     print("\nDeleting temporary files...")
@@ -418,38 +420,21 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
         print("\nSaving to index...")
         def get_name(x): return str(x.name)
         def get_parts(x): return "/".join(x.parts[-3:])
+
         trainSourceList = list(map(get_name, trainSourceList))
         valSourceList   = list(map(get_name, valSourceList))
         trainDestList   = list(map(get_parts, trainDestList))
         valDestList     = list(map(get_parts, valDestList))
 
-        index.set_index('imagem', drop=False, inplace=True)
-        # print(index.index.duplicated())
-        # print(index.head())
-        # index = index[~index.index.duplicated()]
-        # print(index.head())
-        # print(trainDestList[2])
-        # print(trainSourceList[2])
+        index.set_index('TrainPath', drop=False, inplace=True)
         for i in tqdm(range(setLengths[0])):
-            # print("\n",trainSourceList[i])
-            # print(index.index[3101])
-            # input()
-            # print(index.loc[trainSourceList[i], 'imagem'])
-            # print(index.loc[trainSourceList[i]])
-            index.loc[trainSourceList[i], 'imagem'] = trainDestList[i]
+            index.loc[trainSourceList[i], 'TrainPath'] = trainDestList[i]
             index.loc[trainSourceList[i], 'set']    = 'train'
-            # print(index.loc[trainSourceList[i], 'set'])
-            # input()
         for i in tqdm(range(setLengths[1])):
-            index.loc[valSourceList[i], 'imagem']   = valDestList[i]
+            index.loc[valSourceList[i], 'TrainPath']   = valDestList[i]
             index.loc[valSourceList[i], 'set']      = 'val'
-        # print(index.head())
-        # input()
-        
-        index.reset_index(drop=True, inplace=True)
-        print("reset index")
-        print(index.head())
 
+        index.reset_index(drop=True, inplace=True)
     return index
 
 
@@ -629,15 +614,16 @@ def translate_labels(labels, target_net):
             for value in tup[1]:
                 if label.lower() == value.lower():
                     translatedLabel = str(tup[0])
-        if translatedLabel:
+        if translatedLabel: # This table formats class labels as task-relevant labels
             return commons.net_classes_table[target_net][translatedLabel]
         else:
             warnings.warn("\nTranslation not found for label:\n\t{}".format(label))
-            # print("Translation not found for label:\n\t{}".format(label))
-            # input()
             return commons.no_translation
 
+    # This table formats and normalizes manually annotated class labels
+    # Fixes a limited number of common spelling mistakes
     translationTable = commons.classes
+
     if isinstance(labels, str):
         # If not list, just translate input
         translation = _translate(labels)
