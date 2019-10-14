@@ -427,12 +427,24 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
         valDestList     = list(map(get_parts, valDestList))
 
         index.set_index('TrainPath', drop=False, inplace=True)
-        for i in tqdm(range(setLengths[0])):
-            index.loc[trainSourceList[i], 'TrainPath'] = trainDestList[i]
-            index.loc[trainSourceList[i], 'set']    = 'train'
-        for i in tqdm(range(setLengths[1])):
-            index.loc[valSourceList[i], 'TrainPath']   = valDestList[i]
-            index.loc[valSourceList[i], 'set']      = 'val'
+        # TODO: Check if train dest paths are guaranteed to be saved in
+        #  the same order as index. If not, find other way
+        trainIndex              = index[trainSourceList].copy()
+        trainIndex['TrainPath'] = trainDestList
+        trainIndex['set']       = ['train']*setLengths[0]
+
+        valIndex                = index[valSourceList].copy()
+        valIndex['TrainPath']   = valDestList
+        valIndex['set']         = ['val']*setLengths[0]
+
+        ## This way is unfeasibly slow
+        # for i in tqdm(range(setLengths[0])):
+        #     index.loc[trainSourceList[i], 'TrainPath'] = trainDestList[i]
+        #     index.loc[trainSourceList[i], 'set']    = 'train'
+        # for i in tqdm(range(setLengths[1])):
+        #     index.loc[valSourceList[i], 'TrainPath']   = valDestList[i]
+        #     index.loc[valSourceList[i], 'set']      = 'val'
+        index = pd.concat([trainIndex, valIndex], axis=0, sort=False)
 
         index.reset_index(drop=True, inplace=True)
     return index
