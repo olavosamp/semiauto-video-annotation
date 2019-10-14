@@ -429,11 +429,11 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
         index.set_index('TrainPath', drop=False, inplace=True)
         # TODO: Check if train dest paths are guaranteed to be saved in
         #  the same order as index. If not, find other way
-        trainIndex              = index[trainSourceList].copy()
+        trainIndex              = index.reindex(labels=trainSourceList, axis=0, copy=True)
         trainIndex['TrainPath'] = trainDestList
         trainIndex['set']       = ['train']*setLengths[0]
 
-        valIndex                = index[valSourceList].copy()
+        valIndex              = index.reindex(labels=valSourceList, axis=0, copy=True)
         valIndex['TrainPath']   = valDestList
         valIndex['set']         = ['val']*setLengths[0]
 

@@ -332,7 +332,8 @@ def color_filter(image, filter='r', filter_strenght=1.5):
     return image
 
 
-def image_grid(path, targetPath="image_grid.jpg", upperCrop=0, lowerCrop=0, show=False, save=True):
+def image_grid(path, targetPath="image_grid.jpg", prediction_index=None, upperCrop=0, lowerCrop=0,
+               size_limit=None, show=False, save=True):
     '''
         Creates a square grid of images randomly samples from available files on path.
 
@@ -350,13 +351,16 @@ def image_grid(path, targetPath="image_grid.jpg", upperCrop=0, lowerCrop=0, show
     targetPath = Path(targetPath)
     files = glob(str(path)+'**'+dirs.sep+'*.jpg', recursive=True)
     numImages         = len(files)
+    if size_limit is not None:
+        numImages = np.clip(numImages, None, size_limit)
     squareNumImages = get_perfect_square(numImages)
 
     files = np.random.choice(files, size=squareNumImages, replace=False)
 
-    # Create fake predictions DataFrame
-    predictions = pd.DataFrame(files)
-    predictions['Prediction'] = np.random.choice([0, 1], size=squareNumImages, p=[0.8, 0.2])
+    # TODO: This should be done in an external test file
+    # # Create fake predictions DataFrame 
+    # prediction_index = pd.DataFrame(files)
+    # prediction_index['Prediction'] = np.random.choice([0, 1], size=squareNumImages, p=[0.8, 0.2])
 
     # Square Grid
     # Side of a square image grid. It will contain side^2 images.
@@ -377,9 +381,11 @@ def image_grid(path, targetPath="image_grid.jpg", upperCrop=0, lowerCrop=0, show
             im = im.resize(imageDim)
             im = im.crop((0, upperCrop, imageDim[0], imageDim[1] - lowerCrop))
 
-            # Apply color filter if image has wrong prediction
-            if predictions.loc[index, "Prediction"] == 1:
-                im = color_filter(im, filter='r', filter_strenght=3.5)
+            # TODO: Test this properly
+            if prediction_index is not None:
+                # Apply color filter if image has wrong prediction
+                if prediction_index.loc[index, "Prediction"] == 1:
+                    im = color_filter(im, filter='r', filter_strenght=3.5)
 
             im.thumbnail(imageDim)
             im_grid.paste(im, (i,j))
