@@ -256,6 +256,20 @@ class IndexLoader:
             return imgList, imgHashList, labelList
 
 
+def move_dataset_to_train(index_path, dataset_folder, path_column="FramePath", verbose=True):
+    ''' Move images from dataset folder to sampled images'''
+    def _add_folder_and_copy(x): return utils.copy_files(Path(x), imageFolderPath / Path(x).name)
+    index = pd.read_csv(index_path)
+    
+    if verbose:
+        print("\nMoving files from dataset folder to sampled images folder...")
+    
+    successes = np.sum(index[path_column].map(_add_folder_and_copy))
+    if verbose:
+        print("{}/{} files moved.".format(successes, len(index[path_column])))
+    return successes
+
+
 def fill_index_information(reference_index, to_fill_index, index_column):
     reference_index.set_index(index_column, drop=False, inplace=True)
     to_fill_index.set_index(index_column, drop=False, inplace=True)
@@ -418,13 +432,14 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
     
     if index is not None: # Update frame paths in index
         print("\nSaving to index...")
-        def get_name(x): return str(x.name)
+        # def get_name(x): return str(x.name)
+        # def add_folder(x): return (Path(dirs.images) / "all_datasets_1s") / x
         def get_parts(x): return "/".join(x.parts[-3:])
 
-        trainSourceList = list(map(get_name, trainSourceList))
-        valSourceList   = list(map(get_name, valSourceList))
-        trainHashList   = utils.make_file_hash_list(trainSourceList, hash_column="FrameHash")["FrameHash"]
-        valHashList     = utils.make_file_hash_list(valSourceList, hash_column="FrameHash")["FrameHash"]
+        # trainSourceList = list(map(get_name, trainSourceList))
+        # valSourceList   = list(map(get_name, valSourceList))
+        trainHashList   = utils.make_file_hash_list(trainDestList, hash_column="FrameHash")["FrameHash"]
+        valHashList     = utils.make_file_hash_list(valDestList, hash_column="FrameHash")["FrameHash"]
 
         trainDestList   = list(map(get_parts, trainDestList))
         valDestList     = list(map(get_parts, valDestList))
@@ -438,7 +453,7 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
 
         valIndex                = index.reindex(labels=valHashList, axis=0, copy=True)
         valIndex['TrainPath']   = valDestList
-        valIndex['set']         = ['val']*setLengths[0]
+        valIndex['set']         = ['val']*setLengths[1]
 
         ## This way is unfeasibly slow
         # for i in tqdm(range(setLengths[0])):

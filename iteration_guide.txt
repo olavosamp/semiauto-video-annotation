@@ -2,9 +2,11 @@ extract_all_datasets
 
 run_sample_images  -> sample percentage of unlabeled set to be annotated
 * -- HUMAN -- annotate sampled set
-merge new and current labeled sets
-run_move_to_class_folders   -> move labeled images to separate folder and split them by class
-run_folder_split_train_val  -> split images in train and val sets and move them to the respective folders
+run.merge_new_an_old_labels -> merge new and current labeled sets
+run.class_set_split
+    dutils.move_dataset_to_train   -> Move images from dataset folder to sampled images
+    dutils.move_to_class_folders   -> Sort images in sampled_images folder to separate class folders
+    dutils.data_folder_split       -> Split dataset in train and validation sets, sorting them in val and train folders
 * train_iter_test_resnet18
 ----
 * dataset_inference on val set

@@ -1,7 +1,8 @@
 import torch
 import numpy                as np
-import torchvision.datasets as datasets
+import torch.nn             as nn
 import torch.optim          as optim
+import torchvision.datasets as datasets
 from pathlib                import Path
 from torchvision            import transforms
 
@@ -12,17 +13,20 @@ from models.trainer_class   import TrainModel
 
 if __name__ == "__main__":
     numImgBatch = 256
-    numEpochs   = 500
+    numEpochs   = 25
+    iteration   = 2
 
-    modelPath   = dirs.saved_models + "full_dataset_no_finetune_{}_epochs_rede1.pt".format(numEpochs)
-    historyPath = dirs.saved_models + "history_full_dataset_no_finetune_{}_epochs_rede1.pickle".format(numEpochs)
+    modelPath = dirs.saved_models + \
+            "full_dataset_no_finetune_{}_epochs_rede1_iteration_{}.pt".format(numEpochs, iteration)
+    historyPath = dirs.saved_models + \
+            "history_full_dataset_no_finetune_{}_epochs_rede1_iteration_{}.pickle".format(numEpochs, iteration)
 
     # Dataset root folder
     # Images should have paths following
     #   root/classA/img.jpg
     #   root/classB/img.jpg
     #   ...
-    datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_1/sampled_images/"
+    datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_{}/sampled_images/"
 
     # ImageNet statistics
     # No need to normalize pixel range from [0, 255] to [0, 1] because
@@ -74,7 +78,8 @@ if __name__ == "__main__":
     # # Scheduler for learning rate decay
     # expLrScheduler = optim.lr_scheduler.StepLR(optimizerFineTune, step_size=7, gamma=0.1)
 
-    modelFineTune = trainer.train(modelFineTune, criterion, optimizerFineTune, scheduler=None, num_epochs=numEpochs)
+    modelFineTune = trainer.train(modelFineTune, criterion,
+                                            optimizerFineTune, scheduler=None, num_epochs=numEpochs)
     history = trainer.save_history(historyPath)
 
     # Save model

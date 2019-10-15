@@ -16,19 +16,8 @@ seed = 42
 
 splitPercentages = [0.8, 0.2]
 
-def move_dataset_to_train(index_path, dataset_folder, path_column="FramePath", verbose=True):
-    ''' Move images from dataset folder to sampled images'''
-    # def _add_folder_and_copy(x): return utils.copy_files(dataset_folder / Path(x), imageFolderPath / Path(x))
-    def _add_folder_and_copy(x): return utils.copy_files(Path(x), imageFolderPath / Path(x).name)
-    index = pd.read_csv(index_path)
-
-    successes = np.sum(index[path_column].map(_add_folder_and_copy))
-    if verbose:
-        print("{}/{} files moved.".format(successes, len(index[path_column])))
-    return successes
-
 # Move images from dataset folder to sampled images
-move_dataset_to_train(indexPath, datasetFolder, path_column="FramePath")
+dutils.move_dataset_to_train(indexPath, datasetFolder, path_column="FramePath")
 
 # Sort images in sampled_images folder to separate class folders
 imageIndex = dutils.move_to_class_folders(indexPath, imageFolderPath, target_net="rede1")
