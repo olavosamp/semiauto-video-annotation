@@ -423,17 +423,20 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
 
         trainSourceList = list(map(get_name, trainSourceList))
         valSourceList   = list(map(get_name, valSourceList))
+        trainHashList   = utils.make_file_hash_list(trainSourceList, hash_column="FrameHash")["FrameHash"]
+        valHashList     = utils.make_file_hash_list(valSourceList, hash_column="FrameHash")["FrameHash"]
+
         trainDestList   = list(map(get_parts, trainDestList))
         valDestList     = list(map(get_parts, valDestList))
 
-        index.set_index('TrainPath', drop=False, inplace=True)
+        index.set_index('FrameHash', drop=False, inplace=True)
         # TODO: Check if train dest paths are guaranteed to be saved in
         #  the same order as index. If not, find other way
-        trainIndex              = index.reindex(labels=trainSourceList, axis=0, copy=True)
+        trainIndex              = index.reindex(labels=trainHashList, axis=0, copy=True)
         trainIndex['TrainPath'] = trainDestList
         trainIndex['set']       = ['train']*setLengths[0]
 
-        valIndex              = index.reindex(labels=valSourceList, axis=0, copy=True)
+        valIndex                = index.reindex(labels=valHashList, axis=0, copy=True)
         valIndex['TrainPath']   = valDestList
         valIndex['set']         = ['val']*setLengths[0]
 
@@ -505,7 +508,7 @@ def add_frame_hash_to_labels_file(labelsFile, framePathColumn='imagem'):
     labelsDf.reset_index(drop=True, inplace=True)
 
     # Compute and add frame hashes
-    labelsDf[DEF_frameHashColumnName] = utils.make_video_hash_list(labelsDf['FramePath'])['HashMD5']
+    labelsDf[DEF_frameHashColumnName] = utils.make_file_hash_list(labelsDf['FramePath'])['HashMD5']
 
     # Drop FramePath column
     labelsDf.drop('FramePath', axis=1, inplace=True)

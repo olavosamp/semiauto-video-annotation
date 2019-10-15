@@ -414,7 +414,7 @@ class IndexManager:
     #     assert len(self.videoList) == self.hashTable.shape[0], "Video hash table must have an entry for every video in VideoFolder.\nHash table has {} entries and VideoFolder has {}".format(
     #         len(self.videoList, self.hashTable.shape[0]))
 
-    #     hashList = make_video_hash_list(self.index.loc[:, "VideoPath"].values)
+    #     hashList = make_file_hash_list(self.index.loc[:, "VideoPath"].values)
     #     # TODO: Change check_duplicates to use file hashes instead of convoluted string field comparisons
 
     #     # TODO: Add matching entries to HashMD5 columns; Treat non matching VideoPaths;

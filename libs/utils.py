@@ -99,18 +99,18 @@ def check_empty_file(path):
         return False
 
 
-def make_video_hash_list(fileList, columnName='FilePath', verbose=True):
+def make_file_hash_list(fileList, filepath_column='FilePath', hash_column="FrameHash", verbose=True):
     '''
         Find and save video paths in a file tree in a list,
          calculate their MD5 hashes and save both lists as a Pandas DataFrame.
 
         Argument:
             fileList: list of strings. List of paths of the files to hash.
-            columnName: name of the DataFrame columns where the filepath list
+            filepath_column: name of the DataFrame columns where the filepath list
              will be saved.
 
         Returns:
-            table: Pandas DataFrame with two columns: columnName and HashMD5.
+            table: Pandas DataFrame with two columns: filepath_column and HashMD5.
     '''    
     # hashList = list(map(file_hash, fileList))
     numVideos = len(fileList)
@@ -122,7 +122,7 @@ def make_video_hash_list(fileList, columnName='FilePath', verbose=True):
         # print("{}".format(i).ljust(5), "/{} :\n{}".format(numVideos, fileList[i]))
         hashList.append(file_hash(fileList[i]))
 
-    table = pd.DataFrame({str(columnName): fileList, 'HashMD5': hashList})
+    table = pd.DataFrame({str(filepath_column): fileList, hash_column: hashList})
     return table
     
 

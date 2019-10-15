@@ -32,7 +32,7 @@ move_dataset_to_train(indexPath, datasetFolder, path_column="FramePath")
 
 # Sort images in sampled_images folder to separate class folders
 imageIndex = dutils.move_to_class_folders(indexPath, imageFolderPath, target_net="rede1")
-input("\nDelete unwanted class folders and press Enter to continue.")
+# input("\nDelete unwanted class folders and press Enter to continue.")
 
 # Split dataset in train and validation sets, sorting them in val and train folders
 otherIndex = dutils.data_folder_split(imageFolderPath,

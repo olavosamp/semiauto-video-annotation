@@ -6,15 +6,15 @@ from glob                   import glob
 
 import libs.dirs            as dirs
 import libs.commons         as commons
-from libs.utils             import *
+import libs.utils           as utils
 
 
 videoFolder = dirs.base_videos
 
-videoList = get_file_list(videoFolder, ext_list=commons.videoFormats)
+videoList = utils.get_file_list(videoFolder, ext_list=commons.videoFormats)
 
 start       = time.time()
-hashTable   = make_video_hash_list(videoList, columnName='LocalisedVideoPath')
+hashTable   = utils.make_file_hash_list(videoList, filepath_column='LocalisedVideoPath')
 hashTime    = time.time() - start
 
 print("Elapsed time to hash: {:.2f} seconds.".format(hashTime))
