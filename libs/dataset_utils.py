@@ -1,8 +1,9 @@
 import os
 import math
 import warnings
-import torch
 import random
+import torch
+import torch.nn             as nn
 import numpy                as np
 import pandas               as pd
 import shutil               as sh
@@ -31,18 +32,41 @@ def compute_thresholds(val_outputs, labels,
     val_outputs = val_outputs[:, 0]
     resBits = len(str(resolution)) -2
 
+    # Maximum resolution is to test a threshold on all output values
+    if resolution == 'max':
+        upperThreshList = np.sort(val_outputs)
+        # upperThreshList = copy(upperThreshList).reverse()
+        lowerThreshList = copy(upperThreshList)[::-1]
+    else:
+        lowerThreshList = np.arange(0., 1., resolution)
+        upperThreshList = np.arange(1., 0., -resolution)
+    #     upperThreshList = np.arange(0., 1., resolution)
+    #     lowerThreshList = np.arange(1., 0., -resolution)
+    # # print(upperThreshList[:20])
+    # print(lowerThreshList[:20])
+    # exit()
+
+    
     # Find upper threshold
-    upperThreshList = np.arange(1., 0., -resolution)
+    # upperThreshList = np.arange(1., 0., -resolution)
     idealUpperThresh = find_ideal_upper_thresh(
                                     val_outputs, labels, upperThreshList, ratio=upper_ratio)#, verbose=True)
 
     # Find lower threshold
-    lowerThreshList = np.arange(0., 1., resolution)
+    # lowerThreshList = np.arange(0., 1., resolution)
     idealLowerThresh = find_ideal_lower_thresh(
                                     val_outputs, labels, lowerThreshList, ratio=lower_ratio)
 
     idealLowerThresh = np.around(idealLowerThresh, decimals=resBits)
     idealUpperThresh = np.around(idealUpperThresh, decimals=resBits)
+
+    ## If thresholds break, take the mean value
+    ## TODO: Instead of choosing the mean, choose a thresh that maximizes AUC
+    # if idealUpperThresh < idealLowerThresh:
+    #     meanThresh = (idealUpperThresh+idealLowerThresh)/2
+    #     idealUpperThresh = meanThresh
+    #     idealLowerThresh = meanThresh
+
     if verbose:
         automatic_labeling(val_outputs, idealUpperThresh, idealLowerThresh)
 
@@ -72,11 +96,14 @@ def upper_positive_relative_ratio(outputs, labels, threshold):
         Compute ratio of ground truth positive examples above given threshold relative only
         to the examples above the threshold.
     '''
-    datasetLen     = len(outputs)
-    mask      = np.greater(outputs, threshold)
-    indexes   = np.arange(datasetLen)[mask]
+    datasetLen = len(outputs)
+    mask       = np.greater(outputs, threshold)
+    indexes    = np.arange(datasetLen)[mask]
     
-    posPercent = np.sum(labels[indexes] == 0)/len(indexes) # Positive class index is 0
+    if len(indexes) > 0:
+        posPercent = np.sum(labels[indexes] == 0)/len(indexes) # Positive class index is 0
+    else:
+        return 1.
     return posPercent
 
 
@@ -89,7 +116,10 @@ def lower_positive_ratio(outputs, labels, threshold):
     mask       = np.less(outputs, threshold)
     indexes    = np.arange(datasetLen)[mask]
 
-    posPercent = np.sum(labels[indexes] == 0)/datasetLen # Positive class index is 0
+    if len(indexes) > 0:
+        posPercent = np.sum(labels[indexes] == 0)/datasetLen # Positive class index is 0
+    else:
+        return 0.
     return posPercent
 
 
@@ -107,16 +137,15 @@ def find_ideal_lower_thresh(outputs, labels, threshold_list=None, ratio=0.01, re
         if verbose:
             print("{:.2f}\t\t{:.2f}".format(lowerThresh, posRatio)) # Print search progress
 
-        if posRatio > ratio:
-            if i-1 < 0:
-                print("\nThreshold could not be found.")
-                return None
-            idealThresh = threshold_list[i-1]
+        if (posRatio > ratio) and (ratio > 0.):
+            # if i-1 < 0:
+            #     print("\nThreshold could not be found.")
+            #     return None
+            idealThresh = threshold_list[i]
             posRatio = lower_positive_ratio(outputs, labels, idealThresh)
 
             print("\nFound ideal Lower threshold {:.3f} with {:.2f} % ground truth positives.".format(idealThresh, posRatio*100))
             return idealThresh
-
 
 def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, resolution=0.001, verbose=False):
     if verbose:
@@ -124,7 +153,7 @@ def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, re
     
     if threshold_list is None:
         threshold_list = np.arange(1., 0., -resolution)
-    
+
     for i in tqdm(range(len(threshold_list))):
         upperThresh = threshold_list[i]
         posRatio = upper_positive_relative_ratio(outputs, labels, upperThresh)
@@ -132,11 +161,13 @@ def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, re
         if verbose:
             print("{:.2f}\t\t{:.2f}".format(upperThresh, posRatio)) # Print search progress
 
-        if posRatio < ratio:
-            if i-1 < 0:
-                print("\nThreshold could not be found.")
-                return None
-            idealThresh = threshold_list[i-1]
+        if (posRatio < ratio) and (ratio < 1.):
+            print(posRatio)
+            print(ratio)
+            # if i-1 < 0:
+            #     print("\nThreshold could not be found.")
+            #     return None
+            idealThresh = threshold_list[i]
             posRatio = upper_positive_relative_ratio(outputs, labels, idealThresh)
 
             print("\nFound ideal Upper threshold {:.3f} with {:.2f} % ground truth positives.".format(idealThresh, posRatio*100))
@@ -254,6 +285,24 @@ class IndexLoader:
             return imgList, imgHashList
         else:
             return imgList, imgHashList, labelList
+
+
+def load_outputs_df(outputPath, remove_duplicates=False):
+    '''
+        Load a pickled dictionary containing a set of outputs, image hashes and labels.
+        Each 3-uple corresponds to data of a single sample.
+    '''
+    pickleData = utils.load_pickle(outputPath)
+    
+    if remove_duplicates:
+        pickleData  = dutils.remove_duplicates(pickleData, "ImgHashes")
+
+    outputs      = np.stack(pickleData["Outputs"])
+    imgHashes    = pickleData["ImgHashes"]
+    labels       = pickleData["Labels"]
+
+    outputs = nn.Softmax(dim=1)(torch.as_tensor(outputs))
+    return outputs.numpy(), imgHashes, labels
 
 
 def move_dataset_to_train(index_path, dataset_folder, path_column="FramePath", verbose=True):

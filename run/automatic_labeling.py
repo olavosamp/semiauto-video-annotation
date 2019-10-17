@@ -10,16 +10,19 @@ import libs.dataset_utils   as dutils
 import libs.commons         as commons
 from libs.vis_functions     import plot_outputs_histogram
 
-iteration   = 2
-epochs      = 100
+iteration   = 1
+epochs      = 1000
 rede        = 1
 
 indexPath    = Path(dirs.iter_folder) / \
                 "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
 outputPath   = Path(dirs.saved_models) / \
-                "outputs_full_dataset_iteration_{}_rede{}.pickle".format(iteration, rede)
+                "outputs_full_dataset_iteration_{}_{}_epochs_rede{}.pickle".format(iteration, epochs, rede)
 newIndexPath = Path(dirs.iter_folder) / \
                 "full_dataset/iteration_{}/automatic_labeled_images_iteration_{}.csv".format(iteration, iteration)
+
+idealUpperThresh = 0.8923 # Ratio 99.99%
+idealLowerThresh = 0.0904 # Ratio 0.01%
 
 indexDf    = pd.read_csv(indexPath)
 pickleData = utils.load_pickle(outputPath)
@@ -28,17 +31,17 @@ positiveLabel = commons.rede1_positive
 negativeLabel = commons.rede1_negative
 
 indexDf     = dutils.remove_duplicates(indexDf, "FrameHash")
-pickleData  = dutils.remove_duplicates(pickleData, "ImgHashes")
+outputs, imgHashes, _ = dutils.load_outputs_df(outputPath)
+outputs = outputs[:, 0]
+# pickleData  = dutils.remove_duplicates(pickleData, "ImgHashes")
 
 indexDf.set_index("FrameHash", drop=False, inplace=True)
 # pickleData.set_index("ImgHashes", drop=False, inplace=True)
 
-outputs    = np.stack(pickleData["Outputs"])[:, 0]
-outputs    = utils.normalize_array(outputs)
+# outputs    = np.stack(pickleData["Outputs"])[:, 0]
+# outputs    = utils.normalize_array(outputs)
 datasetLen = len(outputs)
 
-idealLowerThresh = 0.361 # Ratio 0.01%
-idealUpperThresh = 0.597 # Ratio 99.99%
 print("\nAutomatic labeling with upper positive ratio 99%:")
 upperClassified, lowerClassified = dutils.automatic_labeling(outputs, idealUpperThresh, idealLowerThresh)
 
@@ -46,8 +49,8 @@ upperClassified, lowerClassified = dutils.automatic_labeling(outputs, idealUpper
 # newHashes = pickleData.loc[newLabels, "ImgHashes"].values
 # newLabeledIndex = indexDf.reindex(labels=newHashes, axis=0, copy=True)
 
-posHashes = pickleData.loc[upperClassified, "ImgHashes"].values
-negHashes = pickleData.loc[lowerClassified, "ImgHashes"].values
+posHashes = imgHashes[upperClassified]
+negHashes = imgHashes[lowerClassified]
 
 newPositives = indexDf.reindex(labels=posHashes, axis=0, copy=True)
 newNegatives = indexDf.reindex(labels=negHashes, axis=0, copy=True)
@@ -69,7 +72,7 @@ print("total new labels: ", lenPositives+lenNegatives)
 print("new labels df:    ", newLabeledIndex.shape)
 print(len(newLabeledIndex)/datasetLen*100)
 
-newLabeledIndex.to_csv(newIndexPath, index=False)
+# newLabeledIndex.to_csv(newIndexPath, index=False)
 
 imgSavePath = Path(dirs.results) / "histogram_unlabeled_outputs.pdf"
 plot_outputs_histogram(outputs, lower_thresh=idealLowerThresh, upper_thresh=idealUpperThresh,

@@ -62,8 +62,8 @@ def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, 
 if __name__ == "__main__":
     seed = 33
     dutils.set_torch_random_seeds(seed)
-    iteration   = 2
-    epochs      = 100
+    iteration   = 1
+    epochs      = 1000
     rede        = 1
 
     datasetPath = Path(dirs.iter_folder) / \
@@ -93,24 +93,27 @@ if __name__ == "__main__":
 
     # outputPath = Path(dirs.saved_models) / "outputs_full_dataset_validation_iteration_1_rede1.pickle"
     outputPath = savePath
-    pickleData = utils.load_pickle(outputPath)
-
-    outputs      = np.stack(pickleData["Outputs"])
-    imgHashes    = pickleData["ImgHashes"]
-    labels       = pickleData["Labels"]
+    outputs, imgHashes, labels = dutils.load_outputs_df(outputPath)
+    
+    # print(np.shape(outputs))
+    # print(np.sum(outputs, axis=1)[:20])
+    # print(outputs[:20, :])
+    # exit()
 
     idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(outputs,
-                                                                labels,
-                                                                upper_ratio=0.99,
-                                                                lower_ratio=0.01,
-                                                                resolution=0.0001,
-                                                                verbose=True)
-
+                                                                   labels,
+                                                                   upper_ratio=0.99,
+                                                                   lower_ratio=0.01,
+                                                                   resolution=0.0001,#resolution='max',
+                                                                   verbose=True)
+    exit()
     # Plot outputs histogram
     outputs = outputs[:, 0]
-    outputs = np.squeeze(utils.normalize_array(outputs))
-    plot_outputs_histogram(outputs, labels, idealLowerThresh, idealUpperThresh,
-                        save_path= Path(dirs.results)/"histogram_val_set_output_thresholds.png")
+    # outputs = np.squeeze(utils.normalize_array(outputs))
+    # plot_outputs_histogram(outputs, labels, idealLowerThresh, idealUpperThresh,
+    #                     save_path= Path(dirs.results)/"histogram_val_set_output_thresholds.png")
+    plot_outputs_histogram(outputs, labels,
+                    save_path= Path(dirs.results)/"histogram_val_set_output_thresholds_softmax_iteration_{}_test.png".format(iteration))
 
 
     # # Find upper threshold
