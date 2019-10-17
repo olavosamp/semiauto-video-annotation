@@ -20,12 +20,21 @@ from libs.index             import IndexManager
 if __name__ == "__main__":
     seed = 33
     dutils.set_torch_random_seeds(seed)
+    iteration   = 2
+    epochs      = 100
+    rede        = 1
 
-    datasetPath      = Path(dirs.images) / "full_dataset_1s"
-    unlabelIndexPath = Path(dirs.iter_folder) / "full_dataset/iteration_1/unlabeled_images_iteration_1.csv"
-    savePath         = Path(dirs.saved_models)/ "outputs_full_dataset_iteration_1_1000_epochs_rede1.pickle"
-    modelPath        = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000_epochs_rede1.pt"
+    # datasetPath      = Path(dirs.images) / "full_dataset_1s"
+    # savePath         = Path(dirs.saved_models)/ "outputs_full_dataset_iteration_1_1000_epochs_rede1.pickle"
+    # modelPath        = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000_epochs_rede1.pt"
     
+    unlabelIndexPath = Path(dirs.iter_folder) / \
+                    "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
+    modelPath = Path(dirs.saved_models) / \
+                    "full_dataset_no_finetune_{}_epochs_rede{}_iteration_{}.pt".format(epochs, rede, iteration)
+    savePath = Path(dirs.saved_models) / \
+                    "outputs_full_dataset_iteration_{}_rede{}.pickle".format(iteration, rede)
+
     batchSize = 64
 
     unlabelIndex = IndexManager(unlabelIndexPath)
@@ -73,7 +82,7 @@ if __name__ == "__main__":
 
     # Set model
     trainer.define_model_resnet18(finetune=False, print_summary=True)
-    
+
     # Perform inference here for testing
     # ------------------
     # img = Image.open(imagePathList[0])

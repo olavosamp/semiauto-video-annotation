@@ -10,9 +10,16 @@ import libs.dataset_utils   as dutils
 import libs.commons         as commons
 from libs.vis_functions     import plot_outputs_histogram
 
-outputPath      = Path(dirs.saved_models)/ "outputs_full_dataset_iteration_1_1000_epochs_rede1.pickle"
-indexPath       = Path(dirs.iter_folder) / "full_dataset/iteration_1/unlabeled_images_iteration_1.csv"
-newIndexPath    = Path(dirs.iter_folder) / "full_dataset/iteration_1/automatic_labeled_images_iteration_1.csv"
+iteration   = 2
+epochs      = 100
+rede        = 1
+
+indexPath    = Path(dirs.iter_folder) / \
+                "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
+outputPath   = Path(dirs.saved_models) / \
+                "outputs_full_dataset_iteration_{}_rede{}.pickle".format(iteration, rede)
+newIndexPath = Path(dirs.iter_folder) / \
+                "full_dataset/iteration_{}/automatic_labeled_images_iteration_{}.csv".format(iteration, iteration)
 
 indexDf    = pd.read_csv(indexPath)
 pickleData = utils.load_pickle(outputPath)
@@ -20,7 +27,6 @@ pickleData = utils.load_pickle(outputPath)
 positiveLabel = commons.rede1_positive
 negativeLabel = commons.rede1_negative
 
-# # TODO: Find out why there are 9k duplicated images in unlabeled images index
 indexDf     = dutils.remove_duplicates(indexDf, "FrameHash")
 pickleData  = dutils.remove_duplicates(pickleData, "ImgHashes")
 
@@ -31,8 +37,8 @@ outputs    = np.stack(pickleData["Outputs"])[:, 0]
 outputs    = utils.normalize_array(outputs)
 datasetLen = len(outputs)
 
-idealLowerThresh = 0.3690 # Ratio 1%
-idealUpperThresh = 0.5191 # Ratio 99%
+idealLowerThresh = 0.361 # Ratio 0.01%
+idealUpperThresh = 0.597 # Ratio 99.99%
 print("\nAutomatic labeling with upper positive ratio 99%:")
 upperClassified, lowerClassified = dutils.automatic_labeling(outputs, idealUpperThresh, idealLowerThresh)
 
@@ -67,4 +73,4 @@ newLabeledIndex.to_csv(newIndexPath, index=False)
 
 imgSavePath = Path(dirs.results) / "histogram_unlabeled_outputs.pdf"
 plot_outputs_histogram(outputs, lower_thresh=idealLowerThresh, upper_thresh=idealUpperThresh,
-                       title="Unlabeled Outputs Histogram", save_path=imgSavePath, show=False)
+                       title="Unlabeled Outputs Histogram", save_path=imgSavePath, show=True)
