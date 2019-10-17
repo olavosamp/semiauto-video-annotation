@@ -15,34 +15,13 @@ import libs.utils           as utils
 import libs.dataset_utils   as dutils
 from models.trainer_class   import TrainModel
 from libs.index             import IndexManager
+from libs.vis_functions     import plot_outputs_histogram
 
-
-if __name__ == "__main__":
-    seed = 33
-    dutils.set_torch_random_seeds(seed)
-
-    datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_1/sampled_images/val/"
-    savePath    = Path(dirs.saved_models)/ "outputs_full_dataset_validation_iteration_1_rede1.pickle"
-    modelPath   = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000_epochs_rede1.pt"
-    
-    batchSize = 64
-
-    # ImageNet statistics
-    # No need to normalize pixel range from [0, 255] to [0, 1] because
-    # ToTensor transform already does that
-    mean    = [0.485, 0.456, 0.406]#/255
-    std     = [0.229, 0.224, 0.225]#/255
-    
-    dataTransforms = transforms.Compose([
-                        transforms.Resize(256), # Pq 256?
-                        transforms.CenterCrop(224),
-                        transforms.ToTensor(),
-                        transforms.Normalize(mean, std),
-                    ])
-
+def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, batch_size=64, verbose=True):
+    '''Perform inference on validation set and save outputs to file'''
     # Get list of image paths from dataset folder
-    dataset = datasets.ImageFolder(str(datasetPath),
-                                    transform=dataTransforms,
+    dataset = datasets.ImageFolder(str(dataset_path),
+                                    transform=data_transforms,
                                     is_valid_file=utils.check_empty_file)
     imageTupleList  = dataset.imgs
     datasetLen      = len(imageTupleList)
@@ -51,61 +30,88 @@ if __name__ == "__main__":
     
     imagePathList  = np.array(dataset.imgs)[:, 0]
 
-    print("\nDataset information: ")
-    print("\t", datasetLen, "images.")
-    print("\nClasses: ")
-    for key in dataset.class_to_idx.keys():
-        print("\t{}: {}".format(dataset.class_to_idx[key], key))
+    if verbose:
+        print("\nDataset information: ")
+        print("\t", datasetLen, "images.")
+        print("\nClasses: ")
+        for key in dataset.class_to_idx.keys():
+            print("\t{}: {}".format(dataset.class_to_idx[key], key))
 
-    imgLoader = dutils.IndexLoader(imagePathList, batch_size=batchSize, transform=dataTransforms, label_list=labelList)
-    
-    # for img, imgHash in imgLoader:
-    #     # print(img)
-    #     # print(np.shape(img))
-    #     print(imgHash)
-    #     # break
+    imgLoader = dutils.IndexLoader(imagePathList, batch_size=batch_size,
+                                   transform=data_transforms, label_list=labelList)
 
     # Instantiate trainer object
-    trainer = TrainModel(model_path=modelPath)
+    trainer = TrainModel(model_path=model_path)
     trainer.numClasses = 2
 
     # Set model
     trainer.define_model_resnet18(finetune=False, print_summary=True)
-    # exit()
-    
-    # Perform inference
-    # ------------------
-    # img = Image.open(imagePathList[0])
-    # img = torch.stack([dataTransforms(img)], dim=0)
-    # img = img.to('cuda:0')
 
-    # trainer.model.eval()
-    # with torch.set_grad_enabled(False):
-    #     output1 = trainer.model(img)
-    # print("Op 1: ", output1)
-    # dutils.show_inputs(img, output1)
-
-    # with torch.set_grad_enabled(False):
-    #     output2 = trainer.model(img)
-    # print("Op 2: ", output2)
-    # dutils.show_inputs(img, output2)
-    # -------------------
     outputs, imgHashes, labels = trainer.model_inference(imgLoader)
-
-
-    # predictions = np.argmax(np.array(outputs), axis=1)
-    # accuracy = np.equal(predictions, labels).sum()/datasetLen
-    
 
     outputDf = pd.DataFrame({"Outputs":   outputs,
                              "ImgHashes": imgHashes,
                              "Labels":    labels})
 
-    print(np.shape(outputDf))
-
     ## Save output to pickle file
-    print("\nSaving outputs file to ", savePath)
-    outputDf.to_pickle(savePath)
+    print("\nSaving outputs file to ", save_path)
+    outputDf.to_pickle(save_path)
+    return outputDf
+
+
+if __name__ == "__main__":
+    seed = 33
+    dutils.set_torch_random_seeds(seed)
+    iteration   = 2
+    epochs      = 100
+    rede        = 1
+
+    datasetPath = Path(dirs.iter_folder) / \
+                    "full_dataset/iteration_{}/sampled_images/val/".format(iteration)
+    savePath = Path(dirs.saved_models) / \
+                    "outputs_full_dataset_validation_iteration_{}_rede{}.pickle".format(iteration, rede)
+    modelPath = Path(dirs.saved_models) / \
+                    "full_dataset_no_finetune_{}_epochs_rede{}_iteration_{}.pt".format(epochs, rede, iteration)
+
+    batchSize = 64
+
+    # Define transforms
+    # ImageNet statistics
+    mean    = [0.485, 0.456, 0.406]#/255
+    std     = [0.229, 0.224, 0.225]#/255
+    
+    # ToTensor transform normalizes pixel range to [0, 1]
+    dataTransforms = transforms.Compose([
+                        transforms.Resize(256), # Pq 256?
+                        transforms.CenterCrop(224),
+                        transforms.ToTensor(),
+                        transforms.Normalize(mean, std),
+                    ])
+
+    ## Perform inference on validation set and save outputs to file
+    # outputDf = dataset_inference_val(datasetPath, dataTransforms, modelPath, savePath, batch_size=batchSize)
+
+    # outputPath = Path(dirs.saved_models) / "outputs_full_dataset_validation_iteration_1_rede1.pickle"
+    outputPath = savePath
+    pickleData = utils.load_pickle(outputPath)
+
+    outputs      = np.stack(pickleData["Outputs"])
+    imgHashes    = pickleData["ImgHashes"]
+    labels       = pickleData["Labels"]
+
+    idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(outputs,
+                                                                labels,
+                                                                upper_ratio=0.99,
+                                                                lower_ratio=0.01,
+                                                                resolution=0.0001,
+                                                                verbose=True)
+
+    # Plot outputs histogram
+    outputs = outputs[:, 0]
+    outputs = np.squeeze(utils.normalize_array(outputs))
+    plot_outputs_histogram(outputs, labels, idealLowerThresh, idealUpperThresh,
+                        save_path= Path(dirs.results)/"histogram_val_set_output_thresholds.png")
+
 
     # # Find upper threshold
     # upperThreshList = np.arange(1., 0., -0.001)

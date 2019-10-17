@@ -376,7 +376,10 @@ def image_grid(path, targetPath="image_grid.jpg", prediction_index=None, upperCr
     index = 0
     for j in tqdm(range(0, destDim[1], imageDim[1] - lowerCrop - upperCrop)):
         for i in range(0,destDim[0], imageDim[0]):
-            im = Image.open(files[index])
+            try:
+                im = Image.open(files[index])
+            except:
+                continue
 
             im = im.resize(imageDim)
             im = im.crop((0, upperCrop, imageDim[0], imageDim[1] - lowerCrop))

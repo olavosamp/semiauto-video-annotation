@@ -6,8 +6,18 @@ from pathlib                import Path
 import libs.utils           as utils
 import libs.dirs            as dirs
 
-historyPath = Path(dirs.saved_models) / "history_full_dataset_no_finetune_1000_epochs_rede1.pickle"
+iteration   = 2
+epochs      = 100
+rede        = 1
+
+historyPath = Path(dirs.saved_models) \
+    / "history_full_dataset_no_finetune_{}_epochs_rede{}_iteration_{}.pickle".format(epochs, rede, iteration)
 # historyPath = Path(dirs.saved_models) / "test_mnist_resnet18_history_no_finetune.pickle"
+
+if not(historyPath.is_file()):
+    print("History file does not exist.\nFile:\n", historyPath)
+    print("\nExiting program.")
+    exit()
 
 resultsFolder = Path(dirs.results) / historyPath.stem
 dirs.create_folder(resultsFolder)
@@ -27,6 +37,9 @@ x = range(len(trainLoss))
 
 # print(history['f1-train'])
 # print(history['f1-val'])
+lossName = "loss_history_{}_epochs_rede{}_iteration{}.pdf".format(epochs, rede, iteration)
+accName  = "accuracy_history_{}_epochs_rede{}_iteration{}.pdf".format(epochs, rede, iteration)
+f1Name   = "f1_history_{}_epochs_rede{}_iteration{}.pdf".format(epochs, rede, iteration)
 
 fig = plt.figure(figsize=(24, 18))
 plt.plot(x, valLoss, 'r.-', label="valLoss")
@@ -36,7 +49,7 @@ plt.ylabel("Loss")
 plt.xlabel("Epochs")
 plt.title("Training Loss history")
 # plt.show()
-fig.savefig(resultsFolder / "loss_history.pdf", orientation='portrait', bbox_inches='tight')
+fig.savefig(resultsFolder / lossName, orientation='portrait', bbox_inches='tight')
 
 fig = plt.figure(figsize=(24, 18))
 plt.plot(x, valAcc, 'r.-', label="valAcc")
@@ -46,7 +59,7 @@ plt.ylabel("Acc")
 plt.xlabel("Epochs")
 plt.title("Training Acc history")
 # plt.show()
-fig.savefig(resultsFolder / "accuracy_history.pdf", orientation='portrait', bbox_inches='tight')
+fig.savefig(resultsFolder / accName, orientation='portrait', bbox_inches='tight')
 
 
 fig = plt.figure(figsize=(24, 18))
@@ -57,8 +70,9 @@ plt.ylabel("Loss")
 plt.xlabel("Epochs")
 plt.title("Training F1 history, class 0")
 # plt.show()
-fig.savefig(resultsFolder / "f1_history.pdf", orientation='portrait', bbox_inches='tight')
+fig.savefig(resultsFolder / f1Name, orientation='portrait', bbox_inches='tight')
 
+print("\nSaved results to ", resultsFolder)
 # total 3918 imagens
 # Treino 85%
 #    Evento     1224

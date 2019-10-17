@@ -7,9 +7,15 @@ import libs.utils           as utils
 import libs.dataset_utils   as dutils
 from libs.index             import IndexManager
 
-savePath            = Path(dirs.saved_models)/ "results_full_dataset_iteration_1_1000_epochs.pickle"
-indexPath           = Path(dirs.iter_folder) / "full_dataset/iteration_1/unlabeled_images_iteration_1.csv"
-sampledImagesPath   = Path(dirs.images)/ "full_dataset_results_samples"
+iteration   = 2
+epochs      = 100
+rede        = 1
+
+savePath = Path(dirs.saved_models) / \
+                    "results_full_dataset_iteration_{}_{}_epochs.pickle".format(iteration, epochs)
+indexPath = Path(dirs.iter_folder) / \
+                    "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
+sampledImagesPath = Path(dirs.images) / "full_dataset_results_samples"
 
 # Load model outputs and unlabeled images index
 index = IndexManager(indexPath)

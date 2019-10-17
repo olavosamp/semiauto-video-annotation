@@ -26,7 +26,7 @@ if __name__ == "__main__":
     #   root/classA/img.jpg
     #   root/classB/img.jpg
     #   ...
-    datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_{}/sampled_images/"
+    datasetPath = Path(dirs.iter_folder) / "full_dataset/iteration_{}/sampled_images/".format(iteration)
 
     # ImageNet statistics
     # No need to normalize pixel range from [0, 255] to [0, 1] because
