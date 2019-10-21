@@ -61,7 +61,7 @@ class IterationManager:
     def new_iteration(self):
         '''
             create new iteration folder v
-        sample new images               v
+            sample new images           v
             update iter_info            v
         label images
         merge new labels (manual) to annotated dataset

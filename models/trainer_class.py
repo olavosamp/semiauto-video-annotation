@@ -101,9 +101,11 @@ class TrainModel:
         # Add FC layer
         # Use Linear layer for Cross Entropy loss
         self.model.fc = nn.Linear(self.numFeatures, self.numClasses)
-        
-        # Use Softmax layer for other loss functions
+
+        # Use Softmax layer with NLLoss
         # self.model.fc = nn.Softmax(dim=-1)
+
+        # Use Sigmoid function with Binary Cross Entropy loss
 
         # Move model to device (must be done before constructing the optimizer)
         self.model.to(self.device)

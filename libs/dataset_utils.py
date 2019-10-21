@@ -1,13 +1,13 @@
 import os
 import math
 import warnings
-import random
 import torch
 import torch.nn             as nn
 import numpy                as np
 import pandas               as pd
 import shutil               as sh
 import matplotlib.pyplot    as plt
+import torch.optim          as optim
 from PIL                    import Image
 from copy                   import copy
 from tqdm                   import tqdm
@@ -20,7 +20,6 @@ import libs.commons         as commons
 import libs.utils           as utils
 from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
-
 
 ## Threshold finding
 def compute_thresholds(val_outputs, labels,
@@ -42,11 +41,7 @@ def compute_thresholds(val_outputs, labels,
         upperThreshList = np.arange(1., 0., -resolution)
     #     upperThreshList = np.arange(0., 1., resolution)
     #     lowerThreshList = np.arange(1., 0., -resolution)
-    # # print(upperThreshList[:20])
-    # print(lowerThreshList[:20])
-    # exit()
 
-    
     # Find upper threshold
     # upperThreshList = np.arange(1., 0., -resolution)
     idealUpperThresh = find_ideal_upper_thresh(
@@ -147,6 +142,7 @@ def find_ideal_lower_thresh(outputs, labels, threshold_list=None, ratio=0.01, re
             print("\nFound ideal Lower threshold {:.3f} with {:.2f} % ground truth positives.".format(idealThresh, posRatio*100))
             return idealThresh
 
+
 def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, resolution=0.001, verbose=False):
     if verbose:
         print("\nThreshold\tUpper Pos Ratio")
@@ -192,7 +188,7 @@ def show_inputs(inputs, labels):
 
 def show_image(image, title_string=None):
     '''
-        Show input image.
+        Show Pillow or Pyplot input image.
     '''
     print("Title: ", title_string)
     plt.imshow(image)
@@ -201,14 +197,7 @@ def show_image(image, title_string=None):
     plt.show()
 
 
-## Pytorch utilities
-def set_torch_random_seeds(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.random.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-
-
+## Dataset files manipulation
 class IndexLoader:
     '''
         Iterator to load and transform an image and its file hash.
@@ -287,7 +276,7 @@ class IndexLoader:
             return imgList, imgHashList, labelList
 
 
-def load_outputs_df(outputPath, remove_duplicates=False):
+def load_outputs_df(outputPath, remove_duplicates=False, softmax=True):
     '''
         Load a pickled dictionary containing a set of outputs, image hashes and labels.
         Each 3-uple corresponds to data of a single sample.
@@ -295,13 +284,16 @@ def load_outputs_df(outputPath, remove_duplicates=False):
     pickleData = utils.load_pickle(outputPath)
     
     if remove_duplicates:
-        pickleData  = dutils.remove_duplicates(pickleData, "ImgHashes")
+        pickleData  = remove_duplicates(pickleData, "ImgHashes")
 
     outputs      = np.stack(pickleData["Outputs"])
     imgHashes    = pickleData["ImgHashes"]
     labels       = pickleData["Labels"]
 
-    outputs = nn.Softmax(dim=1)(torch.as_tensor(outputs))
+    if softmax:  # TODO: Test both options
+        outputs = nn.Softmax(dim=1)(torch.as_tensor(outputs))
+    else:
+        outputs = torch.as_tensor(outputs)
     return outputs.numpy(), imgHashes, labels
 
 

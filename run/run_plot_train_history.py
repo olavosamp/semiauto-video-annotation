@@ -11,7 +11,7 @@ epochs      = 100
 rede        = 1
 
 historyPath = Path(dirs.saved_models) \
-    / "history_full_dataset_no_finetune_{}_epochs_rede{}_iteration_{}.pickle".format(epochs, rede, iteration)
+    / "history_full_dataset_no_finetune_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
 # historyPath = Path(dirs.saved_models) / "test_mnist_resnet18_history_no_finetune.pickle"
 
 if not(historyPath.is_file()):
@@ -37,9 +37,9 @@ x = range(len(trainLoss))
 
 # print(history['f1-train'])
 # print(history['f1-val'])
-lossName = "loss_history_{}_epochs_rede{}_iteration{}.pdf".format(epochs, rede, iteration)
-accName  = "accuracy_history_{}_epochs_rede{}_iteration{}.pdf".format(epochs, rede, iteration)
-f1Name   = "f1_history_{}_epochs_rede{}_iteration{}.pdf".format(epochs, rede, iteration)
+lossName = "loss_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
+accName  = "accuracy_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
+f1Name   = "f1_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
 
 fig = plt.figure(figsize=(24, 18))
 plt.plot(x, valLoss, 'r.-', label="valLoss")

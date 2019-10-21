@@ -9,7 +9,8 @@ def plot_outputs_histogram(normalized_outputs,
                            upper_thresh=None,
                            title="Outputs Histogram",
                            show=True,
-                           save_path=None):
+                           save_path=None,
+                           save_formats=[".png", ".pdf"]):
     fig = plt.figure(figsize=(8, 4))
     # plt.subplots_adjust(left=0.09, bottom=0.09, right=0.95, top=0.80,
     #                     wspace=None, hspace=None)
@@ -37,10 +38,12 @@ def plot_outputs_histogram(normalized_outputs,
     if save_path is not None:
         save_path = Path(save_path)
         dirs.create_folder(save_path.parent)
-        # Save with desired format, png and pdf
+
+        # Save with desired format, and additional formats specified in save_formats
         plt.savefig(save_path)
-        plt.savefig(save_path.with_suffix('.png'))
-        plt.savefig(save_path.with_suffix('.pdf'))
+        for ext in save_formats:
+            if ext[0] == '.':
+                plt.savefig(save_path.with_suffix(ext))
     if show:
         plt.show()
     return fig

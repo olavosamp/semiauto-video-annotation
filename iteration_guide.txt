@@ -3,6 +3,8 @@ extract_all_datasets
 run_sample_images  -> sample percentage of unlabeled set to be annotated
 * -- HUMAN -- annotate sampled set
 run.merge_new_an_old_labels -> merge new and current labeled sets
+new_unlabeled_set -> Complement of current labeled set and last iteration unlabeled.
+                     Creates new and smaller unlabeled set represented by a csv file
 run.class_set_split
     dutils.move_dataset_to_train   -> Move images from dataset folder to sampled images
     dutils.move_to_class_folders   -> Sort images in sampled_images folder to separate class folders
@@ -11,8 +13,6 @@ run.class_set_split
 ----
 * dataset_inference on val set
 * compute_thresholds
-new_unlabeled_set -> Complement of current labeled set and last iteration unlabeled.
-                     Creates new and smaller unlabeled set represented by a csv file
 * dataset_inference on unlabeled set -> automatic annotation
 (sampe_auto_labeled) -> optional, used only to measure automatic annotation error percentage
 merge_labeled_sets

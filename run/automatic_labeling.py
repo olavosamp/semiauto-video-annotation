@@ -16,8 +16,9 @@ rede        = 1
 
 indexPath    = Path(dirs.iter_folder) / \
                 "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
-outputPath   = Path(dirs.saved_models) / \
-                "outputs_full_dataset_iteration_{}_{}_epochs_rede{}.pickle".format(iteration, epochs, rede)
+savedModelsFolder = Path(dirs.saved_models) / "full_dataset_rede_{}/iteration_{}".format(rede, iteration)
+outputPath   = savedModelsFolder / \
+                "outputs_full_dataset_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
 newIndexPath = Path(dirs.iter_folder) / \
                 "full_dataset/iteration_{}/automatic_labeled_images_iteration_{}.csv".format(iteration, iteration)
 

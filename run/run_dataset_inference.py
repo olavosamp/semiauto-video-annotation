@@ -19,7 +19,7 @@ from libs.index             import IndexManager
 
 if __name__ == "__main__":
     seed = 33
-    dutils.set_torch_random_seeds(seed)
+    mutils.set_torch_random_seeds(seed)
     iteration   = 2
     epochs      = 100
     rede        = 1
@@ -31,9 +31,9 @@ if __name__ == "__main__":
     unlabelIndexPath = Path(dirs.iter_folder) / \
                     "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
     modelPath = Path(dirs.saved_models) / \
-                    "full_dataset_no_finetune_{}_epochs_rede{}_iteration_{}.pt".format(epochs, rede, iteration)
+                    "full_dataset_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(epochs, rede, iteration)
     savePath = Path(dirs.saved_models) / \
-                    "outputs_full_dataset_iteration_{}_rede{}.pickle".format(iteration, rede)
+                    "outputs_full_dataset_iteration_{}_rede_{}.pickle".format(iteration, rede)
 
     batchSize = 64
 
