@@ -35,18 +35,12 @@ if __name__ == "__main__":
                     "full_dataset_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(epochs, rede, iteration)
     batchSize = 64
 
-    # Define transforms
     # ImageNet statistics
-    mean    = [0.485, 0.456, 0.406]#/255
-    std     = [0.229, 0.224, 0.225]#/255
-    
-    # ToTensor transform normalizes pixel range to [0, 1]
-    dataTransforms = transforms.Compose([
-                        transforms.Resize(256), # Pq 256?
-                        transforms.CenterCrop(224),
-                        transforms.ToTensor(),
-                        transforms.Normalize(mean, std),
-                    ])
+    mean    = commons.IMAGENET_MEAN
+    std     = commons.IMAGENET_STD 
+
+    # Set transforms
+    dataTransforms = mutils.resnet_transforms(mean, std)
 
     ## Perform inference on validation set and save outputs to file
     # outputDf = mutils.dataset_inference_val(datasetPath, dataTransforms, modelPath, savePath, batch_size=batchSize)

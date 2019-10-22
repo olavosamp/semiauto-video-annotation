@@ -13,9 +13,10 @@ from torch.utils.data       import DataLoader
 import libs.dirs            as dirs
 import libs.utils           as utils
 import libs.dataset_utils   as dutils
+import models.utils         as mutils
 from models.trainer_class   import TrainModel
 from libs.index             import IndexManager
-
+import libs.commons         as commons
 
 if __name__ == "__main__":
     seed = 33
@@ -24,10 +25,6 @@ if __name__ == "__main__":
     epochs      = 100
     rede        = 1
 
-    # datasetPath      = Path(dirs.images) / "full_dataset_1s"
-    # savePath         = Path(dirs.saved_models)/ "outputs_full_dataset_iteration_1_1000_epochs_rede1.pickle"
-    # modelPath        = Path(dirs.saved_models)/ "full_dataset_no_finetune_1000_epochs_rede1.pt"
-    
     unlabelIndexPath = Path(dirs.iter_folder) / \
                     "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
     modelPath = Path(dirs.saved_models) / \
@@ -39,24 +36,12 @@ if __name__ == "__main__":
 
     unlabelIndex = IndexManager(unlabelIndexPath)
 
-    # ImageNet statistics
-    # No need to normalize pixel range from [0, 255] to [0, 1] because
-    # ToTensor transform already does that
-    mean    = [0.485, 0.456, 0.406]#/255
-    std     = [0.229, 0.224, 0.225]#/255
-    
-    dataTransforms = transforms.Compose([
-                        transforms.Resize(256), # Pq 256?
-                        transforms.CenterCrop(224),
-                        transforms.ToTensor(),
-                        transforms.Normalize(mean, std),
-                    ])
-    
-    # Get list of images from image index
-    labelsToDrop  = unlabelIndex.index.index[~unlabelIndex.index["FramePath"].map(utils.check_empty_file)]
-    unlabelIndex.index.drop(labels=labelsToDrop,
-                            axis=0,
-                            inplace=True)
+    # Drop duplicated files
+    unlabelIndex.index = dutils.remove_duplicates(unlabelIndex.index, "FrameHash")
+
+    # Drop missing or corrupt images
+    unlabelIndex.index = dutils.check_df_files(unlabelIndex.index, utils.check_empty_file, "FramePath")
+
     
     imagePathList = unlabelIndex.index["FramePath"].values
     datasetLen    = len(imagePathList)
@@ -64,7 +49,14 @@ if __name__ == "__main__":
     print("\nDataset information: ")
     print("\t", datasetLen, "images.")
     
-    # Label list for an unlabeled dataset
+    # ImageNet statistics
+    mean    = commons.IMAGENET_MEAN
+    std     = commons.IMAGENET_STD 
+
+    # Set transforms
+    dataTransforms = mutils.resnet_transforms(mean, std)
+    
+    # Label list for an unlabeled dataset (bit of a hack? is there a better way?)
     labelList = np.zeros(datasetLen)
 
     imgLoader = dutils.IndexLoader(imagePathList, batch_size=batchSize,

@@ -336,6 +336,25 @@ def merge_manual_auto_sets(auto_df, manual_df):
     return mergedIndex.copy()
 
 
+def check_df_files(df, check_function, filepath_column, verbose=False):
+    '''
+        Given a DataFrame with a column of file paths, specified by filepath_column, check if 
+        each file passes a True/False check defined by check_function. Return the df without
+        the rows that returned False on their checks.
+    '''
+    dfLen = len(df)
+    df.set_index(filepath_column, drop=False, inplace=True)
+    labelsToKeep = df[filepath_column].map(check_function)
+    df = df[labelsToKeep]
+    df.reset_index(drop=True, inplace=True)
+
+    if verbose:
+        badLabels = dfLen - len(labelsToKeep)
+        print("\nFound and removed {} missing or corrupt entries in the DataFrame.".format(badLabels))
+
+    return df.copy()
+
+
 def remove_duplicates(target_df, index_column, verbose=False):
     '''
         Drop duplicated entries from target_df DataFrame. Entries are dropped if they have 
@@ -349,7 +368,7 @@ def remove_duplicates(target_df, index_column, verbose=False):
     target_df.reset_index(drop=True, inplace=True)
 
     if verbose:
-        print("\nFound and removed {} duplicated entries in unlabeled images Index.".format(numDups))
+        print("\nFound and removed {} duplicated entries in the DataFrame.".format(numDups))
 
     return target_df.copy()
 

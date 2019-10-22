@@ -43,7 +43,7 @@ if __name__ == "__main__":
                     "outputs_full_dataset_validation_rede_{}_iteration_{}.pickle".format(iteration, rede)
     resultsFolder = imageResultsFolder / "histogram_output_rede_{}_softmax".format(rede)
 
-
+    # Debug all file paths
     print("\nunlabeledSetFolder: {}\n{} ".format( Path(unlabeledSetFolder).is_dir(), unlabeledSetFolder))
     print("\niterPath: {}\n{} ".format( Path(iterPath).is_dir(), iterPath))
     print("\nimageFolderPath: {}\n{} ".format( Path(imageFolderPath).is_dir(), imageFolderPath))
