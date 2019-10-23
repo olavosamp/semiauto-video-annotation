@@ -13,7 +13,8 @@ run.class_set_split
 ----
 * dataset_inference on val set
 * compute_thresholds
-* dataset_inference on unlabeled set -> automatic annotation
+dataset_inference on unlabeled set
+* automatic_labeling - > Produces automatic_labeled_images.csv
 (sampe_auto_labeled) -> optional, used only to measure automatic annotation error percentage
 merge_labeled_sets
 new_unlabeled_set -> Get remaining unlabeled set for next iteration

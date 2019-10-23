@@ -12,11 +12,11 @@ from torch.utils.data       import DataLoader
 
 import libs.dirs            as dirs
 import libs.utils           as utils
+import libs.commons         as commons
 import libs.dataset_utils   as dutils
 import models.utils         as mutils
 from models.trainer_class   import TrainModel
 from libs.index             import IndexManager
-import libs.commons         as commons
 
 if __name__ == "__main__":
     seed = 33
@@ -25,12 +25,13 @@ if __name__ == "__main__":
     epochs      = 100
     rede        = 1
 
-    unlabelIndexPath = Path(dirs.iter_folder) / \
-                    "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
-    modelPath = Path(dirs.saved_models) / \
-                    "full_dataset_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(epochs, rede, iteration)
-    savePath = Path(dirs.saved_models) / \
-                    "outputs_full_dataset_iteration_{}_rede_{}.pickle".format(iteration, rede)
+    unlabelIndexPath  = Path(dirs.iter_folder) / \
+                "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
+    savedModelsFolder = Path(dirs.saved_models) / "full_dataset_rede_{}/iteration_{}".format(rede, iteration)
+    modelPath         = savedModelsFolder / \
+                "full_dataset_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(epochs, rede, iteration)
+    savePath          = savedModelsFolder / \
+                "outputs_full_dataset_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
 
     batchSize = 64
 
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     std     = commons.IMAGENET_STD 
 
     # Set transforms
-    dataTransforms = mutils.resnet_transforms(mean, std)
+    dataTransforms = mutils.resnet_transforms(mean, std)['val']
     
     # Label list for an unlabeled dataset (bit of a hack? is there a better way?)
     labelList = np.zeros(datasetLen)

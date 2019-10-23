@@ -8,6 +8,8 @@ import libs.dirs            as dirs
 import libs.utils           as utils
 import libs.dataset_utils   as dutils
 
+''' Merge manual and automatic labeled sets '''
+
 # TODO: Use versions in dutils
 def fill_index_information(reference_index, to_fill_index, index_column, columns_to_keep):
     reference_index.set_index(index_column, drop=False, inplace=True)

@@ -21,6 +21,61 @@ import libs.utils           as utils
 from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
+
+# Automatic labeling
+def automatic_labeling(outputs, outputs_index, upper_thresh, lower_thresh, verbose=True):
+    '''
+        Return the indexes whose corresponding outputs lie between the given upper and lower thresholds.
+    '''
+    datasetLen      = len(outputs)
+    # indexes         = np.arange(datasetLen, dtype=int)
+    indexes         = outputs_index
+    upperIndexes    = indexes[np.greater(outputs, upper_thresh)]
+    lowerIndexes    = indexes[np.less(outputs, lower_thresh)]
+    totalClassified = len(upperIndexes) + len(lowerIndexes)
+    
+    if verbose:
+        print("\nIdeal Upper Threshold: ", upper_thresh)
+        print("Ideal Lower Threshold: ", lower_thresh)
+
+        print("\nImages in:")
+        print("upperIndexes: ", len(upperIndexes))
+        print("lowerIndexes: ", len(lowerIndexes))
+        print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
+                                                                    (totalClassified)/datasetLen*100))
+    return upperIndexes, lowerIndexes
+
+
+def get_classified_index(index, pos_hashes, neg_hashes, index_col="FrameHash", verbose=True):
+    if index_col is not None:
+        index.set_index("FrameHash", drop=False, inplace=True)
+
+    positiveLabel = commons.rede1_positive
+    negativeLabel = commons.rede1_negative
+
+    newPositives = index.reindex(labels=pos_hashes, axis=0, copy=True)
+    newNegatives = index.reindex(labels=neg_hashes, axis=0, copy=True)
+
+    datasetLen    = len(index)
+    lenPositives = len(newPositives)
+    lenNegatives = len(newNegatives)
+
+    # Set positive and negative class labels
+    newPositives["rede1"] = [positiveLabel]*lenPositives
+    newNegatives["rede1"] = [negativeLabel]*lenNegatives
+
+    newLabeledIndex = pd.concat([newPositives, newNegatives], axis=0, sort=False)
+    if verbose:
+        print(newLabeledIndex.shape)
+        print("Unlabeled images: ", datasetLen)
+        print("New pos labels:   ", lenPositives)
+        print("New neg labels:   ", lenNegatives)
+        print("Total new labels: ", lenPositives+lenNegatives)
+        print("New labels len:   ", newLabeledIndex.shape)
+        print("\nAutomatic anotation of {:.2f} % of input images.".format(len(newLabeledIndex)/datasetLen*100))
+    return newLabeledIndex
+
+
 ## Threshold finding
 def compute_thresholds(val_outputs, labels,
                         upper_ratio=0.95,
@@ -66,24 +121,6 @@ def compute_thresholds(val_outputs, labels,
         automatic_labeling(val_outputs, idealUpperThresh, idealLowerThresh)
 
     return idealUpperThresh, idealLowerThresh
-
-
-def automatic_labeling(outputs, upper_thresh, lower_thresh):
-    datasetLen      = len(outputs)
-    indexes         = np.arange(datasetLen, dtype=int)
-    upperIndexes    = indexes[np.greater(outputs, upper_thresh)]
-    lowerIndexes    = indexes[np.less(outputs, lower_thresh)]
-    totalClassified = len(upperIndexes) + len(lowerIndexes)
-
-    print("\nIdeal Upper Threshold: ", upper_thresh)
-    print("Ideal Lower Threshold: ", lower_thresh)
-
-    print("\nImages in:")
-    print("upperIndexes: ", len(upperIndexes))
-    print("lowerIndexes: ", len(lowerIndexes))
-    print("\nImages automatically labeled: {}/{} = {:.2f} %".format(totalClassified, datasetLen,
-                                                                (totalClassified)/datasetLen*100))
-    return upperIndexes, lowerIndexes
 
 
 def upper_positive_relative_ratio(outputs, labels, threshold):
@@ -311,16 +348,13 @@ def move_dataset_to_train(index_path, dataset_folder, path_column="FramePath", v
     return successes
 
 
-def fill_index_information(reference_index, to_fill_index, index_column):
+def fill_index_information(reference_index, to_fill_index, index_column, columns_to_keep):
     reference_index.set_index(index_column, drop=False, inplace=True)
     to_fill_index.set_index(index_column, drop=False, inplace=True)
 
     complete_index = reference_index.loc[to_fill_index.index, :]
-    # complete_index = pd.concat([to_fill_index, subset_index], axis=1, sort=False)
-    for col in to_fill_index.columns:
-        print(col)
-        if col != "FramePath":
-            complete_index[col] = to_fill_index[col].copy()
+    for col in columns_to_keep:
+        complete_index[col] = to_fill_index[col]
 
     complete_index.reset_index(drop=True, inplace=True)
     reference_index.reset_index(drop=True, inplace=True)

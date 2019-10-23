@@ -12,6 +12,7 @@ from torch.utils.data       import DataLoader
 
 import libs.dirs            as dirs
 import libs.utils           as utils
+import libs.commons         as commons
 import libs.dataset_utils   as dutils
 import models.utils         as mutils
 from models.trainer_class   import TrainModel
@@ -40,7 +41,7 @@ if __name__ == "__main__":
     std     = commons.IMAGENET_STD 
 
     # Set transforms
-    dataTransforms = mutils.resnet_transforms(mean, std)
+    dataTransforms = mutils.resnet_transforms(mean, std)['val']
 
     ## Perform inference on validation set and save outputs to file
     # outputDf = mutils.dataset_inference_val(datasetPath, dataTransforms, modelPath, savePath, batch_size=batchSize)

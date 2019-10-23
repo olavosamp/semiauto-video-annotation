@@ -16,7 +16,7 @@ rede        = 1
 
 indexPath    = Path(dirs.iter_folder) / \
                 "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
-savedModelsFolder = Path(dirs.saved_models) / "full_dataset_rede_{}/iteration_{}".format(rede, iteration)
+savedModelsFolder = Path(dirs.saved_models) / "full_dataset_rede_{}_softmax/iteration_{}".format(rede, iteration)
 outputPath   = savedModelsFolder / \
                 "outputs_full_dataset_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
 newIndexPath = Path(dirs.iter_folder) / \
@@ -28,52 +28,21 @@ idealLowerThresh = 0.0904 # Ratio 0.01%
 indexDf    = pd.read_csv(indexPath)
 pickleData = utils.load_pickle(outputPath)
 
-positiveLabel = commons.rede1_positive
-negativeLabel = commons.rede1_negative
 
 indexDf     = dutils.remove_duplicates(indexDf, "FrameHash")
 outputs, imgHashes, _ = dutils.load_outputs_df(outputPath)
+
 outputs = outputs[:, 0]
-# pickleData  = dutils.remove_duplicates(pickleData, "ImgHashes")
 
 indexDf.set_index("FrameHash", drop=False, inplace=True)
-# pickleData.set_index("ImgHashes", drop=False, inplace=True)
-
-# outputs    = np.stack(pickleData["Outputs"])[:, 0]
-# outputs    = utils.normalize_array(outputs)
-datasetLen = len(outputs)
 
 print("\nAutomatic labeling with upper positive ratio 99%:")
-upperClassified, lowerClassified = dutils.automatic_labeling(outputs, idealUpperThresh, idealLowerThresh)
+posHashes, negHashes = dutils.automatic_labeling(outputs, imgHashes,
+                                                 idealUpperThresh, idealLowerThresh)
 
-# newLabels = np.concatenate([upperClassified, lowerClassified])
-# newHashes = pickleData.loc[newLabels, "ImgHashes"].values
-# newLabeledIndex = indexDf.reindex(labels=newHashes, axis=0, copy=True)
+newLabeledIndex = dutils.get_classified_index(indexDf, posHashes, negHashes, verbose=False)
 
-posHashes = imgHashes[upperClassified]
-negHashes = imgHashes[lowerClassified]
-
-newPositives = indexDf.reindex(labels=posHashes, axis=0, copy=True)
-newNegatives = indexDf.reindex(labels=negHashes, axis=0, copy=True)
-
-lenPositives = len(newPositives)
-lenNegatives = len(newNegatives)
-# Set positive and negative class labels
-newPositives["rede1"] = [positiveLabel]*lenPositives
-newNegatives["rede1"] = [negativeLabel]*lenNegatives
-
-newLabeledIndex = pd.concat([newPositives, newNegatives], axis=0, sort=False)
-
-
-print(newLabeledIndex.shape)
-print("outputs:          ", datasetLen)
-print("\nnew pos labels:   ", lenPositives)
-print("new neg labels:   ", lenNegatives)
-print("total new labels: ", lenPositives+lenNegatives)
-print("new labels df:    ", newLabeledIndex.shape)
-print(len(newLabeledIndex)/datasetLen*100)
-
-# newLabeledIndex.to_csv(newIndexPath, index=False)
+newLabeledIndex.to_csv(newIndexPath, index=False)
 
 imgSavePath = Path(dirs.results) / "histogram_unlabeled_outputs.pdf"
 plot_outputs_histogram(outputs, lower_thresh=idealLowerThresh, upper_thresh=idealUpperThresh,
