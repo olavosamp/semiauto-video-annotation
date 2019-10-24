@@ -347,9 +347,10 @@ def load_outputs_df(outputPath, remove_duplicates=False, softmax=True):
     return outputs.numpy(), imgHashes, labels
 
 
-def move_dataset_to_train(index_path, dataset_folder, path_column="FramePath", verbose=True):
+def move_dataset_to_train(index_path, dest_folder, path_column="FramePath", verbose=True):
     ''' Move images from dataset folder to sampled images'''
-    def _add_folder_and_copy(x): return utils.copy_files(Path(x), dataset_folder / Path(x).name)
+    def _add_folder_and_copy(x):
+        return utils.copy_files(Path(x), dest_folder / Path(x).name)
     index = pd.read_csv(index_path)
     
     if verbose:
@@ -424,7 +425,7 @@ def move_to_class_folders(indexPath, imageFolderPath, target_net="rede1", verbos
     '''
         Sort labeled images in class folders according to index file with labels and filepaths.
     '''
-    indexPath       = Path(indexPath)
+    indexPath     = Path(indexPath)
     assert imageFolderPath.is_dir(), "Folder argument must be a valid image folder."
 
     imageIndex = pd.read_csv(indexPath)
@@ -443,7 +444,7 @@ def move_to_class_folders(indexPath, imageFolderPath, target_net="rede1", verbos
     destList = []
     print("Moving files to class folders...")
     for i in tqdm(range(numImages)):
-        imageName  = imageIndex.loc[i, 'FrameName']
+        imageName  = str(imageIndex.loc[i, 'FrameName'])
         # print(imageFolderPath)
         # print(imageName)
         source   = imageFolderPath / imageName

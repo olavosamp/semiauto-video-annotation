@@ -46,10 +46,12 @@ if __name__ == "__main__":
     fullOutputPath       = savedModelsFolder / \
         "outputs_full_dataset_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
 
+    originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
     unlabeledIndexPath    = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
     sampledIndexPath      = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
     manualIndexPath       = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)
-    prevManualIndexPath   = previousIterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration-1)
+    prevManualIndexPath   = previousIterFolder / \
+        "manual_annotated_images_iteration_{}_train_val_split.csv".format(iteration-1)
     splitIndexPath        = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
     autoLabelIndexPath    = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
     mergedIndexPath       = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
@@ -64,86 +66,67 @@ if __name__ == "__main__":
 # splitIndexPath      : annotated_images_..._train_val_split contains the annotated images to be used in training this iteration, that is, the manual annotated images from the current and previous iterations.
 # autoLabelIndexPath  : automatic_labeled_images contains images annotated automatically in the current iteration
 
-    # ## Process manual labels and create new unlabeled set
+    ## Process manual labels and create new unlabeled set
+    # Add folder path
+    def _add_folder_path(path):
+        path = sampledImageFolder / Path(path)
+        return str(path)
 
-    # # Add folder path
-    # def _add_folder_path(path):
-    #     path = sampledImageFolder / Path(path)
-    #     return str(path)
+    # Load model outputs and unlabeled images index
+    indexSampled = IndexManager(sampledIndexPath)
 
-    # # Load model outputs and unlabeled images index
-    # indexSampled = IndexManager(sampledIndexPath)
+    indexSampled.index["FramePath"] = indexSampled.index["imagem"].map(_add_folder_path)
 
-    # indexSampled.index["FramePath"] = indexSampled.index["imagem"].map(_add_folder_path)
+    eTime = indexSampled.compute_frame_hashes(reference_column="FramePath", verbose=True)
 
-    # eTime = indexSampled.compute_frame_hashes(reference_column="FramePath", verbose=True)
+    indexSampled.write_index(dest_path=manualIndexPath, make_backup=False, prompt=False)
 
-    # # indexSampled.index.set_index('FrameHash', drop=False, inplace=True)
-    # # indexSampled.index.reset_index(drop=True, inplace=True)
-    # indexSampled.write_index(dest_path=manualIndexPath, make_backup=False, prompt=False)
+    ## Merge manual annotated labels from current and previous iterations
+    if iteration > 1:
+        oldLabels = pd.read_csv(prevManualIndexPath)
+        newLabels = pd.read_csv(manualIndexPath)
 
-    # ## Merge manual annotated labels from current and previous iterations
-    # if iteration > 1:
-    #     oldLabels = pd.read_csv(prevManualIndexPath)
-    #     newLabels = pd.read_csv(manualIndexPath)
+        # Add folder path
+        def _add_folder_path(path):
+            path = sampledImageFolder / Path(path)
+            return str(path)
 
-    #     # Add folder path
-    #     def _add_folder_path(path):
-    #         path = sampledImageFolder / Path(path)
-    #         return str(path)
+        # Remove duplicates
+        oldLabels = dutils.remove_duplicates(oldLabels, "FrameHash")
+        newLabels = dutils.remove_duplicates(newLabels, "FrameHash")
 
-    #     # newLabels["FramePath"] = newLabels["imagem"].map(_add_folder_path)
-    #     # newLabels["FrameHash"] = newLabels["FramePath"].map(utils.file_hash)
+        # Get additional information for newLabels from main unlabeled index
+        # TODO: Don't do this again when merging auto and manual annotated indexes
+        originalUnlabeledIndex = pd.read_csv(originalUnlabeledIndexPath)
+        originalUnlabeledIndex = dutils.remove_duplicates(originalUnlabeledIndex, "FrameHash")
 
-    #     # Add annotation type column to manual_labeled_raw index
-    #     newLabels["Annotation"] = [commons.manual_annotation]*len(newLabels)
+        newLabels = dutils.fill_index_information(originalUnlabeledIndex, newLabels,
+                                                 "FrameHash", [ 'rede1', 'rede2', 'rede3'])
+        oldLabels = dutils.fill_index_information(originalUnlabeledIndex, oldLabels,
+                                                 "FrameHash", [ 'rede1', 'rede2', 'rede3'])
 
-    #     # Remove duplicates
-    #     oldLabels = dutils.remove_duplicates(oldLabels, "FrameHash")
-    #     newLabels = dutils.remove_duplicates(newLabels, "FrameHash")
-
-    #     # Get additional information for newLabels from main unlabeled index
-    #     # TODO: Don't do this again when merging auto and manual annotated indexes
-    #     unlabeledIndex = pd.read_csv(unlabeledIndexPath)
-    #     unlabeledIndex = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
-
-    #     newLabels = dutils.fill_index_information(unlabeledIndex, newLabels,
-    #                                              "FrameHash", ["Annotation", 'rede1', 'rede2', 'rede3'])
-
-    #     mergedIndex = pd.concat([newLabels, oldLabels], axis=0, sort=False)
-    #     mergedIndex.to_csv(manualIndexPath, index=False)
-
+        mergedIndex = pd.concat([newLabels, oldLabels], axis=0, sort=False)
+        mergedIndex.to_csv(manualIndexPath, index=False)
 
     ## Split train and val sets
     splitPercentages = [0.8, 0.2]
 
     # Move images from dataset folder to sampled images
     # Sort images in sampled_images folder to separate class folders
-    dutils.move_dataset_to_train(manualIndexPath, remoteDatasetFolder, path_column="FramePath")
+    dutils.move_dataset_to_train(manualIndexPath, sampledImageFolder, path_column="FramePath")
+    
     imageIndex = dutils.move_to_class_folders(manualIndexPath, sampledImageFolder, target_net="rede1")
-    # input("\nDelete unwanted class folders and press Enter to continue.")
+    input("\nDelete unwanted class folders and press Enter to continue.")
 
     # Split dataset in train and validation sets, sorting them in val and train folders
     splitIndex = dutils.data_folder_split(sampledImageFolder,
                                         splitPercentages, index=imageIndex.copy(), seed=seed)
     splitIndex.to_csv(splitIndexPath, index=False)
 
-    # TODO: Move to separate script: iteration_train
     # ## Train model
-    # # ImageNet statistics
-    # mean    = commons.IMAGENET_MEAN
-    # std     = commons.IMAGENET_STD 
+    # MOVED TO iteration_train
 
-    # # Set transforms
-    # dataTransforms = mutils.resnet_transforms(mean, std)
-
-    # history, modelFineTune = mutils.train_network(sampledImageFolder, dataTransforms, epochs=25, batch_size=64,
-    #                                         model_path=modelPath,
-    #                                         history_path=historyPath)
-
-    # # TODO: Plot train history here. Encapsulate scripts to functions and put here
-
-
+    # TODO: Move to iteration_part_3
     # ## Dataset Inference on Validation set to find thresholds
     # mutils.set_torch_random_seeds(seed)
 

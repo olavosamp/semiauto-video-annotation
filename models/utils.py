@@ -23,7 +23,10 @@ def set_torch_random_seeds(seed):
 ## Model training and inference
 def train_network(dataset_path, data_transforms, epochs=25, batch_size=64,
                   model_path="./model_weights.pt",
-                  history_path="./train_history.pickle"):
+                  history_path="./train_history.pickle",
+                  seed=None):
+    if seed:
+        set_torch_random_seeds(seed)
 
     # Load Dataset objects for train and val sets from folder
     sets = ['train', 'val']
