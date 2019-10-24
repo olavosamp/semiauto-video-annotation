@@ -10,7 +10,7 @@ import libs.dataset_utils   as dutils
 from libs.vis_functions     import plot_outputs_histogram
 
 
-outputPath = Path(dirs.saved_models) / "outputs_full_dataset_validation_iteration_1_rede1.pickle"
+outputPath = Path(dirs.saved_models) / "outputs_full_dataset_validation_iteration_1_rede_1.pickle"
 pickleData = utils.load_pickle(outputPath)
 
 outputs      = np.stack(pickleData["Outputs"])

@@ -22,8 +22,8 @@ outputPath   = savedModelsFolder / \
 newIndexPath = Path(dirs.iter_folder) / \
                 "full_dataset/iteration_{}/automatic_labeled_images_iteration_{}.csv".format(iteration, iteration)
 
-idealUpperThresh = 0.8923 # Ratio 99.99%
-idealLowerThresh = 0.0904 # Ratio 0.01%
+idealUpperThresh = 0.8923 # Ratio 99%
+idealLowerThresh = 0.0904 # Ratio 1%
 
 indexDf    = pd.read_csv(indexPath)
 pickleData = utils.load_pickle(outputPath)

@@ -136,6 +136,7 @@ class SampleImages:
         self.percentage  = None
         self.seed        = seed
         self.verbose     = verbose
+        self.index       = None
 
         np.random.seed(self.seed)
         dirs.create_folder(self.destFolder)

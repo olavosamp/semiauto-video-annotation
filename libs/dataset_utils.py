@@ -313,6 +313,21 @@ class IndexLoader:
             return imgList, imgHashList, labelList
 
 
+def index_complement(reference_df, to_drop_df, column_label):
+    '''
+        Drop rows from 'reference_df' DataFrame indicated by column_label
+        column of 'to_drop_df' DataFrame.
+
+        The operation performed can be interpreted a set complement between reference and
+        to_drop DataFrames. Returns a DataFrame with length equal to (len(reference_df) - len(to_drop_df)).
+    '''
+    reference_df.set_index(column_label, drop=False, inplace=True)
+    reference_df.drop(labels=to_drop_df[column_label], axis=0, inplace=True)
+
+    reference_df.reset_index(drop=True, inplace=True)
+    return reference_df.copy()
+
+
 def load_outputs_df(outputPath, remove_duplicates=False, softmax=True):
     '''
         Load a pickled dictionary containing a set of outputs, image hashes and labels.
