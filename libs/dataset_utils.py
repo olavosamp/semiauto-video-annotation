@@ -81,7 +81,7 @@ def compute_thresholds(val_outputs, labels,
                         upper_ratio=0.95,
                         lower_ratio=0.01,
                         resolution=0.001,
-                        verbose=True):
+                        val_indexes=None):
     val_outputs = np.squeeze(utils.normalize_array(val_outputs))
     val_outputs = val_outputs[:, 0]
     resBits = len(str(resolution)) -2
@@ -117,8 +117,8 @@ def compute_thresholds(val_outputs, labels,
     #     idealUpperThresh = meanThresh
     #     idealLowerThresh = meanThresh
 
-    if verbose:
-        automatic_labeling(val_outputs, idealUpperThresh, idealLowerThresh)
+    if val_indexes is not None:
+        automatic_labeling(val_outputs, val_indexes, idealUpperThresh, idealLowerThresh)
 
     return idealUpperThresh, idealLowerThresh
 
@@ -170,10 +170,10 @@ def find_ideal_lower_thresh(outputs, labels, threshold_list=None, ratio=0.01, re
             print("{:.2f}\t\t{:.2f}".format(lowerThresh, posRatio)) # Print search progress
 
         if (posRatio > ratio) and (ratio > 0.):
-            # if i-1 < 0:
-            #     print("\nThreshold could not be found.")
-            #     return None
-            idealThresh = threshold_list[i]
+            if i-1 < 0:
+                print("\nThreshold could not be found.")
+                return None
+            idealThresh = threshold_list[i-1]
             posRatio = lower_positive_ratio(outputs, labels, idealThresh)
 
             print("\nFound ideal Lower threshold {:.3f} with {:.2f} % ground truth positives.".format(idealThresh, posRatio*100))
@@ -195,12 +195,10 @@ def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, re
             print("{:.2f}\t\t{:.2f}".format(upperThresh, posRatio)) # Print search progress
 
         if (posRatio < ratio) and (ratio < 1.):
-            print(posRatio)
-            print(ratio)
-            # if i-1 < 0:
-            #     print("\nThreshold could not be found.")
-            #     return None
-            idealThresh = threshold_list[i]
+            if i-1 < 0:
+                print("\nThreshold could not be found.")
+                return None
+            idealThresh = threshold_list[i-1]
             posRatio = upper_positive_relative_ratio(outputs, labels, idealThresh)
 
             print("\nFound ideal Upper threshold {:.3f} with {:.2f} % ground truth positives.".format(idealThresh, posRatio*100))

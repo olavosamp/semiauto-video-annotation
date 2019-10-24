@@ -28,8 +28,6 @@ if __name__ == "__main__":
     def get_iter_folder(iteration):
         return Path(dirs.iter_folder) / "full_dataset_softmax/iteration_{}/".format(iteration)
 
-    sampledImagesFolder  = Path(dirs.iter_folder) / "full_dataset/iteration_2/"
-    
     remoteDatasetFolder  = Path(dirs.dataset) / "all_datasets_1s"
     previousIterFolder   = get_iter_folder(iteration-1)
     iterFolder           = get_iter_folder(iteration)
@@ -102,21 +100,21 @@ if __name__ == "__main__":
     # outputDf = mutils.dataset_inference_val(valSetFolder, dataTransforms['val'], modelPath,
     #                                         valOutputPath, batch_size=inferBatchSize)
 
-    # valOutputs, imgHashes, labels = dutils.load_outputs_df(valOutputPath)
 
     # # Compute decision thresholds
+    # valOutputs, imgHashes, labels = dutils.load_outputs_df(valOutputPath)
     # upperThresh, lowerThresh = dutils.compute_thresholds(valOutputs,
     #                                                                labels,
     #                                                                upper_ratio=0.99,
     #                                                                lower_ratio=0.01,
     #                                                                resolution=0.0001,#resolution='max',
-    #                                                                verbose=True)
+    #                                                                val_indexes=imgHashes)
 
     # # Plot validation outputs histogram
     # valOutputs = valOutputs[:, 0]
     # plot_outputs_histogram(valOutputs, labels, lowerThresh, upperThresh, show=False,
     #                        save_path = valHistogramPath)
-    
+
     # ## Perform inference on entire unlabeled dataset
     # # TODO
 
@@ -184,13 +182,6 @@ if __name__ == "__main__":
 
     # dirs.create_folder(newUnlabeledIndexPath.parent)
     newIndex.to_csv(newUnlabeledIndexPath, index=False)
-
-    ### Next Iteration
-    ## Sample images for manual annotation
-    sampler = SampleImages(newUnlabeledIndexPath, sampledImagesFolder, seed=seed)
-    sampler.sample(percentage=0.01)
-    # print(sampler.imageSourcePaths)
-    print(sampler.imageSourcePaths.shape)
 
     # # Debug all file paths
     # print("\nremoteDatasetFolder: {}\n{} ".format( Path(remoteDatasetFolder).is_dir(), remoteDatasetFolder))

@@ -10,25 +10,26 @@ import libs.dataset_utils   as dutils
 from libs.vis_functions     import plot_outputs_histogram
 
 
-outputPath = Path(dirs.saved_models) / "outputs_full_dataset_validation_iteration_1_rede_1.pickle"
-pickleData = utils.load_pickle(outputPath)
+valOutputPath = Path(dirs.saved_models) / "full_dataset_rede_1/iteration_1/outputs_full_dataset_validation_rede_1_iteration_1.pickle"
+# pickleData = utils.load_pickle(valOutputPath)
 
-outputs      = np.stack(pickleData["Outputs"])
-imgHashes    = pickleData["ImgHashes"]
-labels       = pickleData["Labels"]
-
-idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(outputs,
+# outputs      = np.stack(pickleData["Outputs"])
+# imgHashes    = pickleData["ImgHashes"]
+# labels       = pickleData["Labels"]
+valOutputs, imgHashes, labels = dutils.load_outputs_df(valOutputPath)
+print(valOutputs.shape)
+idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(valOutputs,
                                                                labels,
                                                                upper_ratio=0.99,
                                                                lower_ratio=0.01,
                                                                resolution=0.0001,
-                                                               verbose=True)
+                                                               val_indexes=imgHashes)
 
 # Plot outputs histogram
-outputs = outputs[:, 0]
-outputs = np.squeeze(utils.normalize_array(outputs))
-plot_outputs_histogram(outputs, labels, idealLowerThresh, idealUpperThresh,
-                       save_path=Path(dirs.results)/"histogram_val_set_output_thresholds.png")
+# valOutputs = valOutputs[:, 0]
+# valOutputs = np.squeeze(utils.normalize_array(outputs))
+# plot_outputs_histogram(outputs, labels, idealLowerThresh, idealUpperThresh,
+#                        save_path=Path(dirs.results)/"histogram_val_set_output_thresholds.png")
 
 ## Compute predictions comparing the greater score of the output pair
 # predictionsMax = np.argmax(outputs, axis=1)
