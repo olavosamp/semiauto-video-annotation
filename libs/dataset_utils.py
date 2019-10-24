@@ -349,7 +349,7 @@ def load_outputs_df(outputPath, remove_duplicates=False, softmax=True):
 
 def move_dataset_to_train(index_path, dataset_folder, path_column="FramePath", verbose=True):
     ''' Move images from dataset folder to sampled images'''
-    def _add_folder_and_copy(x): return utils.copy_files(Path(x), imageFolderPath / Path(x).name)
+    def _add_folder_and_copy(x): return utils.copy_files(Path(x), dataset_folder / Path(x).name)
     index = pd.read_csv(index_path)
     
     if verbose:

@@ -2,6 +2,7 @@ extract_all_datasets
 
 run_sample_images  -> sample percentage of unlabeled set to be annotated
 * -- HUMAN -- annotate sampled set
+process_annotations_file
 run.merge_new_an_old_labels -> merge new and current labeled sets
 new_unlabeled_set -> Complement of current labeled set and last iteration unlabeled.
                      Creates new and smaller unlabeled set represented by a csv file

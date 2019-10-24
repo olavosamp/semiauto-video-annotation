@@ -8,7 +8,7 @@ import libs.utils             as utils
 import libs.dataset_utils     as dutils
 
 iterPath        = Path(dirs.iter_folder) / "full_dataset/iteration_2/"
-indexPath       = iterPath / "annotated_images_iteration_2.csv"
+indexPath       = iterPath / "manual_annotated_images_iteration_2.csv"
 imageFolderPath = iterPath / "sampled_images"
 datasetFolder   = Path(dirs.dataset) / "all_datasets_1s"
 savePath        = indexPath.parent / (indexPath.stem + "_train_val_split.csv")

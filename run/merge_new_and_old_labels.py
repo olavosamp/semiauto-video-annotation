@@ -38,7 +38,7 @@ newLabels = dutils.remove_duplicates(newLabels, "FrameHash")
 unlabeledIndex = pd.read_csv(unlabeledPath)
 unlabeledIndex = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
 
-newLabels = dutils.fill_index_information(unlabeledIndex, newLabels, "FrameHash")
+newLabels = dutils.fill_index_information(unlabeledIndex, newLabels, "FrameHash", ['rede1', 'rede2', 'rede3'])
 print(newLabels.head())
 print(newLabels.shape)
 
@@ -46,5 +46,5 @@ mergedIndex = pd.concat([newLabels, oldLabels], axis=0, sort=False)
 print(mergedIndex.head())
 print(mergedIndex.shape)
 
-mergedIndex.to_csv(newPath.with_name("annotated_images_iteration_2.csv"), index=False)
+mergedIndex.to_csv(newPath.with_name("manual_annotated_images_iteration_2.csv"), index=False)
 

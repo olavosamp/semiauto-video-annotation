@@ -16,10 +16,9 @@ from libs.vis_functions         import plot_outputs_histogram
 from libs.iteration_manager     import SampleImages
 
 
-
 if __name__ == "__main__":
     seed           = 42
-    iteration      = 1
+    iteration      = 2
     rede           = 1
     epochs         = 1000
     trainBatchSize = 256
@@ -47,16 +46,17 @@ if __name__ == "__main__":
     fullOutputPath       = savedModelsFolder / \
         "outputs_full_dataset_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
 
-    unlabeledIndexPath   = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
-    manualIndexPath      = iterFolder / "annotated_images_iteration_{}.csv".format(iteration)
-    splitIndexPath       = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
-    autoLabelIndexPath   = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
-    mergedIndexPath      = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
-    newUnlabeledIndexPath= iterFolder / "unlabeled_images_iteration_{}.csv".format(iteration)
-    # manualIndexPath      = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
+    unlabeledIndexPath    = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
+    sampledIndexPath      = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
+    manualIndexPath       = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)
+    prevManualIndexPath   = previousIterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration-1)
+    splitIndexPath        = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
+    autoLabelIndexPath    = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
+    mergedIndexPath       = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
+    newUnlabeledIndexPath = iterFolder / "unlabeled_images_iteration_{}.csv".format(iteration)
 
-    unlabelHistogramPath = imageResultsFolder / "histogram_unlabeled_outputs.pdf"
-    valHistogramPath     = imageResultsFolder / "histogram_validation_outputs.pdf"
+    unlabelHistogramPath = imageResultsFolder / "histogram_unlabeled_outputs_iteration_{}.pdf".format(iteration)
+    valHistogramPath     = imageResultsFolder / "histogram_validation_outputs_iteration_{}.pdf".format(iteration)
 
 # unlabeledIndexPath  : unlabeled_images contains all the images still not labeled at the end of the iteration. Will be read at the next iteration as a reference
 # mergedIndexPath     : final_annotated_images contains all images annotated in an iteration and on the previous iterations
@@ -64,20 +64,71 @@ if __name__ == "__main__":
 # splitIndexPath      : annotated_images_..._train_val_split contains the annotated images to be used in training this iteration, that is, the manual annotated images from the current and previous iterations.
 # autoLabelIndexPath  : automatic_labeled_images contains images annotated automatically in the current iteration
 
-    # ## Split train and val sets
-    # splitPercentages = [0.8, 0.2]
+    # ## Process manual labels and create new unlabeled set
 
-    # # Move images from dataset folder to sampled images
-    # # Sort images in sampled_images folder to separate class folders
-    # dutils.move_dataset_to_train(manualIndexPath, remoteDatasetFolder, path_column="FramePath")
-    # imageIndex = dutils.move_to_class_folders(manualIndexPath, sampledImageFolder, target_net="rede1")
-    # # input("\nDelete unwanted class folders and press Enter to continue.")
+    # # Add folder path
+    # def _add_folder_path(path):
+    #     path = sampledImageFolder / Path(path)
+    #     return str(path)
 
-    # # Split dataset in train and validation sets, sorting them in val and train folders
-    # splitIndex = dutils.data_folder_split(sampledImageFolder,
-    #                                     splitPercentages, index=imageIndex.copy(), seed=seed)
-    # splitIndex.to_csv(splitIndexPath, index=False)
+    # # Load model outputs and unlabeled images index
+    # indexSampled = IndexManager(sampledIndexPath)
 
+    # indexSampled.index["FramePath"] = indexSampled.index["imagem"].map(_add_folder_path)
+
+    # eTime = indexSampled.compute_frame_hashes(reference_column="FramePath", verbose=True)
+
+    # # indexSampled.index.set_index('FrameHash', drop=False, inplace=True)
+    # # indexSampled.index.reset_index(drop=True, inplace=True)
+    # indexSampled.write_index(dest_path=manualIndexPath, make_backup=False, prompt=False)
+
+    # ## Merge manual annotated labels from current and previous iterations
+    # if iteration > 1:
+    #     oldLabels = pd.read_csv(prevManualIndexPath)
+    #     newLabels = pd.read_csv(manualIndexPath)
+
+    #     # Add folder path
+    #     def _add_folder_path(path):
+    #         path = sampledImageFolder / Path(path)
+    #         return str(path)
+
+    #     # newLabels["FramePath"] = newLabels["imagem"].map(_add_folder_path)
+    #     # newLabels["FrameHash"] = newLabels["FramePath"].map(utils.file_hash)
+
+    #     # Add annotation type column to manual_labeled_raw index
+    #     newLabels["Annotation"] = [commons.manual_annotation]*len(newLabels)
+
+    #     # Remove duplicates
+    #     oldLabels = dutils.remove_duplicates(oldLabels, "FrameHash")
+    #     newLabels = dutils.remove_duplicates(newLabels, "FrameHash")
+
+    #     # Get additional information for newLabels from main unlabeled index
+    #     # TODO: Don't do this again when merging auto and manual annotated indexes
+    #     unlabeledIndex = pd.read_csv(unlabeledIndexPath)
+    #     unlabeledIndex = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
+
+    #     newLabels = dutils.fill_index_information(unlabeledIndex, newLabels,
+    #                                              "FrameHash", ["Annotation", 'rede1', 'rede2', 'rede3'])
+
+    #     mergedIndex = pd.concat([newLabels, oldLabels], axis=0, sort=False)
+    #     mergedIndex.to_csv(manualIndexPath, index=False)
+
+
+    ## Split train and val sets
+    splitPercentages = [0.8, 0.2]
+
+    # Move images from dataset folder to sampled images
+    # Sort images in sampled_images folder to separate class folders
+    dutils.move_dataset_to_train(manualIndexPath, remoteDatasetFolder, path_column="FramePath")
+    imageIndex = dutils.move_to_class_folders(manualIndexPath, sampledImageFolder, target_net="rede1")
+    # input("\nDelete unwanted class folders and press Enter to continue.")
+
+    # Split dataset in train and validation sets, sorting them in val and train folders
+    splitIndex = dutils.data_folder_split(sampledImageFolder,
+                                        splitPercentages, index=imageIndex.copy(), seed=seed)
+    splitIndex.to_csv(splitIndexPath, index=False)
+
+    # TODO: Move to separate script: iteration_train
     # ## Train model
     # # ImageNet statistics
     # mean    = commons.IMAGENET_MEAN
@@ -99,7 +150,6 @@ if __name__ == "__main__":
     # # Perform inference on validation set and save outputs to file
     # outputDf = mutils.dataset_inference_val(valSetFolder, dataTransforms['val'], modelPath,
     #                                         valOutputPath, batch_size=inferBatchSize)
-
 
     # # Compute decision thresholds
     # valOutputs, imgHashes, labels = dutils.load_outputs_df(valOutputPath)
@@ -164,24 +214,24 @@ if __name__ == "__main__":
 
     # mergedIndex.to_csv(mergedIndexPath, index=False)
 
-    ## Create unlabeled set for next iteration
-    indexUnlabel = pd.read_csv(unlabeledIndexPath)
-    indexSampled = pd.read_csv(mergedIndexPath)
-    print(indexUnlabel.index.shape)
+    # ## Create unlabeled set for next iteration
+    # indexUnlabel = pd.read_csv(unlabeledIndexPath)
+    # indexSampled = pd.read_csv(mergedIndexPath)
+    # print(indexUnlabel.index.shape)
 
-    indexUnlabel = dutils.remove_duplicates(indexUnlabel, "FrameHash")
+    # indexUnlabel = dutils.remove_duplicates(indexUnlabel, "FrameHash")
 
-    # indexUnlabel.set_index("FrameHash", drop=False, inplace=True)
-    # indexSampled.set_index("FrameHash", drop=False, inplace=True)
+    # # indexUnlabel.set_index("FrameHash", drop=False, inplace=True)
+    # # indexSampled.set_index("FrameHash", drop=False, inplace=True)
 
-    print(indexUnlabel.index.duplicated().sum())
-    print(indexSampled.index.duplicated().sum())
+    # print(indexUnlabel.index.duplicated().sum())
+    # print(indexSampled.index.duplicated().sum())
 
-    newIndex = dutils.index_complement(indexUnlabel, indexSampled, "FrameHash")
-    print(newIndex.shape)
+    # newIndex = dutils.index_complement(indexUnlabel, indexSampled, "FrameHash")
+    # print(newIndex.shape)
 
-    # dirs.create_folder(newUnlabeledIndexPath.parent)
-    newIndex.to_csv(newUnlabeledIndexPath, index=False)
+    # # dirs.create_folder(newUnlabeledIndexPath.parent)
+    # newIndex.to_csv(newUnlabeledIndexPath, index=False)
 
     # # Debug all file paths
     # print("\nremoteDatasetFolder: {}\n{} ".format( Path(remoteDatasetFolder).is_dir(), remoteDatasetFolder))

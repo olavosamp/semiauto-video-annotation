@@ -420,7 +420,7 @@ class IndexManager:
     #     # TODO: Add matching entries to HashMD5 columns; Treat non matching VideoPaths;
 
 
-    def compute_frame_hashes(self, reference_column='FramePath'):
+    def compute_frame_hashes(self, reference_column='FramePath', verbose=False):
         '''
             Compute MD5 hashes for every frame in the index. The reference column
             is given by the input string reference_column.
@@ -434,6 +434,9 @@ class IndexManager:
             self.index["FrameHash"] = self.index.loc[:, reference_column].apply(utils.file_hash)
 
             elapsedTime = time.time() - start
+            if verbose:
+                print("Calculated frame hashes in {:.2f} seconds.".format(elapsedTime))
+
             return elapsedTime
         else:
             raise ValueError("Index does not exists.")

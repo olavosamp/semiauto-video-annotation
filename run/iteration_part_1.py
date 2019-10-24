@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     previousIterFolder   = get_iter_folder(iteration-1)
     iterFolder           = get_iter_folder(iteration)
-    nextIterFolder       = get_iter_folder(iteration+1)
+    # nextIterFolder       = get_iter_folder(iteration+1)
     unlabeledIndexPath   = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
 
     ### Next Iteration
@@ -37,3 +37,6 @@ if __name__ == "__main__":
     # print(sampler.imageSourcePaths)
     print(sampler.imageSourcePaths.shape)
     # Sampled images index will be created during the manual annotation
+
+    print("Image sampling finished.\nYou may now annotate sampled_images folder with the\
+         labeling interface and run next step.")
