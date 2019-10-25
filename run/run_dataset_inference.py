@@ -24,6 +24,7 @@ if __name__ == "__main__":
     iteration   = 2
     epochs      = 100
     rede        = 1
+    batchSize = 64
 
     unlabelIndexPath  = Path(dirs.iter_folder) / \
                 "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
@@ -33,7 +34,6 @@ if __name__ == "__main__":
     savePath          = savedModelsFolder / \
                 "outputs_full_dataset_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
 
-    batchSize = 64
 
     unlabelIndex = IndexManager(unlabelIndexPath)
 

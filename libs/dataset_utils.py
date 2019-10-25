@@ -518,9 +518,7 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
 
     print("Moving files to set folders...")
     for source, dest in tqdm(zip(sources, dests)):
-        # dirs.create_folder(source.parent)
         dirs.create_folder(dest.parent)
-        
         sh.move(source, dest)
     
     print("Set lengths:\n\ttrain: {}\n\tval: {}".format(setLengths[0], setLengths[1]))
@@ -532,20 +530,15 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
     fileList = set(fileList)
     print("\nDeleting temporary files...")
     for f in tqdm(fileList):
-        # print(f)
         if Path(f).is_dir():
             sh.rmtree(f)
         elif Path(f).is_file():
             os.remove(f)
-    
+
     if index is not None: # Update frame paths in index
         print("\nSaving to index...")
-        # def get_name(x): return str(x.name)
-        # def add_folder(x): return (Path(dirs.images) / "all_datasets_1s") / x
         def get_parts(x): return "/".join(x.parts[-3:])
 
-        # trainSourceList = list(map(get_name, trainSourceList))
-        # valSourceList   = list(map(get_name, valSourceList))
         trainHashList   = utils.make_file_hash_list(trainDestList, hash_column="FrameHash")["FrameHash"]
         valHashList     = utils.make_file_hash_list(valDestList, hash_column="FrameHash")["FrameHash"]
 

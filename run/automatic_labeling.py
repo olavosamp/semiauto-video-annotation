@@ -15,7 +15,7 @@ epochs      = 1000
 rede        = 1
 
 indexPath    = Path(dirs.iter_folder) / \
-                "full_dataset/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration, iteration)
+                "full_dataset_softmax/iteration_{}/unlabeled_images_iteration_{}.csv".format(iteration-1, iteration-1)
 savedModelsFolder = Path(dirs.saved_models) / "full_dataset_rede_{}_softmax/iteration_{}".format(rede, iteration)
 outputPath   = savedModelsFolder / \
                 "outputs_full_dataset_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
@@ -42,7 +42,7 @@ posHashes, negHashes = dutils.automatic_labeling(outputs, imgHashes,
 
 newLabeledIndex = dutils.get_classified_index(indexDf, posHashes, negHashes, verbose=False)
 
-newLabeledIndex.to_csv(newIndexPath, index=False)
+# newLabeledIndex.to_csv(newIndexPath, index=False)
 
 imgSavePath = Path(dirs.results) / "histogram_unlabeled_outputs.pdf"
 plot_outputs_histogram(outputs, lower_thresh=idealLowerThresh, upper_thresh=idealUpperThresh,

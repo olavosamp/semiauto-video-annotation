@@ -10,6 +10,7 @@ from torchvision            import transforms
 
 import libs.utils           as utils
 from models.trainer_class   import TrainModel
+from libs.index                 import IndexManager
 
 
 ## Pytorch utilities
@@ -82,9 +83,28 @@ def resnet_transforms(mean, std):
     return dataTransforms
 
 
+def _model_inference(image_path_list, data_transforms, label_list, model_path, batch_size):
+    imgLoader = dutils.IndexLoader(image_path_list, batch_size=batch_size,
+                                transform=data_transforms, label_list=label_list)
+
+    # Instantiate trainer object
+    trainer = TrainModel(model_path=model_path)
+    trainer.numClasses = 2
+
+    # Set model
+    trainer.define_model_resnet18(finetune=False, print_summary=True)
+
+    outputs, imgHashes, labels = trainer.model_inference(imgLoader)
+
+    outputDf = pd.DataFrame({"Outputs":   outputs,
+                            "ImgHashes": imgHashes,
+                            "Labels":    labels})
+    return outputDf
+
+
 def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, batch_size=64, verbose=True):
     '''
-        Perform inference on validation set and save outputs to file
+        Perform inference on validation set and save outputs to file.
     '''
     # Get list of image paths from dataset folder
     dataset = datasets.ImageFolder(str(dataset_path),
@@ -97,30 +117,49 @@ def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, 
     imagePathList  = np.array(dataset.imgs)[:, 0]
 
     if verbose:
+        print("Validation set inference.")
         print("\nDataset information: ")
         print("\t", datasetLen, "images.")
         print("\nClasses: ")
         for key in dataset.class_to_idx.keys():
             print("\t{}: {}".format(dataset.class_to_idx[key], key))
-
-    imgLoader = dutils.IndexLoader(imagePathList, batch_size=batch_size,
-                                   transform=data_transforms, label_list=labelList)
-
-    # Instantiate trainer object
-    trainer = TrainModel(model_path=model_path)
-    trainer.numClasses = 2
-
-    # Set model
-    trainer.define_model_resnet18(finetune=False, print_summary=True)
-
-    outputs, imgHashes, labels = trainer.model_inference(imgLoader)
-
-    outputDf = pd.DataFrame({"Outputs":   outputs,
-                             "ImgHashes": imgHashes,
-                             "Labels":    labels})
-
+    
+    outputDf = _model_inference(imagePathList, data_transforms, labelList, model_path, batch_size)
+    
     ## Save output to pickle file
-    print("\nSaving outputs file to ", save_path)
+    if verbose:
+        print("\nSaving outputs file to ", save_path)
     outputDf.to_pickle(save_path)
     return outputDf
 
+
+def dataset_inference_unlabeled(dataset_path, data_transforms, model_path, save_path,
+                    batch_size=64, verbose=True):
+    '''
+        Perform inference on an unlabeled dataset, using a csv Index file as reference.
+    '''
+    unlabelIndex = IndexManager(dataset_path)
+
+    # Drop duplicated files
+    unlabelIndex.index = dutils.remove_duplicates(unlabelIndex.index, "FrameHash")
+
+    # Drop missing or corrupt images
+    unlabelIndex.index = dutils.check_df_files(unlabelIndex.index, utils.check_empty_file, "FramePath")
+    
+    imagePathList = unlabelIndex.index["FramePath"].values
+    datasetLen    = len(imagePathList)
+
+    if verbose:
+        print("\nUnlabeled set inference")
+        print("\nDataset information: ")
+        print("\t", datasetLen, "images.")
+
+    # Label list for an unlabeled dataset (bit of a hack? is there a better way?)
+    labelList = np.zeros(datasetLen)
+
+    outputDf = _model_inference(imagePathList, data_transforms, labelList, model_path, batch_size)
+
+    ## Save output to pickle file
+    if verbose:
+        print("\nSaving outputs file to ", save_path)
+    outputDf.to_pickle(save_path)
