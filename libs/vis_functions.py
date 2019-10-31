@@ -9,6 +9,7 @@ def plot_outputs_histogram(normalized_outputs,
                            upper_thresh=None,
                            title="Outputs Histogram",
                            show=True,
+                           log=False,
                            save_path=None,
                            save_formats=[".png", ".pdf"]):
     fig = plt.figure(figsize=(8, 4))
@@ -19,10 +20,10 @@ def plot_outputs_histogram(normalized_outputs,
         posOutputs = normalized_outputs[labels == 0]
         negOutputs = normalized_outputs[labels == 1]
 
-        plt.hist(posOutputs, bins=100, label="Positive Examples")
-        plt.hist(negOutputs, bins=100, label="Negative Examples")
+        plt.hist(posOutputs, bins=100, label="Positive Examples", log=log)
+        plt.hist(negOutputs, bins=100, label="Negative Examples", log=log)
     else:
-        plt.hist(normalized_outputs, bins=100, label="Positive Examples")
+        plt.hist(normalized_outputs, bins=100, label="Positive Examples", log=log)
     
     if lower_thresh is not None and upper_thresh is not None:
         plt.gca().axvline(lower_thresh, 0., 1., color='b', label="Lower Thresh")

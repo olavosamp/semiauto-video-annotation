@@ -23,27 +23,30 @@ if __name__ == "__main__":
     trainBatchSize = 256
     inferBatchSize = 64
 
+    datasetName = "full_dataset_softmax"
+
     def get_iter_folder(iteration):
-        return Path(dirs.iter_folder) / "full_dataset_softmax/iteration_{}/".format(iteration)
+        return Path(dirs.iter_folder) / "{}/iteration_{}/".format(datasetName, iteration)
 
     remoteDatasetFolder  = Path(dirs.dataset) / "all_datasets_1s"
     previousIterFolder   = get_iter_folder(iteration-1)
     iterFolder           = get_iter_folder(iteration)
     nextIterFolder       = get_iter_folder(iteration+1)
     sampledImageFolder   = iterFolder / "sampled_images"
-    savedModelsFolder    = Path(dirs.saved_models) / "full_dataset_rede_{}/iteration_{}".format(rede, iteration)
+    savedModelsFolder    = Path(dirs.saved_models) / \
+        "{}_rede_{}/iteration_{}".format(datasetName, rede, iteration)
     valSetFolder         = sampledImageFolder / "val/"
     imageResultsFolder   = Path(dirs.results) / \
-              "full_dataset_rede_{}_softmax/iteration_{}".format(rede, iteration)
+        "{}_rede_{}_softmax/iteration_{}".format(datasetName, rede, iteration)
 
     modelPath            = savedModelsFolder / \
-        "full_dataset_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(epochs, rede, iteration)
+        "{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(datasetName, epochs, rede, iteration)
     historyPath          = savedModelsFolder / \
-        "history_full_dataset_no_finetune_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
+        "history_{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pickle".format(datasetName, epochs, rede, iteration)
     valOutputPath        = savedModelsFolder / \
-        "outputs_full_dataset_validation_rede_{}_iteration_{}.pickle".format(iteration, rede)
+        "outputs_{}_validation_rede_{}_iteration_{}.pickle".format(datasetName, rede, iteration)
     fullOutputPath       = savedModelsFolder / \
-        "outputs_full_dataset_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
+        "outputs_{}_{}_epochs_rede_{}_iteration_{}.pickle".format(datasetName, epochs, rede, iteration)
 
     originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
     unlabeledIndexPath    = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
@@ -59,19 +62,17 @@ if __name__ == "__main__":
     unlabelHistogramPath = imageResultsFolder / "histogram_unlabeled_outputs_iteration_{}.pdf".format(iteration)
     valHistogramPath     = imageResultsFolder / "histogram_validation_outputs_iteration_{}.pdf".format(iteration)
 
-    ## Dataset Inference on Validation set to find thresholds
-    # ImageNet statistics
-    mean    = commons.IMAGENET_MEAN
-    std     = commons.IMAGENET_STD 
+    # ## Dataset Inference on Validation set to find thresholds
+    # # ImageNet statistics
+    # mean    = commons.IMAGENET_MEAN
+    # std     = commons.IMAGENET_STD 
 
-    # Set transforms
-    dataTransforms = mutils.resnet_transforms(mean, std)
+    # # Set transforms
+    # dataTransforms = mutils.resnet_transforms(mean, std)
 
-    mutils.set_torch_random_seeds(seed)
-
-    # Perform inference on validation set and save outputs to file
-    outputDf = mutils.dataset_inference_val(valSetFolder, dataTransforms['val'], modelPath,
-                                            valOutputPath, batch_size=inferBatchSize)
+    # # # Perform inference on validation set and save outputs to file
+    # outputDf = mutils.dataset_inference_val(valSetFolder, dataTransforms['val'], modelPath,
+    #                                         valOutputPath, batch_size=inferBatchSize, seed=seed)
 
     # Compute decision thresholds
     valOutputs, imgHashes, labels = dutils.load_outputs_df(valOutputPath)
@@ -85,78 +86,73 @@ if __name__ == "__main__":
     # Plot validation outputs histogram
     valOutputs = valOutputs[:, 0]
     plot_outputs_histogram(valOutputs, labels, lowerThresh, upperThresh, show=False,
-                           save_path = valHistogramPath)
+                           save_path = valHistogramPath, log=True)
 
-    ## Perform inference on entire unlabeled dataset
-    mutils.dataset_inference_unlabeled(unlabeledIndexPath, dataTransforms['val'], modelPath, fullOutputPath,
-                        batch_size=inferBatchSize, verbose=True)
+    # ## Perform inference on entire unlabeled dataset
+    # mutils.dataset_inference_unlabeled(unlabeledIndexPath, dataTransforms['val'], modelPath, fullOutputPath,
+    #                     batch_size=inferBatchSize, seed=seed, verbose=True)
     
     # upperThresh = 0.8923 # Ratio 99%
     # lowerThresh = 0.0904 # Ratio 1%
 
-    print("\nUsing thresholds:\nUpper: {:.4f}\nLower: {:.4f}".format(upperThresh, lowerThresh))
+    # print("\nUsing thresholds:\nUpper: {:.4f}\nLower: {:.4f}".format(upperThresh, lowerThresh))
 
-    ## Perform automatic labeling
-    unlabeledIndex  = pd.read_csv(unlabeledIndexPath)
-    pickleData      = utils.load_pickle(fullOutputPath)
+    # ## Perform automatic labeling
+    # unlabeledIndex  = pd.read_csv(unlabeledIndexPath)
+    # pickleData      = utils.load_pickle(fullOutputPath)
 
-    unlabeledIndex        = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
-    outputs, imgHashes, _ = dutils.load_outputs_df(fullOutputPath)
-    outputs = outputs[:, 0]
+    # unlabeledIndex        = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
+    # outputs, imgHashes, _ = dutils.load_outputs_df(fullOutputPath)
+    # outputs = outputs[:, 0]
 
-    print("\nAutomatic labeling with upper positive ratio 99%:")
-    posHashes, negHashes = dutils.automatic_labeling(outputs, imgHashes,
-                                                    upperThresh, lowerThresh)
+    # print("\nAutomatic labeling with upper positive ratio 99%:")
+    # posHashes, negHashes = dutils.automatic_labeling(outputs, imgHashes,
+    #                                                 upperThresh, lowerThresh)
 
-    newLabeledIndex = dutils.get_classified_index(unlabeledIndex, posHashes, negHashes,
-                                                    index_col="FrameHash", verbose=False)
+    # newLabeledIndex = dutils.get_classified_index(unlabeledIndex, posHashes, negHashes,
+    #                                                 index_col="FrameHash", verbose=False)
 
-    newLabeledIndex.to_csv(autoLabelIndexPath, index=False)
+    # newLabeledIndex.to_csv(autoLabelIndexPath, index=False)
 
-    plot_outputs_histogram(outputs, lower_thresh=lowerThresh, upper_thresh=upperThresh,
-                        title="Unlabeled Outputs Histogram", save_path=unlabelHistogramPath, show=False)
+    # plot_outputs_histogram(outputs, lower_thresh=lowerThresh, upper_thresh=upperThresh,
+    #                     title="Unlabeled Outputs Histogram", save_path=unlabelHistogramPath, log=True, show=False)
 
-    # ## Merge labeled sets
-    # manualIndex = pd.read_csv(manualIndexPath)
-    # autoIndex   = pd.read_csv(autoLabelIndexPath)
+    ## Merge labeled sets
+    manualIndex = pd.read_csv(manualIndexPath)
+    autoIndex   = pd.read_csv(autoLabelIndexPath)
 
-    # manualIndex = dutils.remove_duplicates(manualIndex, "FrameHash")
-    # autoIndex   = dutils.remove_duplicates(autoIndex, "FrameHash")
+    manualIndex = dutils.remove_duplicates(manualIndex, "FrameHash")
+    autoIndex   = dutils.remove_duplicates(autoIndex, "FrameHash")
 
-    # # TODO: Do this as the second iteration step
-    # unlabeledIndex = pd.read_csv(unlabeledIndexPath)
-    # unlabeledIndex = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
+    # TODO: Do this as the second iteration step
+    unlabeledIndex = pd.read_csv(unlabeledIndexPath)
+    unlabeledIndex = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
 
-    # # Get additional information for manualIndex from main unlabeled index
-    # manualIndex = dutils.fill_index_information(unlabeledIndex, manualIndex,
-    #                                             "FrameHash", ["rede1", "rede2", "rede3", "set"])
-    # # print(manualIndex.head())
-    # print(manualIndex.shape)
+    # # Get additional informac
 
-    # mergedIndex = dutils.merge_manual_auto_sets(manualIndex, autoIndex)
-    # # print(mergedIndex.head())
-    # print(mergedIndex.shape)
+    mergedIndex = dutils.merge_manual_auto_sets(manualIndex, autoIndex)
+    print(mergedIndex.shape)
 
-    # mergedIndex.to_csv(mergedIndexPath, index=False)
+    mergedIndex.to_csv(mergedIndexPath, index=False)
 
-    # ## Create unlabeled set for next iteration
-    # indexUnlabel = pd.read_csv(unlabeledIndexPath)
-    # indexSampled = pd.read_csv(mergedIndexPath)
-    # print(indexUnlabel.index.shape)
+    ## Create unlabeled set for next iteration
+    indexUnlabel = pd.read_csv(unlabeledIndexPath)
+    indexSampled = pd.read_csv(mergedIndexPath)
+    print(indexUnlabel.index.shape)
 
-    # indexUnlabel = dutils.remove_duplicates(indexUnlabel, "FrameHash")
+    indexUnlabel = dutils.remove_duplicates(indexUnlabel, "FrameHash")
 
-    # # indexUnlabel.set_index("FrameHash", drop=False, inplace=True)
-    # # indexSampled.set_index("FrameHash", drop=False, inplace=True)
+    # indexUnlabel.set_index("FrameHash", drop=False, inplace=True)
+    # indexSampled.set_index("FrameHash", drop=False, inplace=True)
 
-    # print(indexUnlabel.index.duplicated().sum())
-    # print(indexSampled.index.duplicated().sum())
+    print(indexUnlabel.index.duplicated().sum())
+    print(indexSampled.index.duplicated().sum())
 
-    # newIndex = dutils.index_complement(indexUnlabel, indexSampled, "FrameHash")
-    # print(newIndex.shape)
+    newIndex = dutils.index_complement(indexUnlabel, indexSampled, "FrameHash")
+    print(newIndex.shape)
 
-    # # dirs.create_folder(newUnlabeledIndexPath.parent)
-    # newIndex.to_csv(newUnlabeledIndexPath, index=False)
+    # dirs.create_folder(newUnlabeledIndexPath.parent)
+    newIndex.to_csv(newUnlabeledIndexPath, index=False)
 
     # # Debug all file paths
     # print("\nremoteDatasetFolder: {}\n{} ".format( Path(remoteDatasetFolder).is_dir(), remoteDatasetFolder))

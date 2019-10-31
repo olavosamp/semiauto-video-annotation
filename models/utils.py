@@ -83,12 +83,12 @@ def resnet_transforms(mean, std):
     return dataTransforms
 
 
-def _model_inference(image_path_list, data_transforms, label_list, model_path, batch_size):
+def _model_inference(image_path_list, data_transforms, label_list, model_path, batch_size, seed=None):
     imgLoader = dutils.IndexLoader(image_path_list, batch_size=batch_size,
                                 transform=data_transforms, label_list=label_list)
 
     # Instantiate trainer object
-    trainer = TrainModel(model_path=model_path)
+    trainer = TrainModel(model_path=model_path, seed=seed)
     trainer.numClasses = 2
 
     # Set model
@@ -102,7 +102,8 @@ def _model_inference(image_path_list, data_transforms, label_list, model_path, b
     return outputDf
 
 
-def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, batch_size=64, verbose=True):
+def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, batch_size=64,
+                            seed=None, verbose=True):
     '''
         Perform inference on validation set and save outputs to file.
     '''
@@ -133,8 +134,8 @@ def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, 
     return outputDf
 
 
-def dataset_inference_unlabeled(dataset_path, data_transforms, model_path, save_path,
-                    batch_size=64, verbose=True):
+def dataset_inference_unlabeled(dataset_path, data_transforms, model_path, save_path, batch_size=64,
+                                seed=None, verbose=True):
     '''
         Perform inference on an unlabeled dataset, using a csv Index file as reference.
     '''
