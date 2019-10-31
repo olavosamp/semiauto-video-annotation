@@ -49,15 +49,16 @@ if __name__ == "__main__":
         "outputs_{}_{}_epochs_rede_{}_iteration_{}.pickle".format(datasetName, epochs, rede, iteration)
 
     originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
-    unlabeledIndexPath    = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
-    sampledIndexPath      = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
-    manualIndexPath       = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)
-    prevManualIndexPath   = previousIterFolder / \
+    unlabeledIndexPath      = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
+    sampledIndexPath        = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
+    manualIndexPath         = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)
+    prevManualIndexPath     = previousIterFolder / \
         "manual_annotated_images_iteration_{}_train_val_split.csv".format(iteration-1)
-    splitIndexPath        = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
-    autoLabelIndexPath    = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
-    mergedIndexPath       = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
-    newUnlabeledIndexPath = iterFolder / "unlabeled_images_iteration_{}.csv".format(iteration)
+    splitIndexPath          = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
+    autoLabelIndexPath      = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
+    mergedIndexPath         = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
+    previousMergedIndexPath = previousIterFolder / "final_annotated_images_iteration_{}.csv".format(iteration-1)
+    newUnlabeledIndexPath   = iterFolder / "unlabeled_images_iteration_{}.csv".format(iteration)
 
     unlabelHistogramPath = imageResultsFolder / "histogram_unlabeled_outputs_iteration_{}.pdf".format(iteration)
     valHistogramPath     = imageResultsFolder / "histogram_validation_outputs_iteration_{}.pdf".format(iteration)
@@ -74,19 +75,19 @@ if __name__ == "__main__":
     # outputDf = mutils.dataset_inference_val(valSetFolder, dataTransforms['val'], modelPath,
     #                                         valOutputPath, batch_size=inferBatchSize, seed=seed)
 
-    # Compute decision thresholds
-    valOutputs, imgHashes, labels = dutils.load_outputs_df(valOutputPath)
-    upperThresh, lowerThresh = dutils.compute_thresholds(valOutputs,
-                                                        labels,
-                                                        upper_ratio=0.99,
-                                                        lower_ratio=0.01,
-                                                        resolution=0.0001,#resolution='max',
-                                                        val_indexes=imgHashes)
+    # # Compute decision thresholds
+    # valOutputs, imgHashes, labels = dutils.load_outputs_df(valOutputPath)
+    # upperThresh, lowerThresh = dutils.compute_thresholds(valOutputs,
+    #                                                     labels,
+    #                                                     upper_ratio=0.99,
+    #                                                     lower_ratio=0.01,
+    #                                                     resolution=0.0001,#resolution='max',
+    #                                                     val_indexes=imgHashes)
 
-    # Plot validation outputs histogram
-    valOutputs = valOutputs[:, 0]
-    plot_outputs_histogram(valOutputs, labels, lowerThresh, upperThresh, show=False,
-                           save_path = valHistogramPath, log=True)
+    # # Plot validation outputs histogram
+    # valOutputs = valOutputs[:, 0]
+    # plot_outputs_histogram(valOutputs, labels, lowerThresh, upperThresh, show=False,
+    #                        save_path = valHistogramPath, log=True)
 
     # ## Perform inference on entire unlabeled dataset
     # mutils.dataset_inference_unlabeled(unlabeledIndexPath, dataTransforms['val'], modelPath, fullOutputPath,
@@ -118,37 +119,47 @@ if __name__ == "__main__":
     #                     title="Unlabeled Outputs Histogram", save_path=unlabelHistogramPath, log=True, show=False)
 
     ## Merge labeled sets
-    manualIndex = pd.read_csv(manualIndexPath)
-    autoIndex   = pd.read_csv(autoLabelIndexPath)
+    # Merge annotated images of the current iteration: manual and auto
+    sampledIndex           = pd.read_csv(sampledIndexPath)
+    autoIndex              = pd.read_csv(autoLabelIndexPath)
+    originalUnlabeledIndex = pd.read_csv(originalUnlabeledIndexPath)
+    
+    originalUnlabeledIndex = dutils.remove_duplicates(originalUnlabeledIndex, "FrameHash")
 
-    manualIndex = dutils.remove_duplicates(manualIndex, "FrameHash")
-    autoIndex   = dutils.remove_duplicates(autoIndex, "FrameHash")
+    # Add FrameHash column
+    sampledIndex["FrameHash"] = utils.compute_file_hash_list(sampledIndex["imagem"].values,
+                                                            folder=dirs.febe_image_dataset)
 
-    # TODO: Do this as the second iteration step
-    unlabeledIndex = pd.read_csv(unlabeledIndexPath)
-    unlabeledIndex = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
+    # Get missing information from original Unlabeled index
+    sampledIndex = dutils.fill_index_information(originalUnlabeledIndex, sampledIndex,
+                                            "FrameHash", [ 'rede1', 'rede2', 'rede3'])
 
-    # # Get additional informac
+    sampledIndex = dutils.remove_duplicates(sampledIndex, "FrameHash")
+    autoIndex    = dutils.remove_duplicates(autoIndex, "FrameHash")
 
-    mergedIndex = dutils.merge_manual_auto_sets(manualIndex, autoIndex)
+    mergedIndex = dutils.merge_manual_auto_sets(sampledIndex, autoIndex)
     print(mergedIndex.shape)
 
     mergedIndex.to_csv(mergedIndexPath, index=False)
 
+
     ## Create unlabeled set for next iteration
-    indexUnlabel = pd.read_csv(unlabeledIndexPath)
-    indexSampled = pd.read_csv(mergedIndexPath)
-    print(indexUnlabel.index.shape)
+    originalUnlabeledIndex      = pd.read_csv(originalUnlabeledIndexPath)
+    mergedIndex         = pd.read_csv(mergedIndexPath)
+    previousMergedIndex = pd.read_csv(previousMergedIndexPath)
+    print(originalUnlabeledIndex.index.shape)
 
-    indexUnlabel = dutils.remove_duplicates(indexUnlabel, "FrameHash")
+    originalUnlabeledIndex = dutils.remove_duplicates(originalUnlabeledIndex, "FrameHash")
 
-    # indexUnlabel.set_index("FrameHash", drop=False, inplace=True)
-    # indexSampled.set_index("FrameHash", drop=False, inplace=True)
+    print("Columns final_annotations_iter_{}: {}".format(iteration, np.sum(mergedIndex.columns)))
+    print("Columns final_annotations_iter_{}: {}".format(iteration-1, np.sum(previousMergedIndex.columns)))
+    allAnnotations = pd.concat([previousMergedIndex, mergedIndex], axis=0, sort=False)
 
-    print(indexUnlabel.index.duplicated().sum())
-    print(indexSampled.index.duplicated().sum())
+    print(originalUnlabeledIndex.index.duplicated().sum())
+    print(allAnnotations.index.duplicated().sum())
+    input()
 
-    newIndex = dutils.index_complement(indexUnlabel, indexSampled, "FrameHash")
+    newIndex = dutils.index_complement(originalUnlabeledIndex, allAnnotations, "FrameHash")
     print(newIndex.shape)
 
     # dirs.create_folder(newUnlabeledIndexPath.parent)

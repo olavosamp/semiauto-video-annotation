@@ -539,8 +539,8 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
         print("\nSaving to index...")
         def get_parts(x): return "/".join(x.parts[-3:])
 
-        trainHashList   = utils.make_file_hash_list(trainDestList, hash_column="FrameHash")["FrameHash"]
-        valHashList     = utils.make_file_hash_list(valDestList, hash_column="FrameHash")["FrameHash"]
+        trainHashList   = utils.make_videos_hash_list(trainDestList, hash_column="FrameHash")["FrameHash"]
+        valHashList     = utils.make_videos_hash_list(valDestList, hash_column="FrameHash")["FrameHash"]
 
         trainDestList   = list(map(get_parts, trainDestList))
         valDestList     = list(map(get_parts, valDestList))
@@ -597,10 +597,9 @@ def add_frame_hash_to_labels_file(labelsFile, framePathColumn='imagem'):
         Compute MD5 hashes of frames in a interface-generated labels csv file.
         File must be in a parent folder of the labeled images'.
 
-        Adds a column called DEF_frameHashColumnName with file hashes of the images found in
+        Adds a column defined in commons.FRAME_HASH_COL_NAME with file hashes of the images found in 
+        filepaths at framePathColum column.
     '''
-    DEF_frameHashColumnName = 'FrameHash'
-
     labelsFile    = Path(labelsFile)
     labelsDf      = pd.read_csv(labelsFile)
     
@@ -624,7 +623,7 @@ def add_frame_hash_to_labels_file(labelsFile, framePathColumn='imagem'):
     labelsDf.reset_index(drop=True, inplace=True)
 
     # Compute and add frame hashes
-    labelsDf[DEF_frameHashColumnName] = utils.make_file_hash_list(labelsDf['FramePath'])['HashMD5']
+    labelsDf[commons.FRAME_HASH_COL_NAME] = utils.make_videos_hash_list(labelsDf['FramePath'])['HashMD5']
 
     # Drop FramePath column
     labelsDf.drop('FramePath', axis=1, inplace=True)

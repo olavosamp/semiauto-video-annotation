@@ -49,11 +49,14 @@ def load_pickle(filePath):
         pickledInfo = pickle.load(fileHandle)
     return pickledInfo
 
+
 ## Time and Date
 def timeConverter( strTime ):
-    # int seconds = timeConverter( string strTime )
-    # Converts HHMMSS input string to integer seconds
-    #
+    '''
+        int seconds = timeConverter( string strTime )
+        
+        Converts HHMMSS input string to integer seconds
+    '''
     length = len(strTime)
     if length > 6:
         seconds = 0
@@ -92,6 +95,26 @@ def subset_column(main_index, frame_hash_list, target_column):
 
 
 ## Filepath and string processing
+def add_folder_path(path, folder):
+    path = folder / Path(path)
+    return str(path)
+
+
+def compute_file_hash_list(file_list, folder=None):
+    '''
+        Argument:
+           file_list: list of strings
+                List of valid file paths.
+        Returns:
+            : list of strings
+                List of MD5 hashes.
+    '''
+    if folder is not None:
+        fileLen = len(file_list)
+        file_list = list(map(add_folder_path, file_list, [folder]*fileLen))
+    return list(map(file_hash, file_list))
+
+
 def check_empty_file(path):
     if os.path.isfile(path):
         return os.path.getsize(path) > 0
@@ -99,7 +122,7 @@ def check_empty_file(path):
         return False
 
 
-def make_file_hash_list(fileList, filepath_column='FilePath', hash_column="FrameHash", verbose=True):
+def make_videos_hash_list(fileList, filepath_column='FilePath', hash_column="FrameHash", verbose=True):
     '''
         Find and save video paths in a file tree in a list,
          calculate their MD5 hashes and save both lists as a Pandas DataFrame.
@@ -124,7 +147,7 @@ def make_file_hash_list(fileList, filepath_column='FilePath', hash_column="Frame
 
     table = pd.DataFrame({str(filepath_column): fileList, hash_column: hashList})
     return table
-    
+
 
 def file_exists(x):
     return Path(x).is_file()
@@ -179,7 +202,7 @@ def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
     # TODO: Replace this workaround by making a case insensitive search or
     # making all paths lower case before making comparisons (possible?)
 
-    folderPath = replace_symbols(folderPath)
+    folderPath = replace_symbols(folderPath, og_symbol="\\", new_symbol="/")
 
     fileList = []
     for format in ext_list:

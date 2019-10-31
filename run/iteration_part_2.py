@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
 # unlabeledIndexPath  : unlabeled_images contains all the images still not labeled at the end of the iteration. Will be read at the next iteration as a reference
 # mergedIndexPath     : final_annotated_images contains all images annotated in an iteration and on the previous iterations
-# manualIndexPath     : annotated_images contains the current labeled dataset of previous iterations. Valid from iter > 2
+# manualIndexPath     : annotated_images contains the current manually annotated dataset. Include current and previous iterations. Valid from iter > 2
 # splitIndexPath      : annotated_images_..._train_val_split contains the annotated images to be used in training this iteration, that is, the manual annotated images from the current and previous iterations.
 # autoLabelIndexPath  : automatic_labeled_images contains images annotated automatically in the current iteration
 

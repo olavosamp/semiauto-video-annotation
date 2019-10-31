@@ -117,5 +117,8 @@ rede2_negative = "NaoEvento"
 manual_annotation = "manual"
 auto_annotation   = "auto"
 
+# Defines
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD  = [0.229, 0.224, 0.225]
+
+FRAME_HASH_COL_NAME = 'FrameHash'

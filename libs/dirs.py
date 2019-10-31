@@ -20,6 +20,7 @@ test_assets         = test+"test_assets"+sep
 
 febe_base_videos    = "/"+"home"+sep+"common"+sep+"flexiveis"+sep+"videos"+sep
 febe_images         = root+".."+sep+"images"+sep
+febe_image_dataset  = febe_images+sep+"all_datasets_1s"
 
 def create_folder(path, verbose=False):
     if not(os.path.isdir(path)):
