@@ -1,3 +1,4 @@
+import matplotlib
 from pathlib                    import Path
 import matplotlib.pyplot        as plt
 
@@ -12,6 +13,11 @@ def plot_outputs_histogram(normalized_outputs,
                            log=False,
                            save_path=None,
                            save_formats=[".png", ".pdf"]):
+    if not(show):
+        matplotlib.use("Agg")
+        del plt
+        import matplotlib.pyplot as plt
+    
     fig = plt.figure(figsize=(8, 4))
     # plt.subplots_adjust(left=0.09, bottom=0.09, right=0.95, top=0.80,
     #                     wspace=None, hspace=None)

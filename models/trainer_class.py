@@ -204,12 +204,11 @@ class TrainModel:
                 self.lossHist[phase].append(self.epochLoss)
                 self.accHist[phase].append(self.epochAcc)
 
-                print("{} Phase\n\
-                            \tLoss: {:.4f}\n\
-                            \tAcc : {:.4f}\n\
-                            \tF1  : {}".format(
-                                            phase, self.epochLoss, self.epochAcc,
-                                            self.epochF1))
+                print("\{} Phase\n\
+                Loss: {:.4f}\n\
+                Acc : {:.4f}\n\
+                F1  : {}".format(phase, self.epochLoss, self.epochAcc,
+                                self.epochF1))
 
                 # Save model if there is an improvement in evaluation metric
                 # if phase == 'val' and self.epochAcc > self.bestAcc:

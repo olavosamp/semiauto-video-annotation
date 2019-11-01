@@ -15,12 +15,10 @@ from libs.iteration_manager     import SampleImages
 
 
 if __name__ == "__main__":
+    iteration = int(input("Enter iteration number."))
     seed           = 42
-    iteration      = 3
+    # iteration      = 3
     rede           = 1
-    epochs         = 1000
-    trainBatchSize = 256
-    inferBatchSize = 64
 
     def get_iter_folder(iteration):
         return Path(dirs.iter_folder) / "full_dataset_softmax/iteration_{}/".format(iteration)

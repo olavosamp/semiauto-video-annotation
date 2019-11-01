@@ -16,11 +16,11 @@ from libs.iteration_manager     import SampleImages
 
 
 if __name__ == "__main__":
+    iteration = int(input("Enter iteration number."))
     seed           = 42
-    iteration      = 3
+    # iteration      = 3
     rede           = 1
-    epochs         = 1000
-    trainBatchSize = 256
+    epochs         = 500
     inferBatchSize = 64
 
     datasetName = "full_dataset_softmax"
@@ -117,7 +117,8 @@ if __name__ == "__main__":
     newLabeledIndex.to_csv(autoLabelIndexPath, index=False)
 
     plot_outputs_histogram(outputs, lower_thresh=lowerThresh, upper_thresh=upperThresh,
-                        title="Unlabeled Outputs Histogram", save_path=unlabelHistogramPath, log=True, show=False)
+                        title="Unlabeled Outputs Histogram", save_path=unlabelHistogramPath,
+                        log=True, show=False)
 
     ## Merge labeled sets
     print("\nMerge auto and manual labeled sets.")
@@ -147,21 +148,26 @@ if __name__ == "__main__":
 
     ## Create unlabeled set for next iteration
     print("\nCreate new unlabeled set.")
+    mergedPathList = [get_iter_folder(x) / \
+        "final_annotated_images_iteration_{}.csv".format(x) for x in range(1, iteration+1)]
+    mergedIndexList = [pd.read_csv(x) for x in mergedPathList]
     originalUnlabeledIndex  = pd.read_csv(originalUnlabeledIndexPath)
-    mergedIndex             = pd.read_csv(mergedIndexPath)
-    previousMergedIndex     = pd.read_csv(previousMergedIndexPath)
+    # mergedIndex             = pd.read_csv(mergedIndexPath)
+    # previousMergedIndex     = pd.read_csv(previousMergedIndexPath)
     print(originalUnlabeledIndex.index.shape)
 
     originalUnlabeledIndex = dutils.remove_duplicates(originalUnlabeledIndex, "FrameHash")
 
-    print("Shape final_annotations_iter_{}: {}".format(iteration, mergedIndex.shape))
-    print("Shape final_annotations_iter_{}: {}".format(iteration-1, previousMergedIndex.shape))
-    allAnnotations = pd.concat([previousMergedIndex, mergedIndex], axis=0, sort=False)
-    allAnnotations = dutils.remove_duplicates(allAnnotations, "FrameHash")
+    # print("Shape final_annotations_iter_{}: {}".format(iteration, mergedIndex.shape))
+    # print("Shape final_annotations_iter_{}: {}".format(iteration-1, previousMergedIndex.shape))
+
+    # allAnnotations = pd.concat([previousMergedIndex, mergedIndex], axis=0, sort=False)
+    allAnnotations = pd.concat(mergedIndexList, axis=0, sort=False)
     
+    allAnnotations = dutils.remove_duplicates(allAnnotations, "FrameHash")
+    print("Duplicated elements in ogUnlabelIndex and allAnnottations.")
     print(originalUnlabeledIndex.index.duplicated().sum())
     print(allAnnotations.index.duplicated().sum())
-    input("Review duplicated elements in ogUnlabelIndex and allAnnottations.")
 
     newIndex = dutils.index_complement(originalUnlabeledIndex, allAnnotations, "FrameHash")
     print(newIndex.shape)

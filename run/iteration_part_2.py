@@ -17,18 +17,18 @@ from libs.iteration_manager     import SampleImages
 
 
 if __name__ == "__main__":
+    iteration = int(input("Enter iteration number."))
     seed           = 42
-    iteration      = 3
+    # iteration      = 3
     rede           = 1
-    epochs         = 1000
-    trainBatchSize = 256
-    inferBatchSize = 64
+    epochs         = 500
 
     datasetName = "full_dataset_softmax"
 
     def get_iter_folder(iteration):
         return Path(dirs.iter_folder) / "{}/iteration_{}/".format(datasetName, iteration)
 
+    datasetFolder        = dirs.febe_image_dataset
     previousIterFolder   = get_iter_folder(iteration-1)
     iterFolder           = get_iter_folder(iteration)
     sampledImageFolder   = iterFolder / "sampled_images"
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     print("\nSTEP: Process manual labels and add missing information")
     # Add folder path
     def _add_folder_path(path):
-        path = sampledImageFolder / Path(path)
+        path = datasetFolder / Path(path)
         return str(path)
 
     # Load model outputs and unlabeled images index
