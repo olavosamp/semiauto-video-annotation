@@ -204,7 +204,7 @@ class TrainModel:
                 self.lossHist[phase].append(self.epochLoss)
                 self.accHist[phase].append(self.epochAcc)
 
-                print("\{} Phase\n\
+                print("{} Phase\n\
                 Loss: {:.4f}\n\
                 Acc : {:.4f}\n\
                 F1  : {}".format(phase, self.epochLoss, self.epochAcc,

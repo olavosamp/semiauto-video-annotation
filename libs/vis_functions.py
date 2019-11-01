@@ -1,8 +1,62 @@
-import matplotlib
+import matplotlib as mlp
+import os
+# Use non interactive backend if not running on Windows, what means it's on the remote server
+if os.name != "nt":
+    mlp.use("Agg")
+
 from pathlib                    import Path
 import matplotlib.pyplot        as plt
 
 import libs.dirs                as dirs
+
+
+def plot_model_history(data, data_labels=[], xlabel="", ylabel="", title="Model History",
+                       save_path=None, show=False):
+    '''
+        Arguments:
+            data: list
+            One or more datasets that are lists of y values. If more than one, all datasets
+            must be of same length.
+
+            data_labels: string or list of strings
+            Data label for each data set given.
+    '''
+    assert isinstance(data, list), "data argument must be a list of values or a list of datasets."
+    fig = plt.figure(figsize=(24, 18))
+    
+    # User passed several datasets
+    if hasattr(data[0], "__len__"):
+        dataLen   = len(data)
+        labelsLen = len(data_labels)
+
+        assert dataLen == labelsLen, "You must pass one label for each dataset"
+        if labelsLen < dataLen:
+            # Pad labels
+            data_labels += [""]*(dataLen - labelsLen)
+        else:
+            # Trim labels
+            data_labels = data_labels[:dataLen]
+
+        x = range(len(data[0]))
+        for y, label in zip(data, data_labels):
+            # Plot dataset with its corresponding label
+            plt.plot(x, y, '.-', label=label)
+    # User passed only one dataset
+    else:
+        x = range(len(data))
+        plt.plot(x, data, '.-', label=data_labels)
+
+    plt.legend()
+    
+    plt.ylabel(ylabel)
+    plt.xlabel(xlabel)
+    plt.title(title)
+    if save_path is not None:
+        fig.savefig(save_path, orientation='portrait', bbox_inches='tight')
+    if show and mlp.get_backend() != "agg":
+        plt.show()
+    return fig
+
 
 def plot_outputs_histogram(normalized_outputs,
                            labels=None,
@@ -13,11 +67,6 @@ def plot_outputs_histogram(normalized_outputs,
                            log=False,
                            save_path=None,
                            save_formats=[".png", ".pdf"]):
-    if not(show):
-        matplotlib.use("Agg")
-        del plt
-        import matplotlib.pyplot as plt
-    
     fig = plt.figure(figsize=(8, 4))
     # plt.subplots_adjust(left=0.09, bottom=0.09, right=0.95, top=0.80,
     #                     wspace=None, hspace=None)
@@ -51,6 +100,6 @@ def plot_outputs_histogram(normalized_outputs,
         for ext in save_formats:
             if ext[0] == '.':
                 plt.savefig(save_path.with_suffix(ext))
-    if show:
+    if show and mlp.get_backend() != "agg":
         plt.show()
     return fig
