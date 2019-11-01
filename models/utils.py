@@ -6,11 +6,13 @@ import libs.dataset_utils   as dutils
 import torch.nn             as nn
 import torch.optim          as optim
 import torchvision.datasets as datasets
+from pathlib                import Path
 from torchvision            import transforms
 
 import libs.utils           as utils
+import libs.dirs            as dirs
+from libs.index             import IndexManager
 from models.trainer_class   import TrainModel
-from libs.index                 import IndexManager
 
 
 ## Pytorch utilities
@@ -55,10 +57,12 @@ def train_network(dataset_path, data_transforms, epochs=25, batch_size=64,
                                   scheduler=None, num_epochs=epochs)
 
     # Save train history and trained model weights
-    if history_path:
-        history = trainer.save_history(history_path)
     if model_path:
+        dirs.create_folder(Path(model_path).parent)
         torch.save(modelFineTune.state_dict(), model_path)
+    if history_path:
+        dirs.create_folder(Path(history_path).parent)
+        history = trainer.save_history(history_path)
     
     return history, modelFineTune.state_dict()
 

@@ -17,7 +17,7 @@ from libs.iteration_manager     import SampleImages
 
 if __name__ == "__main__":
     seed           = 42
-    iteration      = 2
+    iteration      = 3
     rede           = 1
     epochs         = 1000
     trainBatchSize = 256
@@ -52,8 +52,6 @@ if __name__ == "__main__":
     unlabeledIndexPath      = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
     sampledIndexPath        = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
     manualIndexPath         = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)
-    prevManualIndexPath     = previousIterFolder / \
-        "manual_annotated_images_iteration_{}_train_val_split.csv".format(iteration-1)
     splitIndexPath          = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
     autoLabelIndexPath      = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
     mergedIndexPath         = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
@@ -63,62 +61,66 @@ if __name__ == "__main__":
     unlabelHistogramPath = imageResultsFolder / "histogram_unlabeled_outputs_iteration_{}.pdf".format(iteration)
     valHistogramPath     = imageResultsFolder / "histogram_validation_outputs_iteration_{}.pdf".format(iteration)
 
-    # ## Dataset Inference on Validation set to find thresholds
-    # # ImageNet statistics
-    # mean    = commons.IMAGENET_MEAN
-    # std     = commons.IMAGENET_STD 
+    ## Dataset Inference on Validation set to find thresholds
+    print("\nSTEP: Perform inference on val set.")
+    # ImageNet statistics
+    mean    = commons.IMAGENET_MEAN
+    std     = commons.IMAGENET_STD 
 
-    # # Set transforms
-    # dataTransforms = mutils.resnet_transforms(mean, std)
+    # Set transforms
+    dataTransforms = mutils.resnet_transforms(mean, std)
 
-    # # # Perform inference on validation set and save outputs to file
-    # outputDf = mutils.dataset_inference_val(valSetFolder, dataTransforms['val'], modelPath,
-    #                                         valOutputPath, batch_size=inferBatchSize, seed=seed)
+    # Perform inference on validation set and save outputs to file
+    outputDf = mutils.dataset_inference_val(valSetFolder, dataTransforms['val'], modelPath,
+                                            valOutputPath, batch_size=inferBatchSize, seed=seed)
 
-    # # Compute decision thresholds
-    # valOutputs, imgHashes, labels = dutils.load_outputs_df(valOutputPath)
-    # upperThresh, lowerThresh = dutils.compute_thresholds(valOutputs,
-    #                                                     labels,
-    #                                                     upper_ratio=0.99,
-    #                                                     lower_ratio=0.01,
-    #                                                     resolution=0.0001,#resolution='max',
-    #                                                     val_indexes=imgHashes)
+    # Compute decision thresholds
+    print("\nSTEP: Compute decision thresholds.")
+    valOutputs, imgHashes, labels = dutils.load_outputs_df(valOutputPath)
+    upperThresh, lowerThresh = dutils.compute_thresholds(valOutputs,
+                                                        labels,
+                                                        upper_ratio=0.99,
+                                                        lower_ratio=0.01,
+                                                        resolution=0.0001,#resolution='max',
+                                                        val_indexes=imgHashes)
 
-    # # Plot validation outputs histogram
-    # valOutputs = valOutputs[:, 0]
-    # plot_outputs_histogram(valOutputs, labels, lowerThresh, upperThresh, show=False,
-    #                        save_path = valHistogramPath, log=True)
+    # Plot validation outputs histogram
+    valOutputs = valOutputs[:, 0]
+    plot_outputs_histogram(valOutputs, labels, lowerThresh, upperThresh, show=False,
+                           save_path = valHistogramPath, log=True)
 
-    # ## Perform inference on entire unlabeled dataset
-    # mutils.dataset_inference_unlabeled(unlabeledIndexPath, dataTransforms['val'], modelPath, fullOutputPath,
-    #                     batch_size=inferBatchSize, seed=seed, verbose=True)
+    ## Perform inference on entire unlabeled dataset
+    print("\nSTEP: Perform inference on entire dataset.")
+    mutils.dataset_inference_unlabeled(unlabeledIndexPath, dataTransforms['val'], modelPath, fullOutputPath,
+                        batch_size=inferBatchSize, seed=seed, verbose=True)
     
     # upperThresh = 0.8923 # Ratio 99%
     # lowerThresh = 0.0904 # Ratio 1%
 
-    # print("\nUsing thresholds:\nUpper: {:.4f}\nLower: {:.4f}".format(upperThresh, lowerThresh))
+    print("\nUsing thresholds:\nUpper: {:.4f}\nLower: {:.4f}".format(upperThresh, lowerThresh))
 
-    # ## Perform automatic labeling
-    # unlabeledIndex  = pd.read_csv(unlabeledIndexPath)
-    # pickleData      = utils.load_pickle(fullOutputPath)
+    ## Perform automatic labeling
+    print("\nSTEP: Automatic labeling.")
+    unlabeledIndex  = pd.read_csv(unlabeledIndexPath)
+    pickleData      = utils.load_pickle(fullOutputPath)
 
-    # unlabeledIndex        = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
-    # outputs, imgHashes, _ = dutils.load_outputs_df(fullOutputPath)
-    # outputs = outputs[:, 0]
+    unlabeledIndex        = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
+    outputs, imgHashes, _ = dutils.load_outputs_df(fullOutputPath)
+    outputs = outputs[:, 0]
 
-    # print("\nAutomatic labeling with upper positive ratio 99%:")
-    # posHashes, negHashes = dutils.automatic_labeling(outputs, imgHashes,
-    #                                                 upperThresh, lowerThresh)
+    print("\nAutomatic labeling with upper positive ratio 99%:")
+    posHashes, negHashes = dutils.automatic_labeling(outputs, imgHashes,
+                                                    upperThresh, lowerThresh)
 
-    # newLabeledIndex = dutils.get_classified_index(unlabeledIndex, posHashes, negHashes,
-    #                                                 index_col="FrameHash", verbose=False)
+    newLabeledIndex = dutils.get_classified_index(unlabeledIndex, posHashes, negHashes,
+                                                    index_col="FrameHash", verbose=False)
+    newLabeledIndex.to_csv(autoLabelIndexPath, index=False)
 
-    # newLabeledIndex.to_csv(autoLabelIndexPath, index=False)
-
-    # plot_outputs_histogram(outputs, lower_thresh=lowerThresh, upper_thresh=upperThresh,
-    #                     title="Unlabeled Outputs Histogram", save_path=unlabelHistogramPath, log=True, show=False)
+    plot_outputs_histogram(outputs, lower_thresh=lowerThresh, upper_thresh=upperThresh,
+                        title="Unlabeled Outputs Histogram", save_path=unlabelHistogramPath, log=True, show=False)
 
     ## Merge labeled sets
+    print("\nMerge auto and manual labeled sets.")
     # Merge annotated images of the current iteration: manual and auto
     sampledIndex           = pd.read_csv(sampledIndexPath)
     autoIndex              = pd.read_csv(autoLabelIndexPath)
@@ -144,20 +146,22 @@ if __name__ == "__main__":
 
 
     ## Create unlabeled set for next iteration
-    originalUnlabeledIndex      = pd.read_csv(originalUnlabeledIndexPath)
-    mergedIndex         = pd.read_csv(mergedIndexPath)
-    previousMergedIndex = pd.read_csv(previousMergedIndexPath)
+    print("\nCreate new unlabeled set.")
+    originalUnlabeledIndex  = pd.read_csv(originalUnlabeledIndexPath)
+    mergedIndex             = pd.read_csv(mergedIndexPath)
+    previousMergedIndex     = pd.read_csv(previousMergedIndexPath)
     print(originalUnlabeledIndex.index.shape)
 
     originalUnlabeledIndex = dutils.remove_duplicates(originalUnlabeledIndex, "FrameHash")
 
-    print("Columns final_annotations_iter_{}: {}".format(iteration, np.sum(mergedIndex.columns)))
-    print("Columns final_annotations_iter_{}: {}".format(iteration-1, np.sum(previousMergedIndex.columns)))
+    print("Shape final_annotations_iter_{}: {}".format(iteration, mergedIndex.shape))
+    print("Shape final_annotations_iter_{}: {}".format(iteration-1, previousMergedIndex.shape))
     allAnnotations = pd.concat([previousMergedIndex, mergedIndex], axis=0, sort=False)
-
+    allAnnotations = dutils.remove_duplicates(allAnnotations, "FrameHash")
+    
     print(originalUnlabeledIndex.index.duplicated().sum())
     print(allAnnotations.index.duplicated().sum())
-    input()
+    input("Review duplicated elements in ogUnlabelIndex and allAnnottations.")
 
     newIndex = dutils.index_complement(originalUnlabeledIndex, allAnnotations, "FrameHash")
     print(newIndex.shape)

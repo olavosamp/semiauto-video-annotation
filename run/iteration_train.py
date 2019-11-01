@@ -8,22 +8,27 @@ if __name__ == "__main__":
     seed           = 42
     iteration      = 2
     rede           = 1
-    epochs         = 1000
+    epochs         = 500
     trainBatchSize = 256
 
+    datasetName = "full_dataset_softmax"
+
     def get_iter_folder(iteration):
-        return Path(dirs.iter_folder) / "full_dataset_softmax/iteration_{}/".format(iteration)
+        return Path(dirs.iter_folder) / "{}/iteration_{}/".format(datasetName, iteration)
 
     iterFolder           = get_iter_folder(iteration)
     sampledImageFolder   = iterFolder / "sampled_images"
-    savedModelsFolder    = Path(dirs.saved_models) / "full_dataset_rede_{}/iteration_{}".format(rede, iteration)
+    sampledImageFolder   = iterFolder / "sampled_images"
+    savedModelsFolder    = Path(dirs.saved_models) / \
+        "{}_rede_{}/iteration_{}".format(datasetName, rede, iteration)
 
     modelPath            = savedModelsFolder / \
-        "full_dataset_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(epochs, rede, iteration)
+        "{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(datasetName, epochs, rede, iteration)
     historyPath          = savedModelsFolder / \
-        "history_full_dataset_no_finetune_{}_epochs_rede_{}_iteration_{}.pickle".format(epochs, rede, iteration)
+        "history_{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pickle".format(datasetName, epochs, rede, iteration)
 
     ## Train model
+    print("\nSTEP: Train model.")
     # ImageNet statistics
     mean    = commons.IMAGENET_MEAN
     std     = commons.IMAGENET_STD 

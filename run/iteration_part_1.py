@@ -16,7 +16,7 @@ from libs.iteration_manager     import SampleImages
 
 if __name__ == "__main__":
     seed           = 42
-    iteration      = 2
+    iteration      = 3
     rede           = 1
     epochs         = 1000
     trainBatchSize = 256
@@ -27,15 +27,19 @@ if __name__ == "__main__":
 
     previousIterFolder   = get_iter_folder(iteration-1)
     iterFolder           = get_iter_folder(iteration)
-    # nextIterFolder       = get_iter_folder(iteration+1)
     unlabeledIndexPath   = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
+    sampledImageFolder   = iterFolder / "sampled_images"
 
-    ### Next Iteration
-    ## Sample images for manual annotation
+    dirs.create_folder(iterFolder)
+    dirs.create_folder(sampledImageFolder)
+
+    ## Next Iteration
+    print("\nSTEP: Sample images for manual annotation.")
+    # Sample images for manual annotation
     sampler = SampleImages(unlabeledIndexPath, iterFolder, seed=seed)
     sampler.sample(percentage=0.01)
-    # print(sampler.imageSourcePaths)
     print(sampler.imageSourcePaths.shape)
+    
     # Sampled images index will be created during the manual annotation
 
     print("Image sampling finished.\nYou may now annotate sampled_images folder with the\
