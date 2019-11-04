@@ -118,7 +118,9 @@ manual_annotation = "manual"
 auto_annotation   = "auto"
 
 # Defines
-IMAGENET_MEAN = [0.485, 0.456, 0.406]
-IMAGENET_STD  = [0.229, 0.224, 0.225]
+IMAGENET_MEAN       = [0.485, 0.456, 0.406]
+IMAGENET_STD        = [0.229, 0.224, 0.225]
+MPL_FIG_SIZE        = (18, 9)
+MPL_FIG_SIZE_SMALL  = (8, 4)
 
 FRAME_HASH_COL_NAME = 'FrameHash'

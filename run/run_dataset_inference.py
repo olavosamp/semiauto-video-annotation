@@ -17,6 +17,7 @@ import libs.dataset_utils   as dutils
 import models.utils         as mutils
 from models.trainer_class   import TrainModel
 from libs.index             import IndexManager
+from libs.vis_functions     import show_inputs
 
 if __name__ == "__main__":
     seed = 33
@@ -86,12 +87,12 @@ if __name__ == "__main__":
     # with torch.set_grad_enabled(False):
     #     output1 = trainer.model(img)
     # print("Op 1: ", output1)
-    # dutils.show_inputs(img, output1)
+    # show_inputs(img, output1)
 
     # with torch.set_grad_enabled(False):
     #     output2 = trainer.model(img)
     # print("Op 2: ", output2)
-    # dutils.show_inputs(img, output2)
+    # show_inputs(img, output2)
     # -------------------
     
     outputs, imgHashes, labels = trainer.model_inference(imgLoader)

@@ -8,7 +8,7 @@ import libs.utils               as utils
 from libs.vis_functions         import plot_model_history
 
 if __name__ == "__main__":
-    iteration = int(input("Enter iteration number."))
+    iteration = int(input("Enter iteration number.\n"))
     seed           = 42
     # iteration      = 3
     rede           = 1

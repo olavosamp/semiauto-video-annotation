@@ -16,7 +16,7 @@ from libs.iteration_manager     import SampleImages
 
 
 if __name__ == "__main__":
-    iteration = int(input("Enter iteration number."))
+    iteration = int(input("Enter iteration number.\n"))
     seed           = 42
     # iteration      = 3
     rede           = 1
@@ -37,7 +37,7 @@ if __name__ == "__main__":
         "{}_rede_{}/iteration_{}".format(datasetName, rede, iteration)
     valSetFolder         = sampledImageFolder / "val/"
     imageResultsFolder   = Path(dirs.results) / \
-        "{}_rede_{}_softmax/iteration_{}".format(datasetName, rede, iteration)
+        "{}_rede_{}/iteration_{}".format(datasetName, rede, iteration)
 
     modelPath            = savedModelsFolder / \
         "{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(datasetName, epochs, rede, iteration)

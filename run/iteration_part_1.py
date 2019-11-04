@@ -15,7 +15,7 @@ from libs.iteration_manager     import SampleImages
 
 
 if __name__ == "__main__":
-    iteration = int(input("Enter iteration number."))
+    iteration = int(input("Enter iteration number.\n"))
     seed           = 42
     # iteration      = 3
     rede           = 1
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     print("\nSTEP: Sample images for manual annotation.")
     # Sample images for manual annotation
     sampler = SampleImages(unlabeledIndexPath, iterFolder, seed=seed)
-    sampler.sample(percentage=0.01)
+    sampler.sample(percentage=0.01, sample_min=100)
     print(sampler.imageSourcePaths.shape)
     
     # Sampled images index will be created during the manual annotation

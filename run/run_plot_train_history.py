@@ -1,14 +1,12 @@
-import torch
 import numpy                as np
-import matplotlib.pyplot    as plt
 from pathlib                import Path
 
 import libs.utils           as utils
 import libs.dirs            as dirs
-from libs.vis_functions         import plot_model_history
+from libs.vis_functions     import plot_model_history
 
-iteration   = 3
-epochs      = 500
+iteration = int(input("Enter iteration number.\n"))
+epochs    = int(input("Enter number of epochs.\n"))
 rede        = 1
 
 datasetName = "full_dataset_softmax"
@@ -20,9 +18,10 @@ historyPath = savedModelsFolder \
     / "history_{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pickle".format(datasetName, epochs, rede, iteration)
 
 resultsFolder        = Path(dirs.results) / historyPath.stem
-lossName = "loss_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
-accName  = "accuracy_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
-f1Name   = "f1_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
+nameEnd  = "history_{}_epochs_rede_{}_iteration_{}.pdf".format(epochs, rede, iteration)
+lossName = "loss_"     + nameEnd
+accName  = "accuracy_" + nameEnd
+f1Name   = "f1_"       + nameEnd
 
 if not(historyPath.is_file()):
     print("History file does not exist.\nFile:\n", historyPath)

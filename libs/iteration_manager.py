@@ -127,7 +127,6 @@ class SampleImages:
         Sample images from a folder or an index determined by source.
         Sampled images are copied to destFolder / 'sampled_images'/.
     '''
-
     def __init__(self, source, destFolder, seed=None, verbose=True):
         self.date        = datetime.now()
         self.source      = Path(source)
@@ -143,8 +142,9 @@ class SampleImages:
         dirs.create_folder(self.imageFolder)
 
 
-    def sample(self, percentage=0.01):
+    def sample(self, percentage=0.01, sample_min=None):
         self.percentage = percentage
+        self.sample_min = sample_min
         if self.source.is_dir():
             # Sample files from directory
             self._sample_from_folder()
@@ -166,6 +166,9 @@ class SampleImages:
 
         # Sample 1% of total images with normal distribution
         self.numSamples = int(self.numImages*self.percentage)
+        if self.sample_min is not None:
+            self.numSamples = np.clip(self.numSamples, self.sample_min, None)
+
         self.sampleIndexes = np.random.choice(self.numImages, size=self.numSamples, replace=False)
 
         # Copy images to dest path

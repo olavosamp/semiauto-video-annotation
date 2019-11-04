@@ -1,14 +1,15 @@
-import matplotlib as mlp
 import os
-# Use non interactive backend if not running on Windows, what means it's on the remote server
+import matplotlib as mpl
+# Use non interactive backend if not running on Windows, meaning it's on the remote server
 if os.name != "nt":
-    mlp.use("Agg")
+    mpl.use("Agg")
 
-from pathlib                    import Path
+import numpy                    as np
 import matplotlib.pyplot        as plt
+from pathlib                    import Path
 
 import libs.dirs                as dirs
-
+import libs.commons             as commons
 
 def plot_model_history(data, data_labels=[], xlabel="", ylabel="", title="Model History",
                        save_path=None, show=False):
@@ -22,7 +23,7 @@ def plot_model_history(data, data_labels=[], xlabel="", ylabel="", title="Model 
             Data label for each data set given.
     '''
     assert isinstance(data, list), "data argument must be a list of values or a list of datasets."
-    fig = plt.figure(figsize=(24, 18))
+    fig = plt.figure(figsize=commons.MPL_FIG_SIZE)
     
     # User passed several datasets
     if hasattr(data[0], "__len__"):
@@ -53,7 +54,7 @@ def plot_model_history(data, data_labels=[], xlabel="", ylabel="", title="Model 
     plt.title(title)
     if save_path is not None:
         fig.savefig(save_path, orientation='portrait', bbox_inches='tight')
-    if show and mlp.get_backend() != "agg":
+    if show and mpl.get_backend() != "agg":
         plt.show()
     return fig
 
@@ -67,7 +68,7 @@ def plot_outputs_histogram(normalized_outputs,
                            log=False,
                            save_path=None,
                            save_formats=[".png", ".pdf"]):
-    fig = plt.figure(figsize=(8, 4))
+    fig = plt.figure(figsize=commons.MPL_FIG_SIZE_SMALL)
     # plt.subplots_adjust(left=0.09, bottom=0.09, right=0.95, top=0.80,
     #                     wspace=None, hspace=None)
 
@@ -100,6 +101,32 @@ def plot_outputs_histogram(normalized_outputs,
         for ext in save_formats:
             if ext[0] == '.':
                 plt.savefig(save_path.with_suffix(ext))
-    if show and mlp.get_backend() != "agg":
+    if show and mpl.get_backend() != "agg":
         plt.show()
     return fig
+
+## Dataset Image processing
+def show_inputs(inputs, labels):
+    '''
+        Function to visualize dataset inputs
+    '''
+    for i in range(len(inputs)):
+        print(np.shape(inputs.cpu().numpy()[i,:,:,:]))
+        img = np.transpose(inputs.cpu().numpy()[i,:,:,:], (1, 2, 0))
+        print(np.shape(img))
+        print(labels.size())
+        print("Label: ", labels[i])
+        plt.imshow(img)
+        plt.title("Label: {}".format(labels[i]))
+        plt.show()
+
+
+def show_image(image, title_string=None):
+    '''
+        Show Pillow or Pyplot input image.
+    '''
+    print("Title: ", title_string)
+    plt.imshow(image)
+    if title_string:
+        plt.title(title_string)
+    plt.show()

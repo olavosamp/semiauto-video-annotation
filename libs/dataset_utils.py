@@ -6,12 +6,9 @@ import torch.nn             as nn
 import numpy                as np
 import pandas               as pd
 import shutil               as sh
-import matplotlib.pyplot    as plt
-import torch.optim          as optim
 from PIL                    import Image
 from copy                   import copy
 from tqdm                   import tqdm
-from glob                   import glob
 from pathlib                import Path
 from datetime               import datetime
 
@@ -118,7 +115,7 @@ def compute_thresholds(val_outputs, labels,
     #     idealLowerThresh = meanThresh
 
     if val_indexes is not None:
-        automatic_labeling(val_outputs, val_indexes, idealUpperThresh, idealLowerThresh)
+        automatic_labeling(val_outputs, val_indexes, idealUpperThresh, idealLowerThresh, verbose=True)
 
     return idealUpperThresh, idealLowerThresh
 
@@ -204,32 +201,6 @@ def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, re
             print("\nFound ideal Upper threshold {:.3f} with {:.2f} % ground truth positives.".format(idealThresh, posRatio*100))
             return idealThresh
 
-
-## Image processing
-def show_inputs(inputs, labels):
-    '''
-        Function to visualize dataset inputs
-    '''
-    for i in range(len(inputs)):
-        print(np.shape(inputs.cpu().numpy()[i,:,:,:]))
-        img = np.transpose(inputs.cpu().numpy()[i,:,:,:], (1, 2, 0))
-        print(np.shape(img))
-        print(labels.size())
-        print("Label: ", labels[i])
-        plt.imshow(img)
-        plt.title("Label: {}".format(labels[i]))
-        plt.show()
-
-
-def show_image(image, title_string=None):
-    '''
-        Show Pillow or Pyplot input image.
-    '''
-    print("Title: ", title_string)
-    plt.imshow(image)
-    if title_string:
-        plt.title(title_string)
-    plt.show()
 
 
 ## Dataset files manipulation

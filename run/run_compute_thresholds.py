@@ -7,7 +7,7 @@ import matplotlib.pyplot       as plt
 import libs.dirs            as dirs
 import libs.utils           as utils
 import libs.dataset_utils   as dutils
-from libs.vis_functions     import plot_outputs_histogram
+from libs.vis_functions     import plot_outputs_histogram, show_image
 
 
 valOutputPath = Path(dirs.saved_models) / "full_dataset_rede_1/iteration_1/outputs_full_dataset_validation_rede_1_iteration_1.pickle"
@@ -119,4 +119,4 @@ idealUpperThresh, idealLowerThresh = dutils.compute_thresholds(valOutputs,
 # #     imgHash = imgHashes[ind]
 # #     img = indexDf.loc[imgHash]
 #     title = "output: {:.2f}".format(outputs[ind])
-#     dutils.show_image(img, title_string=title)
+#     show_image(img, title_string=title)

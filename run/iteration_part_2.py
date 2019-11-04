@@ -17,7 +17,7 @@ from libs.iteration_manager     import SampleImages
 
 
 if __name__ == "__main__":
-    iteration = int(input("Enter iteration number."))
+    iteration = int(input("Enter iteration number.\n"))
     seed           = 42
     # iteration      = 3
     rede           = 1
