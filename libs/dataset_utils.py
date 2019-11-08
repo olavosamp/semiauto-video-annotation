@@ -19,6 +19,10 @@ from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
 # Reports and logging
+def get_loop_stats(loop_folder): # TODO: Finish function
+    statsDf = pd.DataFrame()
+    return statsDf
+
 def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unlabeled_path,
                 train_info, show=False):
     sampledIndex     = pd.read_csv(sampled_path)

@@ -164,11 +164,12 @@ class SampleImages:
     def _sample_routine(self):
         self.numImages = len(self.imageList)
 
-        # Sample 1% of total images with normal distribution
+        # Choose a number of images to sample
         self.numSamples = int(self.numImages*self.percentage)
         if self.sample_min is not None:
             self.numSamples = np.clip(self.numSamples, self.sample_min, None)
 
+        # Uniform sampling of a percentage of total images
         self.sampleIndexes = np.random.choice(self.numImages, size=self.numSamples, replace=False)
 
         # Copy images to dest path
