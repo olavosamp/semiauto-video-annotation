@@ -61,6 +61,8 @@ if __name__ == "__main__":
     unlabelHistogramPath = imageResultsFolder / "histogram_unlabeled_outputs_iteration_{}.pdf".format(iteration)
     valHistogramPath     = imageResultsFolder / "histogram_validation_outputs_iteration_{}.pdf".format(iteration)
 
+    reportPath           = iterFolder/"report_iteration_{}.txt".format(iteration)
+
     ## Dataset Inference on Validation set to find thresholds
     print("\nSTEP: Perform inference on val set.")
     # ImageNet statistics
@@ -172,20 +174,8 @@ if __name__ == "__main__":
     newIndex = dutils.index_complement(originalUnlabeledIndex, allAnnotations, "FrameHash")
     print(newIndex.shape)
 
-    # dirs.create_folder(newUnlabeledIndexPath.parent)
+    dirs.create_folder(newUnlabeledIndexPath.parent)
     newIndex.to_csv(newUnlabeledIndexPath, index=False)
-
-    # # Debug all file paths
-    # print("\nremoteDatasetFolder: {}\n{} ".format( Path(remoteDatasetFolder).is_dir(), remoteDatasetFolder))
-    # print("\niterFolder: {}\n{} ".format( Path(iterFolder).is_dir(), iterFolder))
-    # print("\nsampledImageFolder: {}\n{} ".format( Path(sampledImageFolder).is_dir(), sampledImageFolder))
-    # print("\nsavedModelsFolder: {}\n{} ".format( Path(savedModelsFolder).is_dir(), savedModelsFolder))
-    # print("\nimageResultsFolder: {}\n{} ".format( Path(imageResultsFolder).is_dir(), imageResultsFolder))
-    # print("\vVaSetlFolder: {}\n{} ".format( Path(valSetFolder).is_dir(), valSetFolder))
-
-    # print("\nmanualIndexPath: {}\n{} ".format( Path(manualIndexPath).is_file(), manualIndexPath))
-    # print("\nsplitIndexPath: {}\n{} ".format( Path(splitIndexPath).is_file(), splitIndexPath))
-    # print("\nmodelPath: {}\n{} ".format( Path(modelPath).is_file(), modelPath))
-    # print("\nhistoryPath: {}\n{} ".format( Path(historyPath).is_file(), historyPath))
-    # print("\nvalOutputPath: {}\n{} ".format( Path(valOutputPath).is_file(), valOutputPath))
-    # exit()
+    
+    dutils.make_report(reportPath, sampledIndexPath, manualIndexPath, autoLabelIndexPath,
+            unlabeledIndexPath, None)

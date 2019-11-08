@@ -18,6 +18,74 @@ import libs.utils           as utils
 from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
+# Reports and logging
+def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unlabeled_path,
+                train_info, show=False):
+    sampledIndex     = pd.read_csv(sampled_path)
+    manualIndex      = pd.read_csv(manual_path)
+    autoIndex        = pd.read_csv(automatic_path)
+    prevUnlabelIndex = pd.read_csv(prev_unlabeled_path)
+
+    # Get report information
+    numUnlabel = prevUnlabelIndex.shape[0]
+    numSampled = sampledIndex.shape[0]
+
+    sampledNaoDuto   = sampledIndex.groupby("rede1").get_group("Confuso").count()['video']+sampledIndex.groupby("rede1").get_group("Nada").count()['video']
+    sampledDuto      = sampledIndex.groupby("rede1").get_group("Duto").count()['video']
+    sampledEvento    = sampledIndex.groupby("rede2").get_group("Evento").count()['video']
+    sampledNaoEvento = sampledIndex.groupby("rede2").get_group("Nao_Evento").count()['video']
+    sampledTotal     = sampledDuto + sampledNaoDuto
+    naoDutoPercent   = sampledNaoDuto/sampledTotal*100
+    dutoPercent      = sampledDuto/sampledTotal*100
+
+    cumNaoDuto       = manualIndex.groupby("rede1").get_group('Nada').count()[0]+manualIndex.groupby("rede1").get_group('Confuso').count()[0]
+    cumDuto          = manualIndex.groupby("rede1").get_group(commons.rede1_positive).count()[0]
+    cumTotal         = cumDuto + cumNaoDuto
+    cumNaoDutoPercent= cumNaoDuto/cumTotal*100
+    cumDutoPercent   = cumDuto/cumTotal*100
+
+    autoLabel        = autoIndex.shape[0]
+    autoLabelPercent = autoLabel/numUnlabel*100
+    autoNeg          = autoIndex.groupby("rede1").get_group(commons.rede1_negative).count()['rede1']
+    autoPos          = autoIndex.groupby("rede1").get_group(commons.rede1_positive).count()['rede1']
+
+    reportString = "{} unlabeled images remain. Sampled {} images for manual annotation.\n".format(numUnlabel,
+                                                                                            numSampled)+\
+"Manual annotation distribution:\n\
+    NaoDuto:      {} images ({:.2f} %)\n\
+    Duto:         {} images ({:.2f} %)\n\
+        Evento:   {} images\n\
+        NaoEvento {} images\n\
+    Total:        {} images ('100%)\n".format(sampledNaoDuto, naoDutoPercent, sampledDuto, dutoPercent,
+                                            sampledEvento,sampledNaoEvento,sampledTotal)+\
+"Cumulative manual annotation distribution:\n\
+    NaoDuto:      {} images ({:.2f} %)\n\
+    Duto:         {} images ({:.2f} %)\n\
+    Total:        {} images ('100%)\n".format(cumNaoDuto, cumNaoDutoPercent,cumDuto, cumDutoPercent,cumTotal)+\
+"Train Hyperparams:\n\
+    Num Epochs:        {}\n\
+    Batch Size:        {}\n\
+    Optimizer:         Adam\n\
+Train Results:\n\
+    Elapsed Time:      {}m\n\
+    Best val loss:     {:.4f}\n\
+    Best val accuracy: {:.2f} %\n".format(1,2,3,4,5)+\
+"Thresholds val (99% pos ratio):\n\
+    Upper 99% positive ratio: {:.4f}, {:.2f} % ground truth positives\n\
+    Lower  1% positive ratio: {:.4f}, {:.2f} % ground truth positives\n\
+    Validation:  {}/{} = {:.2f} % images annotated\n\
+Automatic Annotation:\n\
+    Imgs Positivas: {}; Imgs Negativas: {}\n\
+    {}/{} = {:.2f} % imagens anotadas automaticamente\n".format(1.,2.,3.,4.,5.,6.,7., autoPos, autoNeg,
+                                                            autoLabel,numUnlabel, autoLabelPercent)
+
+    # Write report
+    with open(report_path, 'w') as f:
+        f.write(reportString)
+    if show:
+        print(reportString)
+    return reportString
+
 
 # Automatic labeling
 def automatic_labeling(outputs, outputs_index, upper_thresh, lower_thresh, verbose=True):

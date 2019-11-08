@@ -46,13 +46,13 @@ if __name__ == "__main__":
     mean    = commons.IMAGENET_MEAN
     std     = commons.IMAGENET_STD 
 
-    # # Set transforms
-    # dataTransforms = mutils.resnet_transforms(mean, std)
-    # history, modelFineTune = mutils.train_network(sampledImageFolder, dataTransforms, epochs=epochs,
-    #                                         batch_size=trainBatchSize,
-    #                                         model_path=modelPath,
-    #                                         history_path=historyPath,
-    #                                         seed=seed)
+    # Set transforms
+    dataTransforms = mutils.resnet_transforms(mean, std)
+    history, modelFineTune = mutils.train_network(sampledImageFolder, dataTransforms, epochs=epochs,
+                                            batch_size=trainBatchSize,
+                                            model_path=modelPath,
+                                            history_path=historyPath,
+                                            seed=seed)
 
     print("\nPlot train history.")
     history = utils.load_pickle(historyPath)
