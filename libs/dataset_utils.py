@@ -19,9 +19,20 @@ from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
 # Reports and logging
+def save_seed_log(log_path, seed, id_string):
+    # Save sample seed
+    if Path(log_path).is_file():
+        f = open(log_path, 'a')
+    else:
+        f = open(log_path, 'w')
+    f.write("{}\n{}".format(id_string, seed))
+    f.close()
+
+
 def get_loop_stats(loop_folder): # TODO: Finish function
     statsDf = pd.DataFrame()
     return statsDf
+
 
 def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unlabeled_path,
                 train_info, show=False):

@@ -5,17 +5,17 @@ import libs.dirs                as dirs
 import libs.commons             as commons
 import models.utils             as mutils
 import libs.utils               as utils
+import libs.dataset_utils       as dutils
 from libs.vis_functions         import plot_model_history
 
 if __name__ == "__main__":
     iteration = int(input("Enter iteration number.\n"))
-    seed           = 42
-    # iteration      = 3
-    rede           = 1
+    seed           = np.random.randint(0, 100)
+    rede           = 2
     epochs         = 500
     trainBatchSize = 256
 
-    datasetName = "full_dataset_softmax"
+    datasetName = "full_dataset_rede_{}".format(rede)
 
     def get_iter_folder(iteration):
         return Path(dirs.iter_folder) / "{}/iteration_{}/".format(datasetName, iteration)
@@ -37,6 +37,7 @@ if __name__ == "__main__":
                 "accuracy_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
     f1Path   = historyFolder / \
                 "f1_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
+    seedLogPath           = iterFolder / "seeds.txt"
     
     dirs.create_folder(historyFolder)
 
@@ -77,5 +78,7 @@ if __name__ == "__main__":
                         show=False)
 
     print("\nSaved results to folder ", historyFolder)
-
+    
+    # Save sample seed
+    dutils.save_seed_log(seedLogPath, seed, "train")
 

@@ -18,12 +18,11 @@ from libs.iteration_manager     import SampleImages
 
 if __name__ == "__main__":
     iteration = int(input("Enter iteration number.\n"))
-    seed           = 42
-    # iteration      = 3
-    rede           = 1
+    seed           = np.random.randint(0, 100)
+    rede           = 2
     epochs         = 500
 
-    datasetName = "full_dataset_softmax"
+    datasetName = "full_dataset_rede_{}".format(rede)
 
     def get_iter_folder(iteration):
         return Path(dirs.iter_folder) / "{}/iteration_{}/".format(datasetName, iteration)
@@ -44,6 +43,7 @@ if __name__ == "__main__":
     splitIndexPath        = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
     autoLabelIndexPath    = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
     mergedIndexPath       = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
+    seedLogPath           = iterFolder / "seeds.txt"
 
 # unlabeledIndexPath  : unlabeled_images contains all the images still not labeled at the end of the iteration. Will be read at the next iteration as a reference
 # mergedIndexPath     : final_annotated_images contains all images annotated in an iteration and on the previous iterations
@@ -95,6 +95,13 @@ if __name__ == "__main__":
 
     # Move images from dataset folder to sampled images
     # Sort images in sampled_images folder to separate class folders
+    if not(sampledImageFolder.is_dir()):
+        # Move images to folder if necessary
+        indexSampled.copy_files(sampledImageFolder)
+        # sourceList = indexSampled.index["FramePath"].values
+        # destList   = 
+        # map(utils.copy_files, sourceList, destList)
+
     dutils.move_dataset_to_train(manualIndexPath, sampledImageFolder, path_column="FramePath")
     
     imageIndex = dutils.move_to_class_folders(manualIndexPath, sampledImageFolder, target_net="rede1")
@@ -104,3 +111,6 @@ if __name__ == "__main__":
     splitIndex = dutils.data_folder_split(sampledImageFolder,
                                         splitPercentages, index=imageIndex.copy(), seed=seed)
     splitIndex.to_csv(splitIndexPath, index=False)
+
+    # Save sample seed
+    dutils.save_seed_log(seedLogPath, seed, "split")

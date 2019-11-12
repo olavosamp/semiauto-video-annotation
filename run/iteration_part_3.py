@@ -17,13 +17,11 @@ from libs.iteration_manager     import SampleImages
 
 if __name__ == "__main__":
     iteration = int(input("Enter iteration number.\n"))
-    seed           = 42
-    # iteration      = 3
-    rede           = 1
+    seed           = np.random.randint(0, 100)
+    rede           = 2
     epochs         = 500
     inferBatchSize = 64
-
-    datasetName = "full_dataset_softmax"
+    datasetName = "full_dataset_rede_{}".format(rede)
 
     def get_iter_folder(iteration):
         return Path(dirs.iter_folder) / "{}/iteration_{}/".format(datasetName, iteration)
@@ -62,6 +60,7 @@ if __name__ == "__main__":
     valHistogramPath     = imageResultsFolder / "histogram_validation_outputs_iteration_{}.pdf".format(iteration)
 
     reportPath           = iterFolder/"report_iteration_{}.txt".format(iteration)
+    seedLogPath          = iterFolder / "seeds.txt"
 
     ## Dataset Inference on Validation set to find thresholds
     print("\nSTEP: Perform inference on val set.")
@@ -179,3 +178,6 @@ if __name__ == "__main__":
     
     dutils.make_report(reportPath, sampledIndexPath, manualIndexPath, autoLabelIndexPath,
             unlabeledIndexPath, None)
+    
+    # Save sample seed
+    dutils.save_seed_log(seedLogPath, seed, "inference")
