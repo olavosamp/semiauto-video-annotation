@@ -276,6 +276,34 @@ def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, re
 
 
 ## Dataset files manipulation
+def start_loop(prev_annotated_path, net_number, target_class, target_column, verbose=True):
+    iter1Folder = Path("/".join(prev_annotated_path.parts[:-2])) / "iteration_1"
+    newUnlabeledPath = Path(prev_annotated_path).with_name("unlabeled_images_iteration_0.csv")
+    newLabeledPath   = iter1Folder / "sampled_images_iteration_1.csv"
+
+    dirs.create_folder(iter1Folder)
+
+    prevAnnotated = pd.read_csv(prevAnnotatedPath)
+
+    mask = prevAnnotated[target_column] == targetClass
+    nextLevelIndex = prevAnnotated.loc[mask, :]
+    nextLevelIndex = dutils.remove_duplicates(nextLevelIndex, "FrameHash", verbose=True)
+
+    group = nextLevelIndex.groupby("Annotation")
+    newUnlabeled   = group.get_group('auto')
+    newLabeled     = group.get_group('manual')
+    
+    newUnlabeled.to_csv(newUnlabeledPath, index=False)
+    newLabeled.to_csv(newLabeledPath, index=False)
+
+    if verbose:
+        print("Annotated last level: ", prevAnnotated.shape)
+        print("To be used in current step: ", nextLevelIndex.shape)
+        print("Unlabeled: ", newUnlabeled.shape)
+        print("Labeled:   ", newLabeled.shape)
+    return newUnlabeled, newLabeled
+
+
 class IndexLoader:
     '''
         Iterator to load and transform an image and its file hash.

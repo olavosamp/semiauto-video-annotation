@@ -48,8 +48,8 @@ manualLastIterIndex  = dutils.fill_index_information(unlabeledIndex, sampledLast
 
 manualIndexFull = pd.concat([cumManualIndex, manualLastIterIndex], axis=0, sort=False)
 
-print(manualIndexFull.shape)
-manualIndexFull.to_csv(compiledManualIndexPath)
+
+manualIndexFull.to_csv(compiledManualIndexPath, index=False)
 
 # Add Annotation column to indexes
 autoIndexFull["Annotation"] = ['auto']*len(autoIndexFull)

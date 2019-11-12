@@ -113,6 +113,10 @@ rede1_negative = "NaoDuto"
 rede2_positive = "Evento"
 rede2_negative = "NaoEvento"
 
+net_target_column = {1:'rede1',
+                     2:'rede2',
+                     3:'rede3'}
+
 # Annotation type names
 manual_annotation = "manual"
 auto_annotation   = "auto"
