@@ -90,6 +90,7 @@ net_classes_table = {   # Dict to translate class tags into binary problem tags
                         'rede2':{   # No translation needed
                             'Evento':       'Evento',
                             'NaoEvento':    'NaoEvento',
+                            'Duvida':       'Duvida',
                         },
                         'rede3':{   # TODO: This multiclass problem will require a more involved translation
                             'Anodo':        'Anodo',

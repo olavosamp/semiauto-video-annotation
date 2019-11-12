@@ -35,7 +35,7 @@ def get_loop_stats(loop_folder): # TODO: Finish function
 
 
 def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unlabeled_path,
-                train_info, show=False):
+                train_info, rede=1, show=False):
     sampledIndex     = pd.read_csv(sampled_path)
     manualIndex      = pd.read_csv(manual_path)
     autoIndex        = pd.read_csv(automatic_path)
@@ -44,39 +44,61 @@ def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unl
     # Get report information
     numUnlabel = prevUnlabelIndex.shape[0]
     numSampled = sampledIndex.shape[0]
+    
+    sampledNaoDuto = 0
+    if rede == 1:
+        sampledNaoDuto = sampledIndex.groupby("rede1").get_group("Confuso").count()['video']+\
+                         sampledIndex.groupby("rede1").get_group("Nada").count()['video']
 
-    sampledNaoDuto   = sampledIndex.groupby("rede1").get_group("Confuso").count()['video']+sampledIndex.groupby("rede1").get_group("Nada").count()['video']
-    sampledDuto      = sampledIndex.groupby("rede1").get_group("Duto").count()['video']
-    sampledEvento    = sampledIndex.groupby("rede2").get_group("Evento").count()['video']
-    sampledNaoEvento = sampledIndex.groupby("rede2").get_group("Nao_Evento").count()['video']
+    sampledDuto      = sampledIndex.groupby("rede1").get_group(commons.rede1_positive).count()['video']
+    sampledNaoEvento = sampledIndex.groupby("rede2").get_group(commons.rede2_negative).count()['video']
+    sampledEvento    = sampledIndex.groupby("rede2").get_group(commons.rede2_positive).count()['video']
     sampledTotal     = sampledDuto + sampledNaoDuto
     naoDutoPercent   = sampledNaoDuto/sampledTotal*100
     dutoPercent      = sampledDuto/sampledTotal*100
+    naoEventoPercent = sampledEvento/sampledTotal*100
+    eventoPercent    = sampledNaoEvento/sampledTotal*100
 
-    cumNaoDuto       = manualIndex.groupby("rede1").get_group('Nada').count()[0]+manualIndex.groupby("rede1").get_group('Confuso').count()[0]
-    cumDuto          = manualIndex.groupby("rede1").get_group(commons.rede1_positive).count()[0]
-    cumTotal         = cumDuto + cumNaoDuto
-    cumNaoDutoPercent= cumNaoDuto/cumTotal*100
-    cumDutoPercent   = cumDuto/cumTotal*100
+    if rede == 1:
+        cumNegName = commons.rede1_negative
+        cumPosName = commons.rede1_positive
+        cumNeg     = manualIndex.groupby("rede1").get_group('Nada').count()[0]+\
+                     manualIndex.groupby("rede1").get_group('Confuso').count()[0]
+        cumPos     = manualIndex.groupby("rede1").get_group(commons.rede1_positive).count()[0]
+        autoNeg    = autoIndex.groupby("rede1").get_group(commons.rede1_negative).count()['rede1']
+        autoPos    = autoIndex.groupby("rede1").get_group(commons.rede1_positive).count()['rede1']
+    elif rede == 2:
+        cumNegName = commons.rede2_negative
+        cumPosName = commons.rede2_positive
+        cumNeg     = manualIndex.groupby("rede2").get_group(commons.rede2_negative).count()[0]
+        cumPos     = manualIndex.groupby("rede2").get_group(commons.rede2_positive).count()[0]
+        autoNeg    = autoIndex.groupby("rede2").get_group(commons.rede2_negative).count()['rede2']
+        autoPos    = autoIndex.groupby("rede2").get_group(commons.rede2_positive).count()['rede2']
+    else:
+        raise NotImplementedError("Report not implemented for rede 3.")
+
+    cumTotal         = cumPos + cumNeg
+    cumNegPercent    = cumNeg/cumTotal*100
+    cumPosPercent    = cumPos/cumTotal*100
 
     autoLabel        = autoIndex.shape[0]
     autoLabelPercent = autoLabel/numUnlabel*100
-    autoNeg          = autoIndex.groupby("rede1").get_group(commons.rede1_negative).count()['rede1']
-    autoPos          = autoIndex.groupby("rede1").get_group(commons.rede1_positive).count()['rede1']
 
-    reportString = "{} unlabeled images remain. Sampled {} images for manual annotation.\n".format(numUnlabel,
-                                                                                            numSampled)+\
+    reportString = "Rede{}.\n{} unlabeled images remain. Sampled {} images for manual annotation.\n".format(rede,
+                                                                                 numUnlabel, numSampled)+\
 "Manual annotation distribution:\n\
     NaoDuto:      {} images ({:.2f} %)\n\
     Duto:         {} images ({:.2f} %)\n\
-        Evento:   {} images\n\
-        NaoEvento {} images\n\
-    Total:        {} images ('100%)\n".format(sampledNaoDuto, naoDutoPercent, sampledDuto, dutoPercent,
-                                            sampledEvento,sampledNaoEvento,sampledTotal)+\
+        Evento:   {} images ({:.2f} %)\n\
+        NaoEvento {} images ({:.2f} %)\n\
+    Total:        {} images (100%)\n".format(sampledNaoDuto, naoDutoPercent, sampledDuto, dutoPercent,
+                                            sampledEvento, eventoPercent, sampledNaoEvento, naoEventoPercent,
+                                            sampledTotal)+\
 "Cumulative manual annotation distribution:\n\
-    NaoDuto:      {} images ({:.2f} %)\n\
-    Duto:         {} images ({:.2f} %)\n\
-    Total:        {} images ('100%)\n".format(cumNaoDuto, cumNaoDutoPercent,cumDuto, cumDutoPercent,cumTotal)+\
+    {}:      {} images ({:.2f} %)\n\
+    {}:      {} images ({:.2f} %)\n\
+    Total:   {} images (100%)\n".format(cumNegName, cumNeg, cumNegPercent,
+                                        cumPosName, cumPos, cumPosPercent, cumTotal)+\
 "Train Hyperparams:\n\
     Num Epochs:        {}\n\
     Batch Size:        {}\n\
@@ -93,7 +115,7 @@ Automatic Annotation:\n\
     Imgs Positivas: {}; Imgs Negativas: {}\n\
     {}/{} = {:.2f} % imagens anotadas automaticamente\n".format(1.,2.,3.,4.,5.,6.,7., autoPos, autoNeg,
                                                             autoLabel,numUnlabel, autoLabelPercent)
-
+                                                            # TODO: Add train info
     # Write report
     with open(report_path, 'w') as f:
         f.write(reportString)
@@ -169,7 +191,6 @@ def compute_thresholds(val_outputs, labels,
     # Maximum resolution is to test a threshold on all output values
     if resolution == 'max':
         upperThreshList = np.sort(val_outputs)
-        # upperThreshList = copy(upperThreshList).reverse()
         lowerThreshList = copy(upperThreshList)[::-1]
     else:
         lowerThreshList = np.arange(0., 1., resolution)
@@ -178,12 +199,10 @@ def compute_thresholds(val_outputs, labels,
     #     lowerThreshList = np.arange(1., 0., -resolution)
 
     # Find upper threshold
-    # upperThreshList = np.arange(1., 0., -resolution)
     idealUpperThresh = find_ideal_upper_thresh(
                                     val_outputs, labels, upperThreshList, ratio=upper_ratio)#, verbose=True)
 
     # Find lower threshold
-    # lowerThreshList = np.arange(0., 1., resolution)
     idealLowerThresh = find_ideal_lower_thresh(
                                     val_outputs, labels, lowerThreshList, ratio=lower_ratio)
 
@@ -515,7 +534,7 @@ def move_to_class_folders(indexPath, imageFolderPath, target_net="rede1", verbos
 
     # Get unique tags and create the respective folders
     tags = set(imageIndex[target_net])# - set("-")
-    # tags = set([commons.net_classes_table[target_net][x] for x in unprocessedTags])
+    
     print("Found tags ", tags)
     for tag in tags:
         tag = translate_labels(tag, target_net)
@@ -527,17 +546,14 @@ def move_to_class_folders(indexPath, imageFolderPath, target_net="rede1", verbos
     print("Moving files to class folders...")
     for i in tqdm(range(numImages)):
         imageName  = str(imageIndex.loc[i, 'FrameName'])
-        # print(imageFolderPath)
-        # print(imageName)
         source   = imageFolderPath / imageName
         
         tag      = translate_labels(imageIndex.loc[i, target_net], target_net)
         destName = Path(tag) / imageName
         dest     = imageFolderPath / destName
 
-        # imageIndex.loc[i, 'imagem'] = destName # Unnecessary and possibly harmful
         # print("Moving\n{}\nto\n{}".format(source, dest))
-        # input()
+
         sh.move(source, dest)
         destList.append(dest)
     imageIndex["TrainPath"] = destList

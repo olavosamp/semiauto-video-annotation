@@ -46,7 +46,7 @@ if __name__ == "__main__":
     fullOutputPath       = savedModelsFolder / \
         "outputs_{}_{}_epochs_rede_{}_iteration_{}.pickle".format(datasetName, epochs, rede, iteration)
 
-    originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
+    originalUnlabeledIndexPath = get_iter_folder(0) / "reference_images.csv"
     unlabeledIndexPath      = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
     sampledIndexPath        = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
     manualIndexPath         = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)
@@ -92,11 +92,12 @@ if __name__ == "__main__":
 
     ## Perform inference on entire unlabeled dataset
     print("\nSTEP: Perform inference on entire dataset.")
-    mutils.dataset_inference_unlabeled(unlabeledIndexPath, dataTransforms['val'], modelPath, fullOutputPath,
-                        batch_size=inferBatchSize, seed=seed, verbose=True)
-    
-    # upperThresh = 0.8923 # Ratio 99%
-    # lowerThresh = 0.0904 # Ratio 1%
+    if not(fullOutputPath.is_file()):
+        # If outputs file already exist, skip inference
+        mutils.dataset_inference_unlabeled(unlabeledIndexPath, dataTransforms['val'], modelPath,
+                            fullOutputPath, batch_size=inferBatchSize, seed=seed, verbose=True)
+    else:
+        print("Output file already exists: {}\nSkipping inference.".format(fullOutputPath))
 
     print("\nUsing thresholds:\nUpper: {:.4f}\nLower: {:.4f}".format(upperThresh, lowerThresh))
 
@@ -131,8 +132,14 @@ if __name__ == "__main__":
     originalUnlabeledIndex = dutils.remove_duplicates(originalUnlabeledIndex, "FrameHash")
 
     # Add FrameHash column
-    sampledIndex["FrameHash"] = utils.compute_file_hash_list(sampledIndex["imagem"].values,
-                                                            folder=dirs.febe_image_dataset)
+    if "imagem" in sampledIndex.columns:
+        fileList = sampledIndex["imagem"].values
+    elif "FrameName" in sampledIndex.columns:
+        fileList = sampledIndex["FrameName"].values
+    else:
+        raise KeyError("DataFrame doesn't have a known image path column.")
+    
+    sampledIndex["FrameHash"] = utils.compute_file_hash_list(fileList, folder=dirs.febe_image_dataset)
 
     # Get missing information from original Unlabeled index
     sampledIndex = dutils.fill_index_information(originalUnlabeledIndex, sampledIndex,
@@ -177,7 +184,7 @@ if __name__ == "__main__":
     newIndex.to_csv(newUnlabeledIndexPath, index=False)
     
     dutils.make_report(reportPath, sampledIndexPath, manualIndexPath, autoLabelIndexPath,
-            unlabeledIndexPath, None)
+            unlabeledIndexPath, None, rede=rede)
     
     # Save sample seed
     dutils.save_seed_log(seedLogPath, seed, "inference")
