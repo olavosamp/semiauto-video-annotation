@@ -47,12 +47,12 @@ def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unl
     
     sampledNaoDuto = 0
     if rede == 1:
-        sampledNaoDuto = sampledIndex.groupby("rede1").get_group("Confuso").count()['video']+\
-                         sampledIndex.groupby("rede1").get_group("Nada").count()['video']
+        sampledNaoDuto = sampledIndex.groupby("rede1").get_group("Confuso").count()[0]+\
+                         sampledIndex.groupby("rede1").get_group("Nada").count()[0]
 
-    sampledDuto      = sampledIndex.groupby("rede1").get_group(commons.rede1_positive).count()['video']
-    sampledNaoEvento = sampledIndex.groupby("rede2").get_group(commons.rede2_negative).count()['video']
-    sampledEvento    = sampledIndex.groupby("rede2").get_group(commons.rede2_positive).count()['video']
+    sampledDuto      = sampledIndex.groupby("rede1").get_group(commons.rede1_positive).count()[0]
+    sampledNaoEvento = sampledIndex.groupby("rede2").get_group(commons.rede2_negative).count()[0]
+    sampledEvento    = sampledIndex.groupby("rede2").get_group(commons.rede2_positive).count()[0]
     sampledTotal     = sampledDuto + sampledNaoDuto
     naoDutoPercent   = sampledNaoDuto/sampledTotal*100
     dutoPercent      = sampledDuto/sampledTotal*100
@@ -125,12 +125,21 @@ Automatic Annotation:\n\
 
 
 # Automatic labeling
-def automatic_labeling(outputs, outputs_index, upper_thresh, lower_thresh, verbose=True):
+def automatic_labeling(outputs, outputs_index, unlabeled_index, upper_thresh, lower_thresh, rede, verbose=True):
     '''
-        Return the indexes whose corresponding outputs lie between the given upper and lower thresholds.
+        Return a DataFrame whose entries are taken from unlabeled_index according to calculated indexes.
+        The indexes are chosen so that their outputs are either above the upper threshold or below the lower.
     '''
+    upperIndexes, lowerIndexes = get_auto_label_indexes(outputs, outputs_index, upper_thresh,
+                                                        lower_thresh, verbose=True)
+    
+    autoIndex = get_classified_index(unlabeled_index, upperIndexes, lowerIndexes, rede,
+                                    index_col="FrameHash", verbose=False)
+    return autoIndex
+
+
+def get_auto_label_indexes(outputs, outputs_index, upper_thresh, lower_thresh, verbose=True):
     datasetLen      = len(outputs)
-    # indexes         = np.arange(datasetLen, dtype=int)
     indexes         = outputs_index
     upperIndexes    = indexes[np.greater(outputs, upper_thresh)]
     lowerIndexes    = indexes[np.less(outputs, lower_thresh)]
@@ -148,12 +157,19 @@ def automatic_labeling(outputs, outputs_index, upper_thresh, lower_thresh, verbo
     return upperIndexes, lowerIndexes
 
 
-def get_classified_index(index, pos_hashes, neg_hashes, index_col="FrameHash", verbose=True):
+def get_classified_index(index, pos_hashes, neg_hashes, rede, index_col="FrameHash", verbose=True):
     if index_col is not None:
         index.set_index("FrameHash", drop=False, inplace=True)
 
-    positiveLabel = commons.rede1_positive
-    negativeLabel = commons.rede1_negative
+    positiveLabel1 = commons.rede1_positive
+    negativeLabel1 = commons.rede1_negative
+    
+    if rede == 2:
+        positiveLabel2 = commons.rede2_positive
+        negativeLabel2 = commons.rede2_negative
+    
+    if rede == 3: # TODO: Implement something for rede 3
+        raise NotImplementedError("automatic labeling not yet implemented for rede 3.")
 
     newPositives = index.reindex(labels=pos_hashes, axis=0, copy=True)
     newNegatives = index.reindex(labels=neg_hashes, axis=0, copy=True)
@@ -163,8 +179,17 @@ def get_classified_index(index, pos_hashes, neg_hashes, index_col="FrameHash", v
     lenNegatives = len(newNegatives)
 
     # Set positive and negative class labels
-    newPositives["rede1"] = [positiveLabel]*lenPositives
-    newNegatives["rede1"] = [negativeLabel]*lenNegatives
+    if rede == 1:
+        newPositives["rede1"] = [positiveLabel1]*lenPositives
+        newNegatives["rede1"] = [negativeLabel1]*lenNegatives
+    if rede == 2:
+        newPositives["rede1"] = [positiveLabel1]*lenPositives
+        newPositives["rede2"] = [positiveLabel2]*lenPositives
+        newNegatives["rede2"] = [negativeLabel2]*lenNegatives
+    if rede == 3: # TODO: Implement something for rede 3
+        newPositives["rede2"] = [positiveLabel2]*lenPositives
+        raise NotImplementedError("automatic labeling not yet implemented for rede 3.")
+
 
     newLabeledIndex = pd.concat([newPositives, newNegatives], axis=0, sort=False)
     if verbose:
@@ -217,7 +242,7 @@ def compute_thresholds(val_outputs, labels,
     #     idealLowerThresh = meanThresh
 
     if val_indexes is not None:
-        automatic_labeling(val_outputs, val_indexes, idealUpperThresh, idealLowerThresh, verbose=True)
+        get_auto_label_indexes(val_outputs, val_indexes, idealUpperThresh, idealLowerThresh, verbose=True)
 
     return idealUpperThresh, idealLowerThresh
 
@@ -307,17 +332,21 @@ def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, re
 
 ## Dataset files manipulation
 def start_loop(prev_annotated_path, net_number, target_class, target_column, verbose=True):
+    '''
+        Splits previous annotated image index in auto and manual labeled indexes.
+        Creates first iteration folder.
+    '''
     iter1Folder = Path("/".join(prev_annotated_path.parts[:-2])) / "iteration_1"
     newUnlabeledPath = Path(prev_annotated_path).with_name("unlabeled_images_iteration_0.csv")
     newLabeledPath   = iter1Folder / "sampled_images_iteration_1.csv"
 
     dirs.create_folder(iter1Folder)
 
-    prevAnnotated = pd.read_csv(prevAnnotatedPath)
+    prevAnnotated = pd.read_csv(prev_annotated_path)
 
-    mask = prevAnnotated[target_column] == targetClass
+    mask = prevAnnotated[target_column] == target_class
     nextLevelIndex = prevAnnotated.loc[mask, :]
-    nextLevelIndex = dutils.remove_duplicates(nextLevelIndex, "FrameHash", verbose=True)
+    nextLevelIndex = remove_duplicates(nextLevelIndex, "FrameHash", verbose=True)
 
     group = nextLevelIndex.groupby("Annotation")
     newUnlabeled   = group.get_group('auto')
@@ -417,7 +446,7 @@ def index_complement(reference_df, to_drop_df, column_label):
         Drop rows from 'reference_df' DataFrame indicated by column_label
         column of 'to_drop_df' DataFrame.
 
-        The operation performed can be interpreted a set complement between reference and
+        The operation performed can be interpreted as a set complement between reference and
         to_drop DataFrames. Returns a DataFrame with length equal to (len(reference_df) - len(to_drop_df)).
     '''
     reference_df.set_index(column_label, drop=False, inplace=True)

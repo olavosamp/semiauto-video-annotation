@@ -111,12 +111,12 @@ if __name__ == "__main__":
     outputs = outputs[:, 0]
 
     print("\nAutomatic labeling with upper positive ratio 99%:")
-    posHashes, negHashes = dutils.automatic_labeling(outputs, imgHashes,
-                                                    upperThresh, lowerThresh)
+    autoIndex = dutils.automatic_labeling(outputs, imgHashes, unlabeledIndex, upperThresh,
+                                                     lowerThresh, rede)
 
-    newLabeledIndex = dutils.get_classified_index(unlabeledIndex, posHashes, negHashes,
-                                                    index_col="FrameHash", verbose=False)
-    newLabeledIndex.to_csv(autoLabelIndexPath, index=False)
+    # autoIndex = dutils.get_classified_index(unlabeledIndex, posHashes, negHashes,
+    #                                             rede=rede, index_col="FrameHash", verbose=False)
+    autoIndex.to_csv(autoLabelIndexPath, index=False)
 
     plot_outputs_histogram(outputs, lower_thresh=lowerThresh, upper_thresh=upperThresh,
                         title="Unlabeled Outputs Histogram", save_path=unlabelHistogramPath,
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     sampledIndex           = pd.read_csv(sampledIndexPath)
     autoIndex              = pd.read_csv(autoLabelIndexPath)
     originalUnlabeledIndex = pd.read_csv(originalUnlabeledIndexPath)
-    
+
     originalUnlabeledIndex = dutils.remove_duplicates(originalUnlabeledIndex, "FrameHash")
 
     # Add FrameHash column
@@ -140,6 +140,7 @@ if __name__ == "__main__":
         raise KeyError("DataFrame doesn't have a known image path column.")
     
     sampledIndex["FrameHash"] = utils.compute_file_hash_list(fileList, folder=dirs.febe_image_dataset)
+
 
     # Get missing information from original Unlabeled index
     sampledIndex = dutils.fill_index_information(originalUnlabeledIndex, sampledIndex,
@@ -159,32 +160,29 @@ if __name__ == "__main__":
     mergedPathList = [get_iter_folder(x) / \
         "final_annotated_images_iteration_{}.csv".format(x) for x in range(1, iteration+1)]
     mergedIndexList = [pd.read_csv(x) for x in mergedPathList]
-    originalUnlabeledIndex  = pd.read_csv(originalUnlabeledIndexPath)
-    # mergedIndex             = pd.read_csv(mergedIndexPath)
-    # previousMergedIndex     = pd.read_csv(previousMergedIndexPath)
-    print(originalUnlabeledIndex.index.shape)
-
-    originalUnlabeledIndex = dutils.remove_duplicates(originalUnlabeledIndex, "FrameHash")
+    unlabeledIndex  = pd.read_csv(unlabeledIndexPath)
+    
+    unlabeledIndex = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
+    # print(unlabeledIndex.index.shape)
+    # print(unlabeledIndex.index.duplicated().sum())
 
     # print("Shape final_annotations_iter_{}: {}".format(iteration, mergedIndex.shape))
     # print("Shape final_annotations_iter_{}: {}".format(iteration-1, previousMergedIndex.shape))
 
-    # allAnnotations = pd.concat([previousMergedIndex, mergedIndex], axis=0, sort=False)
     allAnnotations = pd.concat(mergedIndexList, axis=0, sort=False)
-    
+
     allAnnotations = dutils.remove_duplicates(allAnnotations, "FrameHash")
-    print("Duplicated elements in ogUnlabelIndex and allAnnottations.")
-    print(originalUnlabeledIndex.index.duplicated().sum())
+    print("Duplicated elements in final_annotated_images.")
     print(allAnnotations.index.duplicated().sum())
 
-    newIndex = dutils.index_complement(originalUnlabeledIndex, allAnnotations, "FrameHash")
+    newIndex = dutils.index_complement(unlabeledIndex, allAnnotations, "FrameHash")
     print(newIndex.shape)
 
     dirs.create_folder(newUnlabeledIndexPath.parent)
     newIndex.to_csv(newUnlabeledIndexPath, index=False)
-    
+
     dutils.make_report(reportPath, sampledIndexPath, manualIndexPath, autoLabelIndexPath,
-            unlabeledIndexPath, None, rede=rede)
-    
+                       unlabeledIndexPath, None, rede=rede)
+
     # Save sample seed
     dutils.save_seed_log(seedLogPath, seed, "inference")

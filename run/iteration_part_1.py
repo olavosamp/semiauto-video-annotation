@@ -31,7 +31,7 @@ if __name__ == "__main__":
     seedLogPath          = iterFolder / "seeds.txt"
 
     dirs.create_folder(iterFolder)
-|   dirs.create_folder(sampledImageFolder)
+    dirs.create_folder(sampledImageFolder)
 
     ## Next Iteration
     print("\nSTEP: Sample images for manual annotation.")

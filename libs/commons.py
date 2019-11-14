@@ -112,7 +112,7 @@ net_classes_table = {   # Dict to translate class tags into binary problem tags
 rede1_positive = "Duto"
 rede1_negative = "NaoDuto"
 rede2_positive = "Evento"
-rede2_negative = "NaoEvento"
+rede2_negative = "Nao_Evento"
 
 net_target_column = {1:'rede1',
                      2:'rede2',
