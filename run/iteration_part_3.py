@@ -32,10 +32,10 @@ if __name__ == "__main__":
     nextIterFolder       = get_iter_folder(iteration+1)
     sampledImageFolder   = iterFolder / "sampled_images"
     savedModelsFolder    = Path(dirs.saved_models) / \
-        "{}_rede_{}/iteration_{}".format(datasetName, rede, iteration)
+        "{}/iteration_{}".format(datasetName, iteration)
     valSetFolder         = sampledImageFolder / "val/"
     imageResultsFolder   = Path(dirs.results) / \
-        "{}_rede_{}/iteration_{}".format(datasetName, rede, iteration)
+        "{}/iteration_{}".format(datasetName, iteration)
 
     modelPath            = savedModelsFolder / \
         "{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(datasetName, epochs, rede, iteration)
@@ -54,6 +54,7 @@ if __name__ == "__main__":
     autoLabelIndexPath      = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
     mergedIndexPath         = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
     previousMergedIndexPath = previousIterFolder / "final_annotated_images_iteration_{}.csv".format(iteration-1)
+    unlabelNoManualPath     = iterFolder / "unlabeled_no_manual_iteration_{}.csv".format(iteration)
     newUnlabeledIndexPath   = iterFolder / "unlabeled_images_iteration_{}.csv".format(iteration)
 
     unlabelHistogramPath = imageResultsFolder / "histogram_unlabeled_outputs_iteration_{}.pdf".format(iteration)
@@ -86,15 +87,21 @@ if __name__ == "__main__":
                                                         val_indexes=imgHashes)
 
     # Plot validation outputs histogram
-    valOutputs = valOutputs[:, 0]
-    plot_outputs_histogram(valOutputs, labels, lowerThresh, upperThresh, show=False,
+    plot_outputs_histogram(valOutputs[:, 0], labels, lowerThresh, upperThresh, show=False,
                            save_path = valHistogramPath, log=True)
 
     ## Perform inference on entire unlabeled dataset
+    # Get unlabeled set without manual_annotated_images
+    unlabeledIndex = pd.read_csv(unlabeledIndexPath)
+    splitIndex = pd.read_csv(splitIndexPath)
+
+    unlabelNoManualIndex = dutils.index_complement(unlabeledIndex, splitIndex, "FrameHash")
+    unlabelNoManualIndex.to_csv(unlabelNoManualPath, index=False)
+
+    # If outputs file already exist, skip inference
     print("\nSTEP: Perform inference on entire dataset.")
     if not(fullOutputPath.is_file()):
-        # If outputs file already exist, skip inference
-        mutils.dataset_inference_unlabeled(unlabeledIndexPath, dataTransforms['val'], modelPath,
+        mutils.dataset_inference_unlabeled(unlabelNoManualPath, dataTransforms['val'], modelPath,
                             fullOutputPath, batch_size=inferBatchSize, seed=seed, verbose=True)
     else:
         print("Output file already exists: {}\nSkipping inference.".format(fullOutputPath))
@@ -113,9 +120,6 @@ if __name__ == "__main__":
     print("\nAutomatic labeling with upper positive ratio 99%:")
     autoIndex = dutils.automatic_labeling(outputs, imgHashes, unlabeledIndex, upperThresh,
                                                      lowerThresh, rede)
-
-    # autoIndex = dutils.get_classified_index(unlabeledIndex, posHashes, negHashes,
-    #                                             rede=rede, index_col="FrameHash", verbose=False)
     autoIndex.to_csv(autoLabelIndexPath, index=False)
 
     plot_outputs_histogram(outputs, lower_thresh=lowerThresh, upper_thresh=upperThresh,
@@ -141,7 +145,6 @@ if __name__ == "__main__":
     
     sampledIndex["FrameHash"] = utils.compute_file_hash_list(fileList, folder=dirs.febe_image_dataset)
 
-
     # Get missing information from original Unlabeled index
     sampledIndex = dutils.fill_index_information(originalUnlabeledIndex, sampledIndex,
                                             "FrameHash", [ 'rede1', 'rede2', 'rede3'])
@@ -163,8 +166,6 @@ if __name__ == "__main__":
     unlabeledIndex  = pd.read_csv(unlabeledIndexPath)
     
     unlabeledIndex = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
-    # print(unlabeledIndex.index.shape)
-    # print(unlabeledIndex.index.duplicated().sum())
 
     # print("Shape final_annotations_iter_{}: {}".format(iteration, mergedIndex.shape))
     # print("Shape final_annotations_iter_{}: {}".format(iteration-1, previousMergedIndex.shape))
@@ -176,7 +177,6 @@ if __name__ == "__main__":
     print(allAnnotations.index.duplicated().sum())
 
     newIndex = dutils.index_complement(unlabeledIndex, allAnnotations, "FrameHash")
-    print(newIndex.shape)
 
     dirs.create_folder(newUnlabeledIndexPath.parent)
     newIndex.to_csv(newUnlabeledIndexPath, index=False)

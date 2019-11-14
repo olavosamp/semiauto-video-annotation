@@ -331,7 +331,7 @@ def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, re
 
 
 ## Dataset files manipulation
-def start_loop(prev_annotated_path, net_number, target_class, target_column, verbose=True):
+def start_loop(prev_annotated_path, target_class, target_column, verbose=True):
     '''
         Splits previous annotated image index in auto and manual labeled indexes.
         Creates first iteration folder.
@@ -339,7 +339,6 @@ def start_loop(prev_annotated_path, net_number, target_class, target_column, ver
     iter1Folder = Path("/".join(prev_annotated_path.parts[:-2])) / "iteration_1"
     newUnlabeledPath = Path(prev_annotated_path).with_name("unlabeled_images_iteration_0.csv")
     newLabeledPath   = iter1Folder / "sampled_images_iteration_1.csv"
-
     dirs.create_folder(iter1Folder)
 
     prevAnnotated = pd.read_csv(prev_annotated_path)
@@ -347,10 +346,12 @@ def start_loop(prev_annotated_path, net_number, target_class, target_column, ver
     mask = prevAnnotated[target_column] == target_class
     nextLevelIndex = prevAnnotated.loc[mask, :]
     nextLevelIndex = remove_duplicates(nextLevelIndex, "FrameHash", verbose=True)
-
-    group = nextLevelIndex.groupby("Annotation")
-    newUnlabeled   = group.get_group('auto')
-    newLabeled     = group.get_group('manual')
+    
+    newUnlabeled  = nextLevelIndex.copy()
+    # newUnlabeled   = group.get_group('auto') # To get only auto annotated images of previous level
+    
+    # Save manual labeled images as sampled_images for first iteration
+    newLabeled = nextLevelIndex.groupby("Annotation").get_group('manual')
     
     newUnlabeled.to_csv(newUnlabeledPath, index=False)
     newLabeled.to_csv(newLabeledPath, index=False)

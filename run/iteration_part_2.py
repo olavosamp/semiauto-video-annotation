@@ -15,6 +15,11 @@ from libs.index                 import IndexManager
 from libs.vis_functions         import plot_outputs_histogram
 from libs.iteration_manager     import SampleImages
 
+# unlabeledIndexPath  : unlabeled_images contains all the images still not labeled at the end of the iteration. Will be read at the next iteration as a reference
+# mergedIndexPath     : final_annotated_images contains all images annotated in an iteration and on the previous iterations
+# manualIndexPath     : annotated_images contains the current manually annotated dataset. Include current and previous iterations. Valid from iter > 2
+# splitIndexPath      : annotated_images_..._train_val_split contains the annotated images to be used in training this iteration, that is, the manual annotated images from the current and previous iterations.
+# autoLabelIndexPath  : automatic_labeled_images contains images annotated automatically in the current iteration
 
 if __name__ == "__main__":
     iteration = int(input("Enter iteration number.\n"))
@@ -35,21 +40,13 @@ if __name__ == "__main__":
               "{}_rede_{}_softmax/iteration_{}".format(datasetName, rede, iteration)
 
     originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
-    unlabeledIndexPath    = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
     sampledIndexPath      = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
     manualIndexPath       = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)
     prevManualIndexPath   = previousIterFolder / \
         "manual_annotated_images_iteration_{}_train_val_split.csv".format(iteration-1)
     splitIndexPath        = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
-    autoLabelIndexPath    = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
-    mergedIndexPath       = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
     seedLogPath           = iterFolder / "seeds.txt"
 
-# unlabeledIndexPath  : unlabeled_images contains all the images still not labeled at the end of the iteration. Will be read at the next iteration as a reference
-# mergedIndexPath     : final_annotated_images contains all images annotated in an iteration and on the previous iterations
-# manualIndexPath     : annotated_images contains the current manually annotated dataset. Include current and previous iterations. Valid from iter > 2
-# splitIndexPath      : annotated_images_..._train_val_split contains the annotated images to be used in training this iteration, that is, the manual annotated images from the current and previous iterations.
-# autoLabelIndexPath  : automatic_labeled_images contains images annotated automatically in the current iteration
 
     ## Process manual labels and add missing information
     print("\nSTEP: Process manual labels and add missing information")
