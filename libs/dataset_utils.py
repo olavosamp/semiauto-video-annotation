@@ -25,7 +25,7 @@ def save_seed_log(log_path, seed, id_string):
         f = open(log_path, 'a')
     else:
         f = open(log_path, 'w')
-    f.write("{}\n{}".format(id_string, seed))
+    f.write("{}\n{}\n".format(id_string, seed))
     f.close()
 
 
@@ -331,6 +331,20 @@ def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, re
 
 
 ## Dataset files manipulation
+def merge_indexes(index_path_list, key_column):
+    '''
+        Read a list of DataFrame paths, concatenates them and remove duplicated elements from resulting DF.
+    '''
+    assert (len(index_path_list) >= 2) and \
+           not(isinstance(index_path_list, str)), \
+    "Argument index_path_list must be a list of two or more DataFrame paths."
+
+    indexListNoDups = [remove_duplicates(pd.read_csv(x), key_column) for x in index_path_list]
+    
+    newIndex = pd.concat(indexListNoDups, axis=0, sort=False)
+    newIndex = remove_duplicates(newIndex, key_column)
+    return newIndex
+
 def start_loop(prev_annotated_path, target_class, target_column, verbose=True):
     '''
         Splits previous annotated image index in auto and manual labeled indexes.
@@ -676,6 +690,7 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
         index.set_index('FrameHash', drop=False, inplace=True)
         # TODO: Check if train dest paths are guaranteed to be saved in
         #  the same order as index. If not, find other way
+        ## Note: Iterating the index via for statement is unfeasibly slow
         trainIndex              = index.reindex(labels=trainHashList, axis=0, copy=True)
         trainIndex['TrainPath'] = trainDestList
         trainIndex['set']       = ['train']*setLengths[0]
@@ -684,13 +699,6 @@ def data_folder_split(datasetPath, split_percentages, index=None, seed=None):
         valIndex['TrainPath']   = valDestList
         valIndex['set']         = ['val']*setLengths[1]
 
-        ## This way is unfeasibly slow
-        # for i in tqdm(range(setLengths[0])):
-        #     index.loc[trainSourceList[i], 'TrainPath'] = trainDestList[i]
-        #     index.loc[trainSourceList[i], 'set']    = 'train'
-        # for i in tqdm(range(setLengths[1])):
-        #     index.loc[valSourceList[i], 'TrainPath']   = valDestList[i]
-        #     index.loc[valSourceList[i], 'set']      = 'val'
         index = pd.concat([trainIndex, valIndex], axis=0, sort=False)
 
         index.reset_index(drop=True, inplace=True)

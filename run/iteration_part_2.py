@@ -25,7 +25,6 @@ if __name__ == "__main__":
     iteration = int(input("Enter iteration number.\n"))
     seed           = np.random.randint(0, 100)
     rede           = 2
-    epochs         = 500
 
     datasetName = "full_dataset_rede_{}".format(rede)
 
@@ -47,7 +46,6 @@ if __name__ == "__main__":
     splitIndexPath        = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
     seedLogPath           = iterFolder / "seeds.txt"
 
-
     ## Process manual labels and add missing information
     print("\nSTEP: Process manual labels and add missing information")
     # Add folder path
@@ -57,14 +55,9 @@ if __name__ == "__main__":
 
     # Load model outputs and unlabeled images index
     indexSampled = IndexManager(sampledIndexPath)
-
-    if "imagem" in indexSampled.index.columns:
-        indexSampled.index["FramePath"] = indexSampled.index["imagem"].map(_add_folder_path)
-    elif "FrameName" in indexSampled.index.columns:
-        indexSampled.index["FramePath"] = indexSampled.index["FrameName"].map(_add_folder_path)
-    else:
-        raise KeyError("DataFrame doesn't have a known image path column.")
-
+    indexSampled.index["FrameName"] = indexSampled.index["imagem"].copy()
+    indexSampled.index["FramePath"] = indexSampled.index["FrameName"].map(_add_folder_path)
+    
     eTime = indexSampled.compute_frame_hashes(reference_column="FramePath", verbose=True)
 
     indexSampled.write_index(dest_path=manualIndexPath, make_backup=False, prompt=False)
@@ -94,16 +87,7 @@ if __name__ == "__main__":
     ## Split train and val sets
     print("\nSTEP: Split train and val sets.")
     splitPercentages = [0.8, 0.2]
-
-    # Move images from dataset folder to sampled images
-    # Sort images in sampled_images folder to separate class folders
-    # if not(sampledImageFolder.is_dir()):
-    #     # Move images to folder if necessary
-    #     indexSampled.copy_files(sampledImageFolder)
-    #     # sourceList = indexSampled.index["FramePath"].values
-    #     # destList   = 
-    #     # map(utils.copy_files, sourceList, destList)
-
+    
     dutils.move_dataset_to_train(manualIndexPath, sampledImageFolder, path_column="FramePath")
     
     imageIndex = dutils.move_to_class_folders(manualIndexPath, sampledImageFolder, target_net="rede"+str(rede))

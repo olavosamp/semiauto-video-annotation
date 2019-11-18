@@ -12,7 +12,7 @@ if __name__ == "__main__":
     iteration = int(input("Enter iteration number.\n"))
     seed           = np.random.randint(0, 100)
     rede           = 2
-    epochs         = 500
+    epochs         = 150
     trainBatchSize = 256
 
     datasetName = "full_dataset_rede_{}".format(rede)
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     iterFolder           = get_iter_folder(iteration)
     sampledImageFolder   = iterFolder / "sampled_images"
     savedModelsFolder    = Path(dirs.saved_models) / \
-        "{}_rede_{}/iteration_{}".format(datasetName, rede, iteration)
+        "{}/iteration_{}".format(datasetName, iteration)
 
     modelPath            = savedModelsFolder / \
         "{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(datasetName, epochs, rede, iteration)

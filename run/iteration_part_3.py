@@ -19,7 +19,7 @@ if __name__ == "__main__":
     iteration = int(input("Enter iteration number.\n"))
     seed           = np.random.randint(0, 100)
     rede           = 2
-    epochs         = 500
+    epochs         = 150
     inferBatchSize = 64
     datasetName = "full_dataset_rede_{}".format(rede)
 
@@ -46,16 +46,17 @@ if __name__ == "__main__":
     fullOutputPath       = savedModelsFolder / \
         "outputs_{}_{}_epochs_rede_{}_iteration_{}.pickle".format(datasetName, epochs, rede, iteration)
 
-    originalUnlabeledIndexPath = get_iter_folder(0) / "reference_images.csv"
-    unlabeledIndexPath      = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
-    sampledIndexPath        = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
-    manualIndexPath         = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)
-    splitIndexPath          = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
-    autoLabelIndexPath      = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
-    mergedIndexPath         = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
-    previousMergedIndexPath = previousIterFolder / "final_annotated_images_iteration_{}.csv".format(iteration-1)
-    unlabelNoManualPath     = iterFolder / "unlabeled_no_manual_iteration_{}.csv".format(iteration)
-    newUnlabeledIndexPath   = iterFolder / "unlabeled_images_iteration_{}.csv".format(iteration)
+    # originalUnlabeledIndexPath = get_iter_folder(0) / "reference_images.csv"
+    originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
+    unlabeledIndexPath         = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
+    sampledIndexPath           = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
+    manualIndexPath            = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)
+    splitIndexPath             = iterFolder / (manualIndexPath.stem + "_train_val_split.csv")
+    autoLabelIndexPath         = iterFolder / "automatic_labeled_images_iteration_{}.csv".format(iteration)
+    mergedIndexPath            = iterFolder / "final_annotated_images_iteration_{}.csv".format(iteration)
+    previousMergedIndexPath    = previousIterFolder / "final_annotated_images_iteration_{}.csv".format(iteration-1)
+    unlabelNoManualPath        = iterFolder / "unlabeled_no_manual_iteration_{}.csv".format(iteration)
+    newUnlabeledIndexPath      = iterFolder / "unlabeled_images_iteration_{}.csv".format(iteration)
 
     unlabelHistogramPath = imageResultsFolder / "histogram_unlabeled_outputs_iteration_{}.pdf".format(iteration)
     valHistogramPath     = imageResultsFolder / "histogram_validation_outputs_iteration_{}.pdf".format(iteration)
@@ -92,14 +93,17 @@ if __name__ == "__main__":
 
     ## Perform inference on entire unlabeled dataset
     # Get unlabeled set without manual_annotated_images
-    unlabeledIndex = pd.read_csv(unlabeledIndexPath)
-    splitIndex = pd.read_csv(splitIndexPath)
+    originalUnlabeledIndex = pd.read_csv(originalUnlabeledIndexPath)
+    # splitIndex = pd.read_csv(splitIndexPath)
 
-    unlabelNoManualIndex = dutils.index_complement(unlabeledIndex, splitIndex, "FrameHash")
+    # TODO: Maybe compute unlabeled_index_no_manual earlier: at part_2 after manual annotation 
+    # Do now: unlabeledNoManualIndex = complement(unlabeled_it_0, [final_annot_it_1, manual_annot_split_it_2])
+    annotatedSoFarIndex  = dutils.merge_indexes([previousMergedIndexPath, splitIndexPath], "FrameHash")
+    unlabelNoManualIndex = dutils.index_complement(originalUnlabeledIndex, annotatedSoFarIndex, "FrameHash")
     unlabelNoManualIndex.to_csv(unlabelNoManualPath, index=False)
 
     # If outputs file already exist, skip inference
-    print("\nSTEP: Perform inference on entire dataset.")
+    print("\nSTEP: Perform inference on remaining unlabeled set.")
     if not(fullOutputPath.is_file()):
         mutils.dataset_inference_unlabeled(unlabelNoManualPath, dataTransforms['val'], modelPath,
                             fullOutputPath, batch_size=inferBatchSize, seed=seed, verbose=True)
@@ -110,15 +114,14 @@ if __name__ == "__main__":
 
     ## Perform automatic labeling
     print("\nSTEP: Automatic labeling.")
-    unlabeledIndex  = pd.read_csv(unlabeledIndexPath)
-    pickleData      = utils.load_pickle(fullOutputPath)
+    unlabeledNoManualIndex = pd.read_csv(unlabelNoManualPath)
+    pickleData             = utils.load_pickle(fullOutputPath)
 
-    unlabeledIndex        = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
-    outputs, imgHashes, _ = dutils.load_outputs_df(fullOutputPath)
+    outputs, imgHashes, _  = dutils.load_outputs_df(fullOutputPath)
     outputs = outputs[:, 0]
 
     print("\nAutomatic labeling with upper positive ratio 99%:")
-    autoIndex = dutils.automatic_labeling(outputs, imgHashes, unlabeledIndex, upperThresh,
+    autoIndex = dutils.automatic_labeling(outputs, imgHashes, unlabeledNoManualIndex, upperThresh,
                                                      lowerThresh, rede)
     autoIndex.to_csv(autoLabelIndexPath, index=False)
 
@@ -129,12 +132,12 @@ if __name__ == "__main__":
     ## Merge labeled sets
     print("\nMerge auto and manual labeled sets.")
     # Merge annotated images of the current iteration: manual and auto
+    # Must use sampledIndex because manualIndex also has manual images from previous iterations
     sampledIndex           = pd.read_csv(sampledIndexPath)
     autoIndex              = pd.read_csv(autoLabelIndexPath)
     originalUnlabeledIndex = pd.read_csv(originalUnlabeledIndexPath)
 
-    originalUnlabeledIndex = dutils.remove_duplicates(originalUnlabeledIndex, "FrameHash")
-
+    # TODO: Encapsulate sampledImages processing in function
     # Add FrameHash column
     if "imagem" in sampledIndex.columns:
         fileList = sampledIndex["imagem"].values
@@ -152,6 +155,7 @@ if __name__ == "__main__":
     sampledIndex = dutils.remove_duplicates(sampledIndex, "FrameHash")
     autoIndex    = dutils.remove_duplicates(autoIndex, "FrameHash")
 
+    # TODO: Use merge_indexes in merge_manual_auto_sets
     mergedIndex = dutils.merge_manual_auto_sets(sampledIndex, autoIndex)
     print(mergedIndex.shape)
 
@@ -159,13 +163,12 @@ if __name__ == "__main__":
 
 
     ## Create unlabeled set for next iteration
+    # TODO: Encapsulate this section in function
     print("\nCreate new unlabeled set.")
     mergedPathList = [get_iter_folder(x) / \
         "final_annotated_images_iteration_{}.csv".format(x) for x in range(1, iteration+1)]
     mergedIndexList = [pd.read_csv(x) for x in mergedPathList]
-    unlabeledIndex  = pd.read_csv(unlabeledIndexPath)
-    
-    unlabeledIndex = dutils.remove_duplicates(unlabeledIndex, "FrameHash")
+    originalUnlabeledIndex  = pd.read_csv(originalUnlabeledIndexPath)
 
     # print("Shape final_annotations_iter_{}: {}".format(iteration, mergedIndex.shape))
     # print("Shape final_annotations_iter_{}: {}".format(iteration-1, previousMergedIndex.shape))
@@ -176,7 +179,7 @@ if __name__ == "__main__":
     print("Duplicated elements in final_annotated_images.")
     print(allAnnotations.index.duplicated().sum())
 
-    newIndex = dutils.index_complement(unlabeledIndex, allAnnotations, "FrameHash")
+    newIndex = dutils.index_complement(originalUnlabeledIndex, allAnnotations, "FrameHash")
 
     dirs.create_folder(newUnlabeledIndexPath.parent)
     newIndex.to_csv(newUnlabeledIndexPath, index=False)
