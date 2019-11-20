@@ -65,15 +65,31 @@ def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unl
         cumNeg     = manualIndex.groupby("rede1").get_group('Nada').count()[0]+\
                      manualIndex.groupby("rede1").get_group('Confuso').count()[0]
         cumPos     = manualIndex.groupby("rede1").get_group(commons.rede1_positive).count()[0]
-        autoNeg    = autoIndex.groupby("rede1").get_group(commons.rede1_negative).count()['rede1']
-        autoPos    = autoIndex.groupby("rede1").get_group(commons.rede1_positive).count()['rede1']
+        
+        # Exception for case where there are no positive or negative images automatically annotated
+        if commons.rede1_negative in set(autoIndex['rede1'].values):
+            autoNeg    = autoIndex.groupby("rede1").get_group(commons.rede1_negative).count()['rede1']
+        else:
+            autoNeg = 0
+        if commons.rede1_positive in set(autoIndex['rede1'].values):
+            autoPos    = autoIndex.groupby("rede1").get_group(commons.rede1_positive).count()['rede1']
+        else:
+            autoPos = 0
     elif rede == 2:
         cumNegName = commons.rede2_negative
         cumPosName = commons.rede2_positive
         cumNeg     = manualIndex.groupby("rede2").get_group(commons.rede2_negative).count()[0]
         cumPos     = manualIndex.groupby("rede2").get_group(commons.rede2_positive).count()[0]
-        autoNeg    = autoIndex.groupby("rede2").get_group(commons.rede2_negative).count()['rede2']
-        autoPos    = autoIndex.groupby("rede2").get_group(commons.rede2_positive).count()['rede2']
+
+        # Exception for case where there are no positive or negative images automatically annotated
+        if commons.rede2_negative in set(autoIndex['rede2'].values):
+            autoNeg    = autoIndex.groupby("rede2").get_group(commons.rede2_negative).count()['rede2']
+        else:
+            autoNeg = 0
+        if commons.rede2_positive in set(autoIndex['rede2'].values):
+            autoPos    = autoIndex.groupby("rede2").get_group(commons.rede2_positive).count()['rede2']
+        else:
+            autoPos = 0
     else:
         raise NotImplementedError("Report not implemented for rede 3.")
 

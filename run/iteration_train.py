@@ -22,23 +22,18 @@ if __name__ == "__main__":
 
     iterFolder           = get_iter_folder(iteration)
     sampledImageFolder   = iterFolder / "sampled_images"
-    savedModelsFolder    = Path(dirs.saved_models) / \
-        "{}/iteration_{}".format(datasetName, iteration)
+    savedModelsFolder    = Path(dirs.saved_models) / "{}/iteration_{}".format(datasetName, iteration)
 
     modelPath            = savedModelsFolder / \
-        "{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(datasetName, epochs, rede, iteration)
+        "{}_{}_epochs_iteration_{}.pt".format(datasetName, epochs, iteration)
     historyPath          = savedModelsFolder / \
-        "history_{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pickle".format(datasetName, epochs, rede, iteration)
+        "history_{}_{}_epochs_iteration_{}.pickle".format(datasetName, epochs, iteration)
 
-    historyFolder = Path(dirs.results) / historyPath.stem
-    lossPath = historyFolder / \
-                "loss_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
-    accPath  = historyFolder / \
-                "accuracy_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
-    f1Path   = historyFolder / \
-                "f1_history_{}_epochs_rede_{}_iteration{}.pdf".format(epochs, rede, iteration)
-    seedLogPath           = iterFolder / "seeds.txt"
-    
+    historyFolder = Path(dirs.results) / "{}/iteration_{}".format(datasetName, iteration)
+    lossPath = historyFolder / "loss_history_{}_epochs_iteration{}.pdf".format(epochs, iteration)
+    accPath  = historyFolder / "accuracy_history_{}_epochs_iteration{}.pdf".format(epochs, iteration)
+    f1Path   = historyFolder / "f1_history_{}_epochs_iteration{}.pdf".format(epochs, iteration)
+    seedLogPath = iterFolder / "seeds.txt"
     dirs.create_folder(historyFolder)
 
     ## Train model
@@ -66,7 +61,7 @@ if __name__ == "__main__":
     valF1       = np.array((history['f1-val']))[:, 0]
 
     plot_model_history([trainLoss, valLoss], data_labels=["Train Loss", "Val Loss"], xlabel="Epochs",
-                        ylabel="Loss", title="Training loss history", save_path=lossPath,
+                        ylabel="Loss", title="Training loss history", save_path=lossPath, #min_line=[False, True],
                         show=False)
 
     plot_model_history([trainAcc, valAcc], data_labels=["Train Acc", "Val Acc"], xlabel="Epochs",
@@ -81,4 +76,3 @@ if __name__ == "__main__":
     
     # Save sample seed
     dutils.save_seed_log(seedLogPath, seed, "train")
-

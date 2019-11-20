@@ -36,7 +36,7 @@ if __name__ == "__main__":
     iterFolder           = get_iter_folder(iteration)
     sampledImageFolder   = iterFolder / "sampled_images"
     imageResultsFolder   = Path(dirs.results) / \
-              "{}_rede_{}_softmax/iteration_{}".format(datasetName, rede, iteration)
+              "{}/iteration_{}".format(datasetName, iteration)
 
     originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
     sampledIndexPath      = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)

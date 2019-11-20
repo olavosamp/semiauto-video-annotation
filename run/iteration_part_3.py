@@ -21,6 +21,8 @@ if __name__ == "__main__":
     rede           = 2
     epochs         = 150
     inferBatchSize = 64
+    upperThreshPercent = 0.95
+    
     datasetName = "full_dataset_rede_{}".format(rede)
 
     def get_iter_folder(iteration):
@@ -38,15 +40,14 @@ if __name__ == "__main__":
         "{}/iteration_{}".format(datasetName, iteration)
 
     modelPath            = savedModelsFolder / \
-        "{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pt".format(datasetName, epochs, rede, iteration)
+        "{}_{}_epochs_iteration_{}.pt".format(datasetName, epochs, iteration)
     historyPath          = savedModelsFolder / \
-        "history_{}_no_finetune_{}_epochs_rede_{}_iteration_{}.pickle".format(datasetName, epochs, rede, iteration)
+        "history_{}_{}_epochs_iteration_{}.pickle".format(datasetName, epochs, iteration)
     valOutputPath        = savedModelsFolder / \
-        "outputs_{}_validation_rede_{}_iteration_{}.pickle".format(datasetName, rede, iteration)
+        "outputs_{}_validation_iteration_{}.pickle".format(datasetName, iteration)
     fullOutputPath       = savedModelsFolder / \
-        "outputs_{}_{}_epochs_rede_{}_iteration_{}.pickle".format(datasetName, epochs, rede, iteration)
+        "outputs_{}_{}_epochs_iteration_{}.pickle".format(datasetName, epochs, iteration)
 
-    # originalUnlabeledIndexPath = get_iter_folder(0) / "reference_images.csv"
     originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
     unlabeledIndexPath         = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
     sampledIndexPath           = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
@@ -82,7 +83,7 @@ if __name__ == "__main__":
     valOutputs, imgHashes, labels = dutils.load_outputs_df(valOutputPath)
     upperThresh, lowerThresh = dutils.compute_thresholds(valOutputs,
                                                         labels,
-                                                        upper_ratio=0.99,
+                                                        upper_ratio=upperThreshPercent,
                                                         lower_ratio=0.01,
                                                         resolution=0.0001,#resolution='max',
                                                         val_indexes=imgHashes)
@@ -98,7 +99,11 @@ if __name__ == "__main__":
 
     # TODO: Maybe compute unlabeled_index_no_manual earlier: at part_2 after manual annotation 
     # Do now: unlabeledNoManualIndex = complement(unlabeled_it_0, [final_annot_it_1, manual_annot_split_it_2])
-    annotatedSoFarIndex  = dutils.merge_indexes([previousMergedIndexPath, splitIndexPath], "FrameHash")
+    soFarPathList = [get_iter_folder(x) / \
+        "final_annotated_images_iteration_{}.csv".format(x) for x in range(1, iteration)]
+    soFarPathList.append(splitIndexPath)
+    
+    annotatedSoFarIndex  = dutils.merge_indexes(soFarPathList, "FrameHash")
     unlabelNoManualIndex = dutils.index_complement(originalUnlabeledIndex, annotatedSoFarIndex, "FrameHash")
     unlabelNoManualIndex.to_csv(unlabelNoManualPath, index=False)
 
@@ -120,7 +125,7 @@ if __name__ == "__main__":
     outputs, imgHashes, _  = dutils.load_outputs_df(fullOutputPath)
     outputs = outputs[:, 0]
 
-    print("\nAutomatic labeling with upper positive ratio 99%:")
+    print("\nAutomatic labeling with upper positive ratio {:.1f}%:".format(upperThreshPercent*100))
     autoIndex = dutils.automatic_labeling(outputs, imgHashes, unlabeledNoManualIndex, upperThresh,
                                                      lowerThresh, rede)
     autoIndex.to_csv(autoLabelIndexPath, index=False)
