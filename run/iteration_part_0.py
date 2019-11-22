@@ -43,7 +43,5 @@ elif rede == 3:
 else:
     raise NotImplementedError("Only implemented for rede2 and rede3.")
 
-print(event_class)
-exit()
 # Create new labeled and unlabeled datasets from previous level annotated images
 dutils.start_loop(prevAnnotatedPath, baseClass, commons.net_target_column[rede-1])

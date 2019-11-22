@@ -186,9 +186,9 @@ def get_relative_list(fileList, refFolder):
     return list(map(func_rel_to, fileList))
 
 
-def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
+def get_file_list(folderPath, ext_list=['*'], remove_dups=True, recursive=True):
     '''
-        Returns list of files in the file tree starting at folderPath.
+        Returns list of files in the file tree starting at folderPath as pathlib.Path objects.
 
         Optional argument ext_list defines list of recognized extensions, case insensitive.
         ext_list must be a list of strings, each defining an extension, without dots.
@@ -196,7 +196,6 @@ def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
         Argument remove_dups should almost always be True, else it will return duplicated entries
         as it searches both upper and lower case versions of all given extensions.
     '''
-
     # Also search for upper case formats for Linux compatibility
     ext_list.extend([x.upper() for x in ext_list])
     # TODO: Replace this workaround by making a case insensitive search or
@@ -204,18 +203,23 @@ def get_file_list(folderPath, ext_list=['*'], remove_dups=True):
 
     folderPath = replace_symbols(folderPath, og_symbol="\\", new_symbol="/")
 
+    # Add recursive glob wildcard if recursive search is requested
+    recurseStr = ""
+    if recursive:
+        recurseStr = "/**"
+
     fileList = []
-    for format in ext_list:
-        globString = folderPath + "/**" + "/*."+format
-        globList = glob(globString, recursive=True)
+    for extension in ext_list:
+        globString = folderPath + recurseStr + "/*."+extension
+        globList = glob(globString, recursive=recursive)
         fileList.extend(globList)
     
     if remove_dups:
         # Remove duplicated entries
         fileList = list(dict.fromkeys(fileList))
     
-    fileList = list(map(replace_symbols, fileList))
-
+    # fileList = list(map(replace_symbols, fileList))
+    fileList = make_path(fileList)
     return fileList
 
 
