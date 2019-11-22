@@ -98,7 +98,6 @@ if __name__ == "__main__":
     # splitIndex = pd.read_csv(splitIndexPath)
 
     # TODO: Maybe compute unlabeled_index_no_manual earlier: at part_2 after manual annotation 
-    # Do now: unlabeledNoManualIndex = complement(unlabeled_it_0, [final_annot_it_1, manual_annot_split_it_2])
     soFarPathList = [get_iter_folder(x) / \
         "final_annotated_images_iteration_{}.csv".format(x) for x in range(1, iteration)]
     soFarPathList.append(splitIndexPath)

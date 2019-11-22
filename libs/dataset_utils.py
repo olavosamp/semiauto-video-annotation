@@ -897,14 +897,14 @@ def translate_labels(labels, target_net):
                 if label.lower() == value.lower():
                     translatedLabel = str(tup[0])
         if translatedLabel: # This table formats class labels as task-relevant labels
-            return commons.net_classes_table[target_net][translatedLabel]
+            return commons.net_binary_table[target_net][translatedLabel]
         else:
             warnings.warn("\nTranslation not found for label:\n\t{}".format(label))
             return commons.no_translation
 
     # This table formats and normalizes manually annotated class labels
     # Fixes a limited number of common spelling mistakes
-    translationTable = commons.classes
+    translationTable = commons.net_class_translation_table
 
     if isinstance(labels, str):
         # If not list, just translate input

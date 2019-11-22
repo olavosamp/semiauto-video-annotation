@@ -233,7 +233,6 @@ class GetFramesCsv(GetFrames):
         # print("totalFrames:", self.totalFrames)
         print()
 
-
         # if self.totalFrames == 0:
             # TODO: GET TOTAL FRAMES AND VIDEO TIME SOME WAY
 
@@ -252,7 +251,7 @@ class GetFramesCsv(GetFrames):
 
             self.eventTime = self.eventEnd - self.eventStart
 
-            if self.eventClass not in commons.classes:
+            if self.eventClass not in commons.net_class_translation_table:
                 print("\n\nError: Proposed class is not in accepted classes list.\nSkipping entry.\n\n")
                 continue
 

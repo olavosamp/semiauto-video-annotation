@@ -54,7 +54,9 @@ reportList = [  # Report list without _OK suffix
             "TVILL16-054",
 ]
 
-classes = { # This translation table follows the non-standard format described below.
+net_class_translation_table = {
+            # Dict to normalize class annotations into standard class tags
+            # This translation table follows the non-standard format described below.
             # Standard class name:  [ list of words equivalent to the standard name]
             'Duto':         ["tubo", "duto"],
             'Nada':         ["nada"],
@@ -80,31 +82,31 @@ classes = { # This translation table follows the non-standard format described b
 }
 no_translation = 'UNTRANSLATED'
 
-net_classes_table = {   # Dict to translate class tags into binary problem tags
+net_binary_table = { # Dict to translate standard class tags into binary problem tags
                         'rede1':{
                             'Duto':         'Duto',
                             'Nada':         'NaoDuto',
                             'Confuso':      'NaoDuto',
                             'NaoDuto':      'NaoDuto',
                         },
-                        'rede2':{   # No translation needed
+                        'rede2':{ # No translation needed
                             'Evento':       'Evento',
                             'NaoEvento':    'NaoEvento',
                             'Duvida':       'Duvida',
                         },
-                        'rede3':{   # TODO: This multiclass problem will require a more involved translation
-                            'Anodo':        'Anodo',
-                            'Flutuadores':  'Flutuadores',
-                            'Reparo':       'Reparo',
-                            'Dano':         'Dano',
-                            'Loop':         'Loop',
-                            'Torcao':       'Torcao',
-                            'Gaiola':       'Gaiola',
-                            'Corrosao':     'Corrosao',
-                            'Enterramento': 'Enterramento',
-                            'Cruzamento':   'Cruzamento',
-                            'Flange':       'Flange',
-                            'Duvida':       'Duvida'
+                        'rede3':{ # TODO: This multiclass problem will require a more involved translation
+                            # 'Anodo':        'Anodo',
+                            # 'Flutuadores':  'Flutuadores',
+                            # 'Reparo':       'Reparo',
+                            # 'Dano':         'Dano',
+                            # 'Loop':         'Loop',
+                            # 'Torcao':       'Torcao',
+                            # 'Gaiola':       'Gaiola',
+                            # 'Corrosao':     'Corrosao',
+                            # 'Enterramento': 'Enterramento',
+                            # 'Cruzamento':   'Cruzamento',
+                            # 'Flange':       'Flange',
+                            # 'Duvida':       'Duvida'
                         }
 }
 
@@ -113,6 +115,13 @@ rede1_positive = "Duto"
 rede1_negative = "NaoDuto"
 rede2_positive = "Evento"
 rede2_negative = "Nao_Evento"
+
+rede3_classes = ['Anodo',
+                 'Cruzamento',
+                 'Dano',
+                 'Flange',
+                 'Reparo',
+]
 
 net_target_column = {1:'rede1',
                      2:'rede2',

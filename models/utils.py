@@ -1,8 +1,8 @@
+import os
 import torch
 import random
 import numpy                as np
 import pandas               as pd
-import libs.dataset_utils   as dutils
 import torch.nn             as nn
 import torch.optim          as optim
 import torchvision.datasets as datasets
@@ -10,6 +10,7 @@ from pathlib                import Path
 from torchvision            import transforms
 
 import libs.utils           as utils
+import libs.dataset_utils   as dutils
 import libs.dirs            as dirs
 from libs.index             import IndexManager
 from models.trainer_class   import TrainModel
@@ -106,11 +107,16 @@ def _model_inference(image_path_list, data_transforms, label_list, model_path, b
     return outputDf
 
 
-def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, batch_size=64,
+def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, batch_size=64, force=False,
                             seed=None, verbose=True):
     '''
         Perform inference on validation set and save outputs to file.
     '''
+    if os.path.isfile(model_path) and not(force):
+        outputDf = utils.load_pickle(model_path)
+        if len(outputDf[0]) > 0:
+            return outputDf
+
     # Get list of image paths from dataset folder
     dataset = datasets.ImageFolder(str(dataset_path),
                                     transform=data_transforms,
@@ -139,10 +145,15 @@ def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, 
 
 
 def dataset_inference_unlabeled(dataset_path, data_transforms, model_path, save_path, batch_size=64,
-                                seed=None, verbose=True):
+                                force=False, seed=None, verbose=True):
     '''
         Perform inference on an unlabeled dataset, using a csv Index file as reference.
     '''
+    if os.path.isfile(model_path) and not(force):
+        outputDf = utils.load_pickle(model_path)
+        if len(outputDf[0]) > 0:
+            return outputDf
+
     unlabelIndex = IndexManager(dataset_path)
 
     # Drop duplicated files
