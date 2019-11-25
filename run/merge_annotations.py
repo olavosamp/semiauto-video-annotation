@@ -15,9 +15,9 @@ datasetName = "full_dataset_rede_2"
 sampledImagesPath           = Path(dirs.images) / "{}_results_samples".format(datasetName)
 loopFolder                  = Path(dirs.iter_folder) / datasetName
 originalUnlabeledIndexPath  = loopFolder / "iteration_0/reference_images.csv"
-compiledAutoIndexPath       = loopFolder / "final_automatic_images.csv"
-compiledManualIndexPath     = loopFolder / "final_manual_images.csv"
-annotatedIndexFullPath      = loopFolder / "final_annotated_images.csv"
+compiledAutoIndexPath       = loopFolder / "final_automatic_images_{}.csv".format(datasetName)
+compiledManualIndexPath     = loopFolder / "final_manual_images_{}.csv".format(datasetName)
+annotatedIndexFullPath      = loopFolder / "final_annotated_images_{}.csv".format(datasetName)
 
 originalUnlabeledIndex = pd.read_csv(originalUnlabeledIndexPath)
 

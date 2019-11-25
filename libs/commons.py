@@ -54,6 +54,28 @@ reportList = [  # Report list without _OK suffix
             "TVILL16-054",
 ]
 
+
+# Defines of positive and negative class labels for rede1 and rede2
+rede1_positive = "Duto"
+rede1_negative = "NaoDuto"
+rede2_positive = "Evento"
+rede2_negative = "Nao_Evento"
+
+rede3_classes = {0: 'Anodo',
+                 1: 'Cruzamento',
+                 2: 'Dano',
+                 3: 'Flange',
+                 4: 'Reparo',
+}
+
+net_target_column = {1:'rede1',
+                     2:'rede2',
+                     3:'rede3'}
+
+# Annotation type names
+manual_annotation = "manual"
+auto_annotation   = "auto"
+
 net_class_translation_table = {
             # Dict to normalize class annotations into standard class tags
             # This translation table follows the non-standard format described below.
@@ -95,41 +117,55 @@ net_binary_table = { # Dict to translate standard class tags into binary problem
                             'Duvida':       'Duvida',
                         },
                         'rede3':{ # TODO: This multiclass problem will require a more involved translation
-                            # 'Anodo':        'Anodo',
-                            # 'Flutuadores':  'Flutuadores',
-                            # 'Reparo':       'Reparo',
-                            # 'Dano':         'Dano',
-                            # 'Loop':         'Loop',
-                            # 'Torcao':       'Torcao',
-                            # 'Gaiola':       'Gaiola',
-                            # 'Corrosao':     'Corrosao',
-                            # 'Enterramento': 'Enterramento',
-                            # 'Cruzamento':   'Cruzamento',
-                            # 'Flange':       'Flange',
-                            # 'Duvida':       'Duvida'
+                            'Anodo':          rede3_classes[0],
+                            'NaoAnodo':       'NaoAnodo',
+                            'anod':           rede3_classes[0],
+                            'anoto':          rede3_classes[0],
+
+                            'Flutuadores':    'Flutuadores',
+                            'NaoFlutuadores': 'NaoFlutuadores',
+                            'flut':           'Flutuadores',
+
+                            'Reparo':         rede3_classes[4],
+                            'NaoReparo':      'NaoReparo',
+                            'repr':           rede3_classes[4],
+
+                            'Dano':           rede3_classes[2],
+                            'NaoDano':        'NaoDano',
+
+                            'Loop':           'Loop',
+                            'NaoLoop':        'NaoLoop',
+
+                            'Torcao':         'Torcao',
+                            'NaoTorcao':      'NaoTorcao',
+                            'torc':           'Torcao',
+
+                            'Gaiola':         'Gaiola',
+                            'NaoGaiola':      'NaoGaiola',
+                            'gaio':           'Gaiola',
+
+                            'Corrosao':       'Corrosao',
+                            'NaoCorrosao':    'NaoCorrosao',
+                            'Corrosão':       'Corrosao',
+                            'corr':           'Corrosao',
+
+                            'Enterramento':   'Enterramento',
+                            'NaoEnterramento':'NaoEnterramento',
+                            'ente':           'Enterramento',
+
+                            'Cruzamento':     rede3_classes[1],
+                            'NaoCruzamento':  'NaoCruzamento',
+                            'cruz':           rede3_classes[1],
+
+                            'Flange':         rede3_classes[3],
+                            'NaoFlange':      'NaoFlange',
+                            'flan':           rede3_classes[3],
+
+                            'Duvida':         'Duvida'
                         }
 }
 
-# Defines of positive and negative class labels for rede1 and rede2
-rede1_positive = "Duto"
-rede1_negative = "NaoDuto"
-rede2_positive = "Evento"
-rede2_negative = "Nao_Evento"
 
-rede3_classes = ['Anodo',
-                 'Cruzamento',
-                 'Dano',
-                 'Flange',
-                 'Reparo',
-]
-
-net_target_column = {1:'rede1',
-                     2:'rede2',
-                     3:'rede3'}
-
-# Annotation type names
-manual_annotation = "manual"
-auto_annotation   = "auto"
 
 # Defines
 IMAGENET_MEAN       = [0.485, 0.456, 0.406]

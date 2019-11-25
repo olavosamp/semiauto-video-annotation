@@ -11,11 +11,15 @@ from libs.vis_functions         import plot_model_history
 if __name__ == "__main__":
     iteration = int(input("Enter iteration number.\n"))
     seed           = np.random.randint(0, 100)
-    rede           = 2
+    rede           = 3
     epochs         = 150
     trainBatchSize = 256
 
-    datasetName = "full_dataset_rede_{}".format(rede)
+    if rede == 3:
+        target_class = dutils.get_input_target_class(commons.rede3_classes)
+        datasetName  = "full_dataset_rede_{}_{}".format(rede, target_class.lower())
+    else:
+        datasetName  = "full_dataset_rede_{}".format(rede)
 
     def get_iter_folder(iteration):
         return Path(dirs.iter_folder) / "{}/iteration_{}/".format(datasetName, iteration)

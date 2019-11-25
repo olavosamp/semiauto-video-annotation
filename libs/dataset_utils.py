@@ -18,6 +18,35 @@ import libs.utils           as utils
 from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
+# User Input
+def get_input_target_class(net_class_dict):
+    '''
+        Get user input of net target class. Applicable to rede3 only.
+    '''
+    classLen = len(net_class_dict)
+    print("Enter the target class code from list:\n")
+    print("Code\tClass name")
+    for i in range(classLen):
+        print("{}:\t{}".format(i, net_class_dict[i]))
+
+    input_class_code = int(input())
+    if input_class_code < classLen:
+        event_class = net_class_dict[input_class_code]
+    else:
+        event_class = "UNKNOWN"
+
+    while event_class not in net_class_dict.values():
+        input_class_code = input("Unknown class. Please select a class from the list.\n")
+        try:
+            input_class_code = int(input_class_code)
+        except ValueError:
+            continue
+
+        if input_class_code < classLen:
+            event_class = net_class_dict[input_class_code]
+    return event_class
+
+
 # Reports and logging
 def save_seed_log(log_path, seed, id_string):
     # Save sample seed
@@ -373,12 +402,15 @@ def start_loop(prev_annotated_path, target_class, target_column, verbose=True):
 
     prevAnnotated = pd.read_csv(prev_annotated_path)
 
+    # Create nextLevelIndex df with only images that have been annotated as target_class in the
+    # previous iteration
     mask = prevAnnotated[target_column] == target_class
     nextLevelIndex = prevAnnotated.loc[mask, :]
     nextLevelIndex = remove_duplicates(nextLevelIndex, "FrameHash", verbose=True)
     
-    newUnlabeled  = nextLevelIndex.copy()
-    # newUnlabeled   = group.get_group('auto') # To get only auto annotated images of previous level
+    # New unlabeled set unlabeled_images_iteration_0 is actually composed of all images
+    # newUnlabeled  = nextLevelIndex.copy()
+    newUnlabeled  = nextLevelIndex.groupby("Annotation").get_group('auto') # To get only auto annotated images
     
     # Save manual labeled images as sampled_images for first iteration
     newLabeled = nextLevelIndex.groupby("Annotation").get_group('manual')
@@ -582,12 +614,14 @@ def remove_duplicates(target_df, index_column, verbose=False):
     return target_df.copy()
 
 
-def move_to_class_folders(indexPath, imageFolderPath, target_net="rede1", verbose=True):
+def move_to_class_folders(indexPath, imageFolderPath, target_net="rede1", target_class=None, verbose=True):
     '''
         Sort labeled images in class folders according to index file with labels and filepaths.
     '''
     indexPath     = Path(indexPath)
     assert imageFolderPath.is_dir(), "Folder argument must be a valid image folder."
+    if target_net == commons.net_target_column[3]:
+        assert target_class in commons.rede3_classes.values(), "Invalid target class for rede3."
 
     imageIndex = pd.read_csv(indexPath)
     numImages     = len(imageIndex)
@@ -597,7 +631,7 @@ def move_to_class_folders(indexPath, imageFolderPath, target_net="rede1", verbos
     
     print("Found tags ", tags)
     for tag in tags:
-        tag = translate_labels(tag, target_net)
+        tag = translate_labels(tag, target_net, target_class=target_class)
         dirs.create_folder(imageFolderPath / tag)
         if verbose:
             print("Created folder ", (imageFolderPath / tag))
@@ -608,7 +642,7 @@ def move_to_class_folders(indexPath, imageFolderPath, target_net="rede1", verbos
         imageName  = str(imageIndex.loc[i, 'FrameName'])
         source   = imageFolderPath / imageName
         
-        tag      = translate_labels(imageIndex.loc[i, target_net], target_net)
+        tag      = translate_labels(imageIndex.loc[i, target_net], target_net, target_class=target_class)
         destName = Path(tag) / imageName
         dest     = imageFolderPath / destName
 
@@ -875,7 +909,25 @@ def extract_dataset(videoFolder, destFolder,
     return index
 
 
-def translate_labels(labels, target_net):
+class Rede3Translator:
+    '''
+        Translate normalized class labels to binary classification labels.
+    '''
+    def __init__(self, target_class):
+        self.target_class = target_class
+
+    def translate_label(self, label_name):
+        if label_name == self.target_class:
+            translatedLabel = self.target_class
+        else:
+            translatedLabel = "Nao"+self.target_class
+        return translatedLabel
+
+    # def __getitem__(self, label_name):
+    #     return self._translate_label(label_name)
+
+
+def translate_labels(labels, target_net, target_class=None):
     '''
         Translate interface-generated labels to the index standard, following commons.classes
          class list.
@@ -896,8 +948,13 @@ def translate_labels(labels, target_net):
             for value in tup[1]:
                 if label.lower() == value.lower():
                     translatedLabel = str(tup[0])
-        if translatedLabel: # This table formats class labels as task-relevant labels
-            return commons.net_binary_table[target_net][translatedLabel]
+        if translatedLabel:
+            if target_net == commons.net_target_column[3]:
+                # If target net is rede3, translate normalized labels using other table
+                return rede3Translator.translate_label(translation)
+            else:
+                # Translate class labels as task-relevant binary labels
+                return commons.net_binary_table[target_net][translatedLabel]
         else:
             warnings.warn("\nTranslation not found for label:\n\t{}".format(label))
             return commons.no_translation
@@ -905,6 +962,7 @@ def translate_labels(labels, target_net):
     # This table formats and normalizes manually annotated class labels
     # Fixes a limited number of common spelling mistakes
     translationTable = commons.net_class_translation_table
+    rede3Translator  = Rede3Translator(target_class)
 
     if isinstance(labels, str):
         # If not list, just translate input
@@ -913,4 +971,9 @@ def translate_labels(labels, target_net):
         # If list, apply translation subroutine to every element in list
         translation = list(map(_translate, labels))
     
+    # If target net is rede3, translate normalized labels to binary labels
+    # if target_net == commons.net_target_column[3]:
+    #     rede3Translator = Rede3Translator(target_class)
+    #     translation = rede3Translator.translate_label(translation)
+
     return translation

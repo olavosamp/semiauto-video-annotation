@@ -22,8 +22,11 @@ if __name__ == "__main__":
     epochs         = 150
     inferBatchSize = 64
     upperThreshPercent = 0.95
-    
-    datasetName = "full_dataset_rede_{}".format(rede)
+    if rede == 3:
+        target_class = dutils.get_input_target_class(commons.rede3_classes)
+        datasetName  = "full_dataset_rede_{}_{}".format(rede, target_class.lower())
+    else:
+        datasetName  = "full_dataset_rede_{}".format(rede)
 
     def get_iter_folder(iteration):
         return Path(dirs.iter_folder) / "{}/iteration_{}/".format(datasetName, iteration)
@@ -48,7 +51,8 @@ if __name__ == "__main__":
     fullOutputPath       = savedModelsFolder / \
         "outputs_{}_{}_epochs_iteration_{}.pickle".format(datasetName, epochs, iteration)
 
-    originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
+    # originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
+    originalUnlabeledIndexPath = get_iter_folder(0) / "reference_images.csv"
     unlabeledIndexPath         = previousIterFolder / "unlabeled_images_iteration_{}.csv".format(iteration-1)
     sampledIndexPath           = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
     manualIndexPath            = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)

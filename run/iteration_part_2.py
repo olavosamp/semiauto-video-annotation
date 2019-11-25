@@ -24,9 +24,12 @@ from libs.iteration_manager     import SampleImages
 if __name__ == "__main__":
     iteration = int(input("Enter iteration number.\n"))
     seed           = np.random.randint(0, 100)
-    rede           = 2
-
-    datasetName = "full_dataset_rede_{}".format(rede)
+    rede           = 3
+    if rede == 3:
+        target_class = dutils.get_input_target_class(commons.rede3_classes)
+        datasetName  = "full_dataset_rede_{}_{}".format(rede, target_class.lower())
+    else:
+        datasetName  = "full_dataset_rede_{}".format(rede)
 
     def get_iter_folder(iteration):
         return Path(dirs.iter_folder) / "{}/iteration_{}/".format(datasetName, iteration)
@@ -38,7 +41,8 @@ if __name__ == "__main__":
     imageResultsFolder   = Path(dirs.results) / \
               "{}/iteration_{}".format(datasetName, iteration)
 
-    originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
+    # originalUnlabeledIndexPath = get_iter_folder(0) / "unlabeled_images_iteration_0.csv"
+    originalUnlabeledIndexPath = get_iter_folder(0) / "reference_images.csv"
     sampledIndexPath      = iterFolder / "sampled_images_iteration_{}.csv".format(iteration)
     manualIndexPath       = iterFolder / "manual_annotated_images_iteration_{}.csv".format(iteration)
     prevManualIndexPath   = previousIterFolder / \
@@ -55,7 +59,8 @@ if __name__ == "__main__":
 
     # Load model outputs and unlabeled images index
     indexSampled = IndexManager(sampledIndexPath)
-    indexSampled.index["FrameName"] = indexSampled.index["imagem"].copy()
+    if "imagem" in indexSampled.index.columns:
+        indexSampled.index["FrameName"] = indexSampled.index["imagem"].copy()
     indexSampled.index["FramePath"] = indexSampled.index["FrameName"].map(_add_folder_path)
     
     eTime = indexSampled.compute_frame_hashes(reference_column="FramePath", verbose=True)
@@ -90,7 +95,8 @@ if __name__ == "__main__":
     
     dutils.move_dataset_to_train(manualIndexPath, sampledImageFolder, path_column="FramePath")
     
-    imageIndex = dutils.move_to_class_folders(manualIndexPath, sampledImageFolder, target_net="rede"+str(rede))
+    imageIndex = dutils.move_to_class_folders(manualIndexPath, sampledImageFolder,
+                                        target_net=commons.net_target_column[rede], target_class=target_class)
     input("\nDelete unwanted class folders and press Enter to continue.")
 
     # Split dataset in train and validation sets, sorting them in val and train folders
