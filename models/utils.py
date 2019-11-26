@@ -111,9 +111,13 @@ def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, 
                             seed=None, verbose=True):
     '''
         Perform inference on validation set and save outputs to file.
+
+        force: Boolean
+            If force is False, search for an existing output file and use it, if it exists. If force is
+        True or output file doesn't exist, compute dataset output and save to file.
     '''
-    if os.path.isfile(model_path) and not(force):
-        outputDf = utils.load_pickle(model_path)
+    if os.path.isfile(save_path) and not(force):
+        outputDf = utils.load_pickle(save_path)
         if len(outputDf[0]) > 0:
             return outputDf
 
