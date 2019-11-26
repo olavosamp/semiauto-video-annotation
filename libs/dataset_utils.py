@@ -170,7 +170,8 @@ Automatic Annotation:\n\
 
 
 # Automatic labeling
-def automatic_labeling(outputs, outputs_index, unlabeled_index, upper_thresh, lower_thresh, rede, verbose=True):
+def automatic_labeling(outputs, outputs_index, unlabeled_index, upper_thresh, lower_thresh, rede,
+                        target_class=None, verbose=True):
     '''
         Return a DataFrame whose entries are taken from unlabeled_index according to calculated indexes.
         The indexes are chosen so that their outputs are either above the upper threshold or below the lower.
@@ -179,7 +180,7 @@ def automatic_labeling(outputs, outputs_index, unlabeled_index, upper_thresh, lo
                                                         lower_thresh, verbose=True)
     
     autoIndex = get_classified_index(unlabeled_index, upperIndexes, lowerIndexes, rede,
-                                    index_col="FrameHash", verbose=False)
+                                    index_col="FrameHash", target_class=target_class, verbose=False)
     return autoIndex
 
 
@@ -202,19 +203,24 @@ def get_auto_label_indexes(outputs, outputs_index, upper_thresh, lower_thresh, v
     return upperIndexes, lowerIndexes
 
 
-def get_classified_index(index, pos_hashes, neg_hashes, rede, index_col="FrameHash", verbose=True):
+def get_classified_index(index, pos_hashes, neg_hashes, rede, target_class=None, index_col="FrameHash",
+                         verbose=True):
+    '''
+        Create new auto labeled index from the unlabeled_images index and positive and negative indexes
+        lists.
+    '''
     if index_col is not None:
         index.set_index("FrameHash", drop=False, inplace=True)
 
-    positiveLabel1 = commons.rede1_positive
-    negativeLabel1 = commons.rede1_negative
-    
-    if rede == 2:
+    if rede >= 1:
+        positiveLabel1 = commons.rede1_positive
+        negativeLabel1 = commons.rede1_negative
+    if rede >= 2:
         positiveLabel2 = commons.rede2_positive
         negativeLabel2 = commons.rede2_negative
-    
-    if rede == 3: # TODO: Implement something for rede 3
-        raise NotImplementedError("automatic labeling not yet implemented for rede 3.")
+    if rede >= 3:
+        assert target_class in commons.rede3_classes.values(), "Unknown target_class value."
+        positiveLabel3 = target_class
 
     newPositives = index.reindex(labels=pos_hashes, axis=0, copy=True)
     newNegatives = index.reindex(labels=neg_hashes, axis=0, copy=True)
@@ -224,17 +230,16 @@ def get_classified_index(index, pos_hashes, neg_hashes, rede, index_col="FrameHa
     lenNegatives = len(newNegatives)
 
     # Set positive and negative class labels
-    if rede == 1:
+    if rede >= 1:
         newPositives["rede1"] = [positiveLabel1]*lenPositives
         newNegatives["rede1"] = [negativeLabel1]*lenNegatives
-    if rede == 2:
+    if rede >= 2:
         newPositives["rede1"] = [positiveLabel1]*lenPositives
         newPositives["rede2"] = [positiveLabel2]*lenPositives
         newNegatives["rede2"] = [negativeLabel2]*lenNegatives
-    if rede == 3: # TODO: Implement something for rede 3
+    if rede >= 3:
         newPositives["rede2"] = [positiveLabel2]*lenPositives
-        raise NotImplementedError("automatic labeling not yet implemented for rede 3.")
-
+        newPositives["rede3"] = [positiveLabel3]*lenPositives
 
     newLabeledIndex = pd.concat([newPositives, newNegatives], axis=0, sort=False)
     if verbose:
@@ -380,13 +385,19 @@ def merge_indexes(index_path_list, key_column):
     '''
         Read a list of DataFrame paths, concatenates them and remove duplicated elements from resulting DF.
     '''
-    assert (len(index_path_list) >= 2) and \
+    # assert (len(index_path_list) >= 2) and \
+    #        not(isinstance(index_path_list, str)), \
+    # "Argument index_path_list must be a list of two or more DataFrame paths."
+    assert hasattr(index_path_list, "__iter__") and \
            not(isinstance(index_path_list, str)), \
-    "Argument index_path_list must be a list of two or more DataFrame paths."
+            "Argument index_path_list must be a list of two or more DataFrame paths."
 
     indexListNoDups = [remove_duplicates(pd.read_csv(x), key_column) for x in index_path_list]
     
-    newIndex = pd.concat(indexListNoDups, axis=0, sort=False)
+    if len(indexListNoDups) > 1:
+        newIndex = pd.concat(indexListNoDups, axis=0, sort=False)
+    else:
+        newIndex = indexListNoDups[0]
     newIndex = remove_duplicates(newIndex, key_column)
     return newIndex
 
@@ -397,16 +408,19 @@ def start_loop(prev_annotated_path, target_class, target_column, verbose=True):
     '''
     iter1Folder = Path("/".join(prev_annotated_path.parts[:-2])) / "iteration_1"
     newUnlabeledPath = Path(prev_annotated_path).with_name("unlabeled_images_iteration_0.csv")
+    newReferencePath = Path(prev_annotated_path).with_name("reference_images.csv")
     newLabeledPath   = iter1Folder / "sampled_images_iteration_1.csv"
     dirs.create_folder(iter1Folder)
 
     prevAnnotated = pd.read_csv(prev_annotated_path)
 
     # Create nextLevelIndex df with only images that have been annotated as target_class in the
-    # previous iteration
+    # previous iteration. Save as reference index for this loop
     mask = prevAnnotated[target_column] == target_class
     nextLevelIndex = prevAnnotated.loc[mask, :]
     nextLevelIndex = remove_duplicates(nextLevelIndex, "FrameHash", verbose=True)
+    
+    nextLevelIndex.to_csv(newReferencePath)
     
     # New unlabeled set unlabeled_images_iteration_0 is actually composed of all images
     # newUnlabeled  = nextLevelIndex.copy()
@@ -949,12 +963,8 @@ def translate_labels(labels, target_net, target_class=None):
                 if label.lower() == value.lower():
                     translatedLabel = str(tup[0])
         if translatedLabel:
-            if target_net == commons.net_target_column[3]:
-                # If target net is rede3, translate normalized labels using other table
-                return rede3Translator.translate_label(translation)
-            else:
-                # Translate class labels as task-relevant binary labels
-                return commons.net_binary_table[target_net][translatedLabel]
+            # Translate class labels as task-relevant binary labels
+            return commons.net_binary_table[target_net][translatedLabel]
         else:
             warnings.warn("\nTranslation not found for label:\n\t{}".format(label))
             return commons.no_translation
@@ -962,7 +972,6 @@ def translate_labels(labels, target_net, target_class=None):
     # This table formats and normalizes manually annotated class labels
     # Fixes a limited number of common spelling mistakes
     translationTable = commons.net_class_translation_table
-    rede3Translator  = Rede3Translator(target_class)
 
     if isinstance(labels, str):
         # If not list, just translate input
@@ -972,8 +981,8 @@ def translate_labels(labels, target_net, target_class=None):
         translation = list(map(_translate, labels))
     
     # If target net is rede3, translate normalized labels to binary labels
-    # if target_net == commons.net_target_column[3]:
-    #     rede3Translator = Rede3Translator(target_class)
-    #     translation = rede3Translator.translate_label(translation)
+    if target_net == commons.net_target_column[3]:
+        rede3Translator = Rede3Translator(target_class)
+        translation = rede3Translator.translate_label(translation)
 
     return translation

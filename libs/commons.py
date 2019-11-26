@@ -80,25 +80,36 @@ net_class_translation_table = {
             # Dict to normalize class annotations into standard class tags
             # This translation table follows the non-standard format described below.
             # Standard class name:  [ list of words equivalent to the standard name]
-            'Duto':         ["tubo", "duto"],
-            'Nada':         ["nada"],
-            'Confuso':      ["conf", "confuso"],
-            'NaoDuto':      ["NaoDuto", "NãoDuto", "Nao-Duto", "Não-Duto", "Nao_Duto", "Não_Duto"],
+            'Duto':             ["tubo", "duto"],
+            'Nada':             ["nada"],
+            'Confuso':          ["conf", "confuso"],
+            'NaoDuto':          ["NaoDuto", "NãoDuto", "Nao-Duto", "Não-Duto", "Nao_Duto", "Não_Duto"],
 
-            'Evento':       ["evnt", "evento"],
-            'NaoEvento':    ["nevt", "Nao_Evento"],
+            'Evento':           ["evnt", "evento"],
+            'NaoEvento':        ["nevt", "Nao_Evento"],
 
-            'Anodo':        ["anodo", "anoto"],
-            'Flutuadores':  ["boia", "flutuadores"], 
-            'Reparo':       ["repr", "reparo"],
-            'Dano':         ["dano"],
-            'Loop':         ["loop"],
-            'Torcao':       ["torc", "torcao"],
-            'Gaiola':       ["gaio", "gaiola"],
-            'Corrosao':     ["corr", "corrosao"],
-            'Enterramento': ["ente", "enterramento"],
-            'Cruzamento':   ["cruz", "cruzamento"],
-            'Flange':       ["flan", "flange"],
+            'Anodo':            ["anodo", "anoto"],
+            'NaoAnodo':         ["NaoAnodo"],
+            'Flutuadores':      ["boia", "flutuadores"], 
+            'NaoFlutuadores':   ["NaoFlutuadores"]
+            'Reparo':           ["repr", "reparo"],
+            'NaoReparo':        ["NaoReparo"]
+            'Dano':             ["dano"],
+            'NaoDano':          ["NaoDano"]
+            'Loop':             ["loop"],
+            'NaoLoop':          ["NaoLoop"]
+            'Torcao':           ["torc", "torcao"],
+            'NaoTorcao':        ["NaoTorcao"]
+            'Gaiola':           ["gaio", "gaiola"],
+            'NaoGaiola':        ["NaoGaiola"]
+            'Corrosao':         ["corr", "corrosao"],
+            'NaoCorrosao':      ["NaoCorrosao"]
+            'Enterramento':     ["ente", "enterramento"],
+            'NaoEnterramento':  ["NaoEnterramento"]
+            'Cruzamento':       ["cruz", "cruzamento"],
+            'NaoCruzamento':    ["NaoCruzamento"]
+            'Flange':           ["flan", "flange"],
+            'NaoFlange':        ["NaoFlange"]
 
             'Duvida':       ['Duvida', 'Dúvida']
 }

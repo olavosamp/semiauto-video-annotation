@@ -18,7 +18,7 @@ from libs.iteration_manager     import SampleImages
 if __name__ == "__main__":
     iteration = int(input("Enter iteration number.\n"))
     seed           = np.random.randint(0, 100)
-    rede           = 2
+    rede           = 3
     epochs         = 150
     inferBatchSize = 64
     upperThreshPercent = 0.95
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     print("\nAutomatic labeling with upper positive ratio {:.1f}%:".format(upperThreshPercent*100))
     autoIndex = dutils.automatic_labeling(outputs, imgHashes, unlabeledNoManualIndex, upperThresh,
-                                                     lowerThresh, rede)
+                                                     lowerThresh, rede, target_class=target_class)
     autoIndex.to_csv(autoLabelIndexPath, index=False)
 
     plot_outputs_histogram(outputs, lower_thresh=lowerThresh, upper_thresh=upperThresh,

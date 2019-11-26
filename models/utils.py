@@ -118,7 +118,7 @@ def dataset_inference_val(dataset_path, data_transforms, model_path, save_path, 
     '''
     if os.path.isfile(save_path) and not(force):
         outputDf = utils.load_pickle(save_path)
-        if len(outputDf[0]) > 0:
+        if len(outputDf) > 0:
             return outputDf
 
     # Get list of image paths from dataset folder
@@ -152,10 +152,14 @@ def dataset_inference_unlabeled(dataset_path, data_transforms, model_path, save_
                                 force=False, seed=None, verbose=True):
     '''
         Perform inference on an unlabeled dataset, using a csv Index file as reference.
+        
+        force: Boolean
+            If force is False, search for an existing output file and use it, if it exists. If force is
+        True or output file doesn't exist, compute dataset output and save to file.
     '''
-    if os.path.isfile(model_path) and not(force):
-        outputDf = utils.load_pickle(model_path)
-        if len(outputDf[0]) > 0:
+    if os.path.isfile(save_path) and not(force):
+        outputDf = utils.load_pickle(save_path)
+        if len(outputDf) > 0:
             return outputDf
 
     unlabelIndex = IndexManager(dataset_path)
