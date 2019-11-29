@@ -141,10 +141,7 @@ def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unl
             autoPos    = autoIndex.groupby("rede3").get_group(posLabelName).count()['rede3']
         else:
             autoPos = 0
-        if negLabelName in set(autoIndex['rede3'].values):
-            autoNeg = autoIndex.groupby("rede2").get_group(commons.rede2_positive).count()[0] - autoPos
-        else:
-            autoNeg = 0
+        autoNeg    = autoIndex.groupby("rede2").get_group(commons.rede2_positive).count()[0] - autoPos
 
     cumTotal         = cumPos + cumNeg
     cumNegPercent    = cumNeg/cumTotal*100
@@ -167,8 +164,8 @@ def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unl
     if rede == 3:
         distributionString +=\
             "{}:\t{} images ({:.2f} %)\n\
-            {}:\t{} images ({:.2f} %)\n\
-            Total\t{} images (100 %)\n".format(posLabelName, sampledClassPos, samplePosPercent,
+            {}:\t\t{} images ({:.2f} %)\n\
+            Total\t\t{} images (100 %)\n".format(posLabelName, sampledClassPos, samplePosPercent,
                                                negLabelName, sampledClassNeg, sampleNegPercent,
                                                sampledTotal)
 
