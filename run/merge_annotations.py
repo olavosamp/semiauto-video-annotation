@@ -10,7 +10,7 @@ import libs.utils           as utils
 import libs.dataset_utils   as dutils
 # from libs.index             import IndexManager
 
-datasetName = "full_dataset_rede_2"
+datasetName = "full_dataset_rede_3_anodo"
 
 sampledImagesPath           = Path(dirs.images) / "{}_results_samples".format(datasetName)
 loopFolder                  = Path(dirs.iter_folder) / datasetName
@@ -37,9 +37,6 @@ folderList.sort(key=_get_iter)
 # Drop first and last iterations, as they don't have automatic annotations
 iterList = list(range(len(folderList)))
 autoIterList = iterList[1:-1]
-# print(iterList)
-# print(autoIterList)
-# exit()
 autoIndexList = []
 for i in tqdm(autoIterList):
     folder = folderList[i]

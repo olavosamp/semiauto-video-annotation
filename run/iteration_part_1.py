@@ -13,7 +13,6 @@ import models.utils             as mutils
 from libs.index                 import IndexManager
 from libs.iteration_manager     import SampleImages
 
-
 if __name__ == "__main__":
     iteration      = int(input("Enter iteration number.\n"))
     rede           = 3
@@ -23,7 +22,7 @@ if __name__ == "__main__":
     else:
         datasetName  = "full_dataset_rede_{}".format(rede)
 
-    seed           = np.random.randint(0, 100)
+    seed = np.random.randint(0, 100)
 
     def get_iter_folder(iteration):
         return Path(dirs.iter_folder) / "{}/iteration_{}/".format(datasetName, iteration)

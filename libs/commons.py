@@ -91,27 +91,27 @@ net_class_translation_table = {
             'Anodo':            ["anodo", "anoto"],
             'NaoAnodo':         ["NaoAnodo"],
             'Flutuadores':      ["boia", "flutuadores"], 
-            'NaoFlutuadores':   ["NaoFlutuadores"]
+            'NaoFlutuadores':   ["NaoFlutuadores"],
             'Reparo':           ["repr", "reparo"],
-            'NaoReparo':        ["NaoReparo"]
+            'NaoReparo':        ["NaoReparo"],
             'Dano':             ["dano"],
-            'NaoDano':          ["NaoDano"]
+            'NaoDano':          ["NaoDano"],
             'Loop':             ["loop"],
-            'NaoLoop':          ["NaoLoop"]
+            'NaoLoop':          ["NaoLoop"],
             'Torcao':           ["torc", "torcao"],
-            'NaoTorcao':        ["NaoTorcao"]
+            'NaoTorcao':        ["NaoTorcao"],
             'Gaiola':           ["gaio", "gaiola"],
-            'NaoGaiola':        ["NaoGaiola"]
+            'NaoGaiola':        ["NaoGaiola"],
             'Corrosao':         ["corr", "corrosao"],
-            'NaoCorrosao':      ["NaoCorrosao"]
+            'NaoCorrosao':      ["NaoCorrosao"],
             'Enterramento':     ["ente", "enterramento"],
-            'NaoEnterramento':  ["NaoEnterramento"]
+            'NaoEnterramento':  ["NaoEnterramento"],
             'Cruzamento':       ["cruz", "cruzamento"],
-            'NaoCruzamento':    ["NaoCruzamento"]
+            'NaoCruzamento':    ["NaoCruzamento"],
             'Flange':           ["flan", "flange"],
-            'NaoFlange':        ["NaoFlange"]
+            'NaoFlange':        ["NaoFlange"],
 
-            'Duvida':       ['Duvida', 'Dúvida']
+            'Duvida':       ['Duvida', 'Dúvida'],
 }
 no_translation = 'UNTRANSLATED'
 
@@ -175,8 +175,6 @@ net_binary_table = { # Dict to translate standard class tags into binary problem
                             'Duvida':         'Duvida'
                         }
 }
-
-
 
 # Defines
 IMAGENET_MEAN       = [0.485, 0.456, 0.406]

@@ -21,7 +21,7 @@ if __name__ == "__main__":
     rede           = 3
     epochs         = 150
     inferBatchSize = 64
-    upperThreshPercent = 0.95
+    upperThreshPercent = 0.99
     if rede == 3:
         target_class = dutils.get_input_target_class(commons.rede3_classes)
         datasetName  = "full_dataset_rede_{}_{}".format(rede, target_class.lower())
@@ -192,8 +192,9 @@ if __name__ == "__main__":
     dirs.create_folder(newUnlabeledIndexPath.parent)
     newIndex.to_csv(newUnlabeledIndexPath, index=False)
 
+    # TODO: Include train info in the report
     dutils.make_report(reportPath, sampledIndexPath, manualIndexPath, autoLabelIndexPath,
-                       unlabeledIndexPath, None, rede=rede)
+                       unlabeledIndexPath, None, rede=rede, target_class=target_class)
 
     # Save sample seed
     dutils.save_seed_log(seedLogPath, seed, "inference")

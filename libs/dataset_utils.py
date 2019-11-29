@@ -64,7 +64,7 @@ def get_loop_stats(loop_folder): # TODO: Finish function
 
 
 def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unlabeled_path,
-                train_info, rede=1, show=False):
+                train_info, rede=1, target_class=None, show=False):
     sampledIndex     = pd.read_csv(sampled_path)
     manualIndex      = pd.read_csv(manual_path)
     autoIndex        = pd.read_csv(automatic_path)
@@ -80,17 +80,20 @@ def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unl
                          sampledIndex.groupby("rede1").get_group("Nada").count()[0]
 
     sampledDuto      = sampledIndex.groupby("rede1").get_group(commons.rede1_positive).count()[0]
-    sampledNaoEvento = sampledIndex.groupby("rede2").get_group(commons.rede2_negative).count()[0]
+
+    sampledNaoEvento = 0
     sampledEvento    = sampledIndex.groupby("rede2").get_group(commons.rede2_positive).count()[0]
+    if rede < 3:
+        sampledNaoEvento = sampledIndex.groupby("rede2").get_group(commons.rede2_negative).count()[0]
     sampledTotal     = sampledDuto + sampledNaoDuto
     naoDutoPercent   = sampledNaoDuto/sampledTotal*100
     dutoPercent      = sampledDuto/sampledTotal*100
-    naoEventoPercent = sampledEvento/sampledTotal*100
-    eventoPercent    = sampledNaoEvento/sampledTotal*100
+    eventoPercent    = sampledEvento/sampledTotal*100
+    naoEventoPercent = sampledNaoEvento/sampledTotal*100
 
     if rede == 1:
-        cumNegName = commons.rede1_negative
-        cumPosName = commons.rede1_positive
+        negLabelName = commons.rede1_negative
+        posLabelName = commons.rede1_positive
         cumNeg     = manualIndex.groupby("rede1").get_group('Nada').count()[0]+\
                      manualIndex.groupby("rede1").get_group('Confuso').count()[0]
         cumPos     = manualIndex.groupby("rede1").get_group(commons.rede1_positive).count()[0]
@@ -105,8 +108,8 @@ def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unl
         else:
             autoPos = 0
     elif rede == 2:
-        cumNegName = commons.rede2_negative
-        cumPosName = commons.rede2_positive
+        negLabelName = commons.rede2_negative
+        posLabelName = commons.rede2_positive
         cumNeg     = manualIndex.groupby("rede2").get_group(commons.rede2_negative).count()[0]
         cumPos     = manualIndex.groupby("rede2").get_group(commons.rede2_positive).count()[0]
 
@@ -119,8 +122,29 @@ def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unl
             autoPos    = autoIndex.groupby("rede2").get_group(commons.rede2_positive).count()['rede2']
         else:
             autoPos = 0
-    else:
-        raise NotImplementedError("Report not implemented for rede 3.")
+    elif rede == 3:
+        negLabelName = "Nao"+target_class
+        posLabelName = target_class
+        
+        sampledClassPos = sampledIndex.groupby("rede3").get_group(posLabelName).count()[0]
+        sampledClassNeg = sampledIndex.groupby("rede2").get_group(commons.rede2_positive).count()[0] - sampledClassPos
+        
+        sampledTotal    = sampledIndex.shape[0]
+        sampleNegPercent    = sampledClassNeg/sampledTotal*100
+        samplePosPercent    = sampledClassPos/sampledTotal*100
+
+        cumPos     = manualIndex.groupby("rede3").get_group(posLabelName).count()[0]
+        cumNeg     = manualIndex.groupby("rede2").get_group(commons.rede2_positive).count()[0] - cumPos
+
+        # Exception for case where there are no positive or negative images automatically annotated
+        if posLabelName in set(autoIndex['rede3'].values):
+            autoPos    = autoIndex.groupby("rede3").get_group(posLabelName).count()['rede3']
+        else:
+            autoPos = 0
+        if negLabelName in set(autoIndex['rede3'].values):
+            autoNeg = autoIndex.groupby("rede2").get_group(commons.rede2_positive).count()[0] - autoPos
+        else:
+            autoNeg = 0
 
     cumTotal         = cumPos + cumNeg
     cumNegPercent    = cumNeg/cumTotal*100
@@ -129,21 +153,34 @@ def make_report(report_path, sampled_path, manual_path, automatic_path, prev_unl
     autoLabel        = autoIndex.shape[0]
     autoLabelPercent = autoLabel/numUnlabel*100
 
+    # Compose manual image distribution string
+    distributionString = "Manual annotation distribution:\n"
+    if (rede == 1) or (rede == 2):
+        distributionString +=\
+        "NaoDuto:      {} images ({:.2f} %)\n\
+        Duto:         {} images ({:.2f} %)\n\
+            NaoEvento {} images ({:.2f} %)\n\
+            Evento:   {} images ({:.2f} %)\n\
+        Total:        {} images (100%)\n".format(sampledNaoDuto, naoDutoPercent, sampledDuto, dutoPercent,
+                                                sampledNaoEvento, naoEventoPercent, sampledEvento, eventoPercent,
+                                                sampledTotal)
+    if rede == 3:
+        distributionString +=\
+            "{}:\t{} images ({:.2f} %)\n\
+            {}:\t{} images ({:.2f} %)\n\
+            Total\t{} images (100 %)\n".format(posLabelName, sampledClassPos, samplePosPercent,
+                                               negLabelName, sampledClassNeg, sampleNegPercent,
+                                               sampledTotal)
+
+    # Assemble report string
     reportString = "Rede{}.\n{} unlabeled images remain. Sampled {} images for manual annotation.\n".format(rede,
                                                                                  numUnlabel, numSampled)+\
-"Manual annotation distribution:\n\
-    NaoDuto:      {} images ({:.2f} %)\n\
-    Duto:         {} images ({:.2f} %)\n\
-        Evento:   {} images ({:.2f} %)\n\
-        NaoEvento {} images ({:.2f} %)\n\
-    Total:        {} images (100%)\n".format(sampledNaoDuto, naoDutoPercent, sampledDuto, dutoPercent,
-                                            sampledEvento, eventoPercent, sampledNaoEvento, naoEventoPercent,
-                                            sampledTotal)+\
+    distributionString+\
 "Cumulative manual annotation distribution:\n\
     {}:      {} images ({:.2f} %)\n\
     {}:      {} images ({:.2f} %)\n\
-    Total:   {} images (100%)\n".format(cumNegName, cumNeg, cumNegPercent,
-                                        cumPosName, cumPos, cumPosPercent, cumTotal)+\
+    Total:   {} images (100%)\n".format(negLabelName, cumNeg, cumNegPercent,
+                                        posLabelName, cumPos, cumPosPercent, cumTotal)+\
 "Train Hyperparams:\n\
     Num Epochs:        {}\n\
     Batch Size:        {}\n\
