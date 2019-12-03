@@ -287,7 +287,6 @@ def get_classified_index(index, pos_hashes, neg_hashes, rede, target_class=None,
     if rede == 2:
         newPositives["rede1"] = [positiveLabel1]*lenPositives
 
-
     if verbose:
         print(newLabeledIndex.shape)
         print("Unlabeled images: ", datasetLen)
@@ -466,7 +465,7 @@ def start_loop(prev_annotated_path, target_class, target_column, verbose=True):
     nextLevelIndex = prevAnnotated.loc[mask, :]
     nextLevelIndex = remove_duplicates(nextLevelIndex, "FrameHash", verbose=True)
     
-    nextLevelIndex.to_csv(newReferencePath)
+    nextLevelIndex.to_csv(newReferencePath, index=False)
     
     # New unlabeled set unlabeled_images_iteration_0 is actually composed of all images
     # newUnlabeled  = nextLevelIndex.copy()
