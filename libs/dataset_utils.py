@@ -259,23 +259,35 @@ def get_classified_index(index, pos_hashes, neg_hashes, rede, target_class=None,
     newPositives = index.reindex(labels=pos_hashes, axis=0, copy=True)
     newNegatives = index.reindex(labels=neg_hashes, axis=0, copy=True)
 
-    datasetLen    = len(index)
+    datasetLen   = len(index)
     lenPositives = len(newPositives)
     lenNegatives = len(newNegatives)
 
     # Set positive and negative class labels
-    if rede >= 1:
+    if rede == 1:
         newPositives["rede1"] = [positiveLabel1]*lenPositives
         newNegatives["rede1"] = [negativeLabel1]*lenNegatives
-    if rede >= 2:
+    if rede == 2:
         newPositives["rede1"] = [positiveLabel1]*lenPositives
+        newNegatives["rede1"] = [positiveLabel1]*lenNegatives
+
         newPositives["rede2"] = [positiveLabel2]*lenPositives
         newNegatives["rede2"] = [negativeLabel2]*lenNegatives
-    if rede >= 3:
+    if rede == 3:
+        newPositives["rede1"] = [positiveLabel1]*lenPositives
+        newNegatives["rede1"] = [positiveLabel1]*lenNegatives
+
         newPositives["rede2"] = [positiveLabel2]*lenPositives
+        newNegatives["rede2"] = [positiveLabel2]*lenNegatives
+
         newPositives["rede3"] = [positiveLabel3]*lenPositives
 
     newLabeledIndex = pd.concat([newPositives, newNegatives], axis=0, sort=False)
+
+    if rede == 2:
+        newPositives["rede1"] = [positiveLabel1]*lenPositives
+
+
     if verbose:
         print(newLabeledIndex.shape)
         print("Unlabeled images: ", datasetLen)
