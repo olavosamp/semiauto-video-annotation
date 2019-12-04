@@ -186,12 +186,6 @@ if __name__ == "__main__":
     print("Duplicated elements in final_annotated_images.")
     print(allAnnotations.index.duplicated().sum())
 
-    # Drop NaNs from allAnnotations; TODO: Find out how NaNs could appear in FrameHash column
-    print("Number of NaNs removed in final_annotated_images: ", allAnnotations["FrameHash"].isna().sum())
-    if allAnnotations["FrameHash"].isna().sum() > 10:
-        print("Warning! High number of NaNs! Check if everything is normal.")
-    allAnnotations.dropna(subset=["FrameHash"], inplace=True)
-
     newIndex = dutils.index_complement(originalUnlabeledIndex, allAnnotations, "FrameHash")
 
     dirs.create_folder(newUnlabeledIndexPath.parent)

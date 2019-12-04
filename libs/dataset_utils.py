@@ -571,6 +571,12 @@ def index_complement(reference_df, to_drop_df, column_label):
         The operation performed can be interpreted as a set complement between reference and
         to_drop DataFrames. Returns a DataFrame with length equal to (len(reference_df) - len(to_drop_df)).
     '''
+    # Drop NaNs from allAnnotations; TODO: Find out how NaNs could appear in FrameHash column
+    print("Number of NaNs removed in final_annotated_images: ", to_drop_df[column_label].isna().sum())
+    if to_drop_df[column_label].isna().sum() > 10:
+        print("\nWarning! High number of NaNs! Check if everything is normal.\n")
+    to_drop_df.dropna(subset=[column_label], inplace=True)
+
     reference_df.set_index(column_label, drop=False, inplace=True)
     reference_df.drop(labels=to_drop_df[column_label], axis=0, inplace=True)
 
