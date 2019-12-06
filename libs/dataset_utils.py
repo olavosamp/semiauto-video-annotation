@@ -48,6 +48,67 @@ def get_input_target_class(net_class_dict):
 
 
 # Reports and logging
+def get_class_counts(index, class_column, pos_label, neg_label):
+    '''
+        Returns index class counts according to input labels.
+
+        index: pandas DataFrame
+            DataFrame with the elements to be counted.
+
+        pos_label, neg_label: any object or list
+            labels to be compared to elements of index[class_column]. If any neg_label
+            is None, the count of negative elements will be <Total index size> - <positive count>.
+    '''
+    if isinstance(pos_label, str) or not(hasattr(pos_label, "__iter__")):
+        pos_label = [pos_label]
+    if isinstance(neg_label, str) or not(hasattr(neg_label, "__iter__")):
+        neg_label = [neg_label]
+
+    posCount = 0
+    for label in pos_label:
+        posCount += index.groupby(class_column).get_group(label).count()[0]
+
+    negCount = 0
+    for label in neg_label:
+        if label is None:
+            negCount = index.shape[0] - posCount
+            break
+        # Else, count normally
+        negCount += index.groupby(class_column).get_group(label).count()[0]
+    return posCount, negCount
+
+
+def get_net_class_counts(index_path, net, target_class=None):
+    '''
+        Chooses correct class labels to use in a get_class_counts function call
+        according to input net and target_class.
+    '''
+    assert Path(index_path).is_file(), "Index path does not exist."
+    index = remove_duplicates(pd.read_csv(index_path, low_memory=False), "FrameHash")
+
+    if (net == 3) and (target_class not in commons.rede3_classes.values()):
+        raise ValueError("Net 3 requires a valid target_class.")
+
+    if net == 1:
+        classColumn = "rede1"
+        posLabel = commons.rede1_positive
+        negLabel = commons.rede1_negative
+    elif net ==2:
+        classColumn = "rede2"
+        posLabel = commons.rede2_positive
+        negLabel = commons.rede2_negative
+    elif net == 3:
+        classColumn = "rede3"
+        posLabel = target_class
+        negLabel = None
+
+        # Pass only relevant fraction of index to get_class_counts
+        mask = (index["rede2"] == commons.rede2_positive)
+        index = index.loc[mask, :]
+    
+    return get_class_counts(index, classColumn, posLabel, negLabel)
+
+
 def save_seed_log(log_path, seed, id_string):
     # Save sample seed
     if Path(log_path).is_file():
@@ -196,8 +257,9 @@ Automatic Annotation:\n\
                                                             autoLabel,numUnlabel, autoLabelPercent)
                                                             # TODO: Add train info
     # Write report
-    with open(report_path, 'w') as f:
-        f.write(reportString)
+    # with open(report_path, 'w') as f:
+    #     f.write(reportString)
+    utils.save_string(reportString, report_path, mode='w')
     if show:
         print(reportString)
     return reportString

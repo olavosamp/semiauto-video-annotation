@@ -20,6 +20,16 @@ import libs.commons as commons
 def func_make_path(x):   return Path(x)
 def func_strip(x):       return Path(str(x).strip())
 
+## File and os manipulation
+def write_string(string, save_path, mode='a'):
+    ''' Write input string to file '''
+    if os.path.isfile(save_path):
+        f = open(save_path, mode)
+    else:
+        f = open(save_path, 'w')
+    f.write(string)
+    f.close()
+
 
 # Numeric functions
 def normalize_array(array):

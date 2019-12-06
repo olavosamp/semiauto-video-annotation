@@ -8,18 +8,34 @@ from pathlib                import Path
 import libs.dirs            as dirs
 import libs.utils           as utils
 import libs.dataset_utils   as dutils
+import libs.commons         as commons
 # from libs.index             import IndexManager
 
-datasetName = "full_dataset_rede_3_anodo"
+# datasetName = "full_dataset_rede_3_anodo"
 
-sampledImagesPath           = Path(dirs.images) / "{}_results_samples".format(datasetName)
-loopFolder                  = Path(dirs.iter_folder) / datasetName
-originalUnlabeledIndexPath  = loopFolder / "iteration_0/reference_images.csv"
-compiledAutoIndexPath       = loopFolder / "final_automatic_images_{}.csv".format(datasetName)
-compiledManualIndexPath     = loopFolder / "final_manual_images_{}.csv".format(datasetName)
-annotatedIndexFullPath      = loopFolder / "final_annotated_images_{}.csv".format(datasetName)
+rede      = int(input("Enter net number.\n"))
 
-originalUnlabeledIndex = pd.read_csv(originalUnlabeledIndexPath)
+if rede == 3:
+    target_class = dutils.get_input_target_class(commons.rede3_classes)
+    datasetName  = "full_dataset_rede_{}_{}".format(rede, target_class.lower())
+else:
+    datasetName  = "full_dataset_rede_{}".format(rede)
+
+sampledImagesPath       = Path(dirs.images) / "{}_results_samples".format(datasetName)
+loopFolder              = Path(dirs.iter_folder) / datasetName
+referenceIndexPath      = loopFolder / "iteration_0/reference_images.csv"
+previousLevelIndexPath  = loopFolder / "iteration_0/unlabeled_images_iteration_0.csv"
+autoIndexFullPath       = loopFolder / "final_automatic_images_{}.csv".format(datasetName)
+manualIndexFullPath     = loopFolder / "final_manual_images_{}.csv".format(datasetName)
+annotatedIndexFullPath  = loopFolder / "final_annotated_images_{}.csv".format(datasetName)
+reportPath              = loopFolder / "annotation_report.txt"
+
+referenceIndex     = pd.read_csv(referenceIndexPath, low_memory=False)
+referenceIndex     = dutils.remove_duplicates(referenceIndex, "FrameHash")
+
+previousLevelIndex = pd.read_csv(previousLevelIndexPath, low_memory=False)
+previousLevelIndex = dutils.remove_duplicates(previousLevelIndex, "FrameHash")
+
 
 # Get list of all iteration folders
 folderList = utils.make_path( glob(str(loopFolder)+"/iteration*"))
@@ -28,8 +44,15 @@ for path in tempList:
     if not(path.is_dir()):
         folderList.remove(path)
 
+if rede == 3:
+    print("\nNet {}, target class {}.".format(rede, target_class))
+else:
+    print("\nNet {}.".format(rede))
+print("Ran {} iterations of annotation.".format(len(folderList)))
+
 # Sort folder list by iteration
 def _get_iter(path):
+    # Function that gets integer iteration from string path
     return int(str(path).split("_")[-1])
 folderList.sort(key=_get_iter)
 
@@ -40,7 +63,7 @@ autoIterList = iterList[1:-1]
 autoIndexList = []
 for i in tqdm(autoIterList):
     folder = folderList[i]
-    autoIndexList.append(pd.read_csv(folder/ "automatic_labeled_images_iteration_{}.csv".format(i)))
+    autoIndexList.append(pd.read_csv(folder/ "automatic_labeled_images_iteration_{}.csv".format(i), low_memory=False))
 
 # tot = 0
 # for i in range(len(autoIndexList)):
@@ -51,39 +74,82 @@ for i in tqdm(autoIterList):
 # print("Total: ", tot)
 # exit()
 
+# Concatenate and save auto annotated images
 autoIndexFull = pd.concat(autoIndexList, axis=0, sort=False)
 
 autoIndexFull = dutils.remove_duplicates(autoIndexFull, "FrameHash")
-autoIndexFull.to_csv(compiledAutoIndexPath, index=False)
-print(autoIndexFull.shape)
+autoIndexFull.to_csv(autoIndexFullPath, index=False)
 
 # Group all manual annotations
 # Get cumulative manual index of second to last iteration (the last one with cumulative annotations)
 cumManualIndex = pd.read_csv(folderList[-2] / \
-                    "manual_annotated_images_iteration_{}_train_val_split.csv".format(iterList[-2]))
+                    "manual_annotated_images_iteration_{}_train_val_split.csv".format(iterList[-2]), low_memory=False)
 
 # Process sampled image csv
 # Fill index information of sampled images of the final iteration
 lastFolder = folderList[-1]
-sampledLastIterIndex = pd.read_csv(lastFolder / "sampled_images_iteration_{}.csv".format(iterList[-1]))
+sampledLastIterIndex = pd.read_csv(lastFolder / "sampled_images_iteration_{}.csv".format(iterList[-1]), low_memory=False)
 sampledLastIterIndex["FrameHash"] = utils.compute_file_hash_list(sampledLastIterIndex["imagem"].values,
                                                         folder= lastFolder / "sampled_images")
-manualLastIterIndex  = dutils.fill_index_information(originalUnlabeledIndex, sampledLastIterIndex,
-                                        "FrameHash", [ 'rede1', 'rede2', 'rede3'])
+manualLastIterIndex  = dutils.fill_index_information(referenceIndex, sampledLastIterIndex,
+                                                        "FrameHash", [ 'rede1', 'rede2', 'rede3'])
 
+# Concatenate and save manual annotated images
 manualIndexFull = pd.concat([cumManualIndex, manualLastIterIndex], axis=0, sort=False)
-print(manualIndexFull.shape)
-manualIndexFull.to_csv(compiledManualIndexPath, index=False)
+manualIndexFull.to_csv(manualIndexFullPath, index=False)
 
 # Add Annotation column to indexes
-autoIndexFull["Annotation"] = ['auto']*len(autoIndexFull)
+autoIndexFull["Annotation"]   = ['auto']*len(autoIndexFull)
 manualIndexFull["Annotation"] = ['manual']*len(manualIndexFull)
 
-print(autoIndexFull.head())
-print(manualIndexFull.head())
-
+# Concatenate and save all annotated images
 annotatedIndexFull = pd.concat([manualIndexFull, autoIndexFull], axis=0, sort=False)
-print(annotatedIndexFull.shape)
 annotatedIndexFull = dutils.remove_duplicates(annotatedIndexFull, "FrameHash")
-print(annotatedIndexFull.shape)
 annotatedIndexFull.to_csv(annotatedIndexFullPath, index=False)
+
+# Assemble, print and save report
+if rede == 1:
+    previousManualLen = 0
+else:
+    previousManualLen = pd.read_csv(folderList[1] / "sampled_images_iteration_1.csv", low_memory=False).shape[0]
+
+autoLen        = autoIndexFull.shape[0]
+manualLen      = manualIndexFull.shape[0] - previousManualLen # Manual anotations made only on this level
+totalLen       = annotatedIndexFull.shape[0] - previousManualLen
+totalManualLen = manualIndexFull.shape[0]
+
+imgNumberStr = ("Ran {} iterations of annotation.".format(len(folderList)))
+imgNumberStr += ("\n\nFinal number of annotated images in level {}:".format(rede))
+imgNumberStr += ("\nAutomatic: {}\t({:.2f} %)".format(autoLen, autoLen/totalLen*100 ))
+imgNumberStr += ("\nManual:    {}\t({:.2f} %)".format(manualLen, manualLen/totalLen*100 ))
+imgNumberStr += ("\nTotal:     {}\t({:.2f} % of current level starting dataset)\n".format(totalLen,
+                                                    totalLen/previousLevelIndex.shape[0]*100 ))
+
+imgNumberStr += ("\n\nTotal number of manual annotated images (shared between levels):\n{} ({:.2f} % of\
+ original dataset)".format(totalManualLen, totalManualLen/referenceIndex.shape[0]))
+
+autoPos, autoNeg     = dutils.get_net_class_counts(autoIndexFullPath, rede, target_class=target_class)
+manualPos, manualNeg = dutils.get_net_class_counts(manualIndexFullPath, rede, target_class=target_class)
+totalPos, totalNeg   = dutils.get_net_class_counts(annotatedIndexFullPath, rede, target_class=target_class)
+
+# Report strings
+strAuto = ("\n\nClass distribution:")
+strAuto += ("\nAutomatic:")
+strAuto += ("\nPos:   {}\t({:.2f} %)".format(autoPos, autoPos/autoLen*100))
+strAuto += ("\nNeg:   {}\t({:.2f} %)".format(autoNeg, autoNeg/autoLen*100))
+strAuto += ("\nTotal: {}\t({:.2f} %)".format(autoNeg+autoPos, (autoNeg+autoPos)/autoLen*100))
+
+strManual =("\nManual:")
+strManual +=("\nPos:   {}\t({:.2f} %)".format(manualPos, manualPos/(manualLen+previousManualLen)*100))
+strManual +=("\nNeg:   {}\t({:.2f} %)".format(manualNeg, manualNeg/(manualLen+previousManualLen)*100))
+strManual +=("\nTotal: {}\t({:.2f} %)".format(manualNeg+manualPos, (manualNeg+manualPos)/(manualLen+previousManualLen)*100))
+
+strTotal = ("\nTotal:")
+strTotal += ("\nPos:   {}\t({:.2f} %)".format(totalPos, totalPos/(totalLen + previousManualLen)*100))
+strTotal += ("\nNeg:   {}\t({:.2f} %)".format(totalNeg, totalNeg/(totalLen + previousManualLen)*100))
+strTotal += ("\nTotal: {}\t({:.2f} %)".format(totalNeg+totalPos, (totalNeg+totalPos)/(totalLen + previousManualLen)*100))
+
+print(strAuto)
+print(strManual)
+print(strTotal)
+utils.write_string(strAuto+strManual+strTotal, reportPath, mode='w')
