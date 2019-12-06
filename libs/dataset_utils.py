@@ -1044,7 +1044,7 @@ class Rede3Translator:
         self.target_class = target_class
 
     def translate_label(self, label_name):
-        if label_name == self.target_class:
+        if label_name.lower() == self.target_class.lower():
             translatedLabel = self.target_class
         else:
             translatedLabel = "Nao"+self.target_class
@@ -1054,7 +1054,7 @@ class Rede3Translator:
     #     return self._translate_label(label_name)
 
 
-def translate_labels(labels, target_net, target_class=None):
+def translate_labels(labels, target_net, target_class=None, verbose=False):
     '''
         Translate interface-generated labels to the index standard, following commons.classes
          class list.
@@ -1077,10 +1077,18 @@ def translate_labels(labels, target_net, target_class=None):
                     translatedLabel = str(tup[0])
         if translatedLabel:
             # Translate class labels as task-relevant binary labels
-            return commons.net_binary_table[target_net][translatedLabel]
+            innerTranslation = commons.net_binary_table[target_net][translatedLabel]
         else:
-            warnings.warn("\nTranslation not found for label:\n\t{}".format(label))
-            return commons.no_translation
+            if verbose:
+                warnings.warn("\nTranslation not found for label:\n\t{}".format(label))
+            innerTranslation = commons.no_translation
+
+        # If target net is rede3, translate normalized labels to binary labels
+        if target_net == commons.net_target_column[3]:
+            rede3Translator = Rede3Translator(target_class)
+            return rede3Translator.translate_label(innerTranslation)
+        else:
+            return innerTranslation
 
     # This table formats and normalizes manually annotated class labels
     # Fixes a limited number of common spelling mistakes
@@ -1092,10 +1100,7 @@ def translate_labels(labels, target_net, target_class=None):
     elif hasattr(labels, "__iter__"):
         # If list, apply translation subroutine to every element in list
         translation = list(map(_translate, labels))
+    else:
+        raise ValueError("Input must be a string or list of strings.")
     
-    # If target net is rede3, translate normalized labels to binary labels
-    if target_net == commons.net_target_column[3]:
-        rede3Translator = Rede3Translator(target_class)
-        translation = rede3Translator.translate_label(translation)
-
     return translation

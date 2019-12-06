@@ -176,6 +176,14 @@ net_binary_table = { # Dict to translate standard class tags into binary problem
                         }
 }
 
+# Priority table for multilabel conflict desambiguation
+rede_3_multiclass_priority_table = [rede3_classes[2],
+                                    rede3_classes[4],
+                                    rede3_classes[0],
+                                    rede3_classes[1],
+                                    rede3_classes[3],
+]
+
 # Defines
 IMAGENET_MEAN       = [0.485, 0.456, 0.406]
 IMAGENET_STD        = [0.229, 0.224, 0.225]
