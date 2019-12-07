@@ -1,6 +1,6 @@
 import numpy                as np
 import pandas               as pd
-# from tqdm                   import tqdm
+from tqdm                   import tqdm
 from glob                   import glob
 from pathlib                import Path
 # from copy                   import copy
@@ -21,37 +21,35 @@ for classLabel in classList.values():
         "final_annotated_images_full_dataset_rede_3_{}.csv".format(classLabel.lower()))
     indexDict[classLabel] = pd.read_csv(indexPath, low_memory=False)
 
+positivesList = {}
 for key in indexDict.keys():
     indexLen = len(indexDict[key])
-    print("Positives before: ", np.sum(indexDict[key]['rede3'] == key))
-    print("Negatives before: ", np.sum(indexDict[key]['rede3'] != key))
     labelList = indexDict[key]['rede3'].copy().map(str)
     indexDict[key]['rede3'] = dutils.translate_labels(labelList,
                                                       'rede3',
                                                       target_class=key)
-    
-    print("Positives after: ", np.sum(indexDict[key]['rede3'] == key))
-    print("Negatives after: ", np.sum(indexDict[key]['rede3'] != key))
-    input()
+    mask = indexDict[key]['rede3'] == key
+    positivesList[key] = indexDict[key].loc[mask, :]
 
 
 # TODO:
-# for each index, translate rede3 labels to binary labels;
-# split positive and negative entries;
-# each positive set will correspond to a class;
+# V for each index, translate rede3 labels to binary labels;
+# V split positive and negative entries;
+# V each positive set will correspond to a class;
+# V fuse the 5 indexes in a single index
+# V translate duplicated labels using the priority table;
 # images that are labeled negative for all classes are split in a negatives index;
-# fuse the 5 indexes in a single index, using the priority table;
 # concatenate negatives index and new fusion index;
 # check if before and after sizes matches
 
-compiledIndex = pd.concat(indexDict)
-print(compiledIndex.shape)
+print("\nConcatenating positive indexes...")
+compiledPositivesIndex = pd.concat(positivesList.values())
 
-duplicatesMask = compiledIndex.duplicated(subset=commons.FRAME_HASH_COL_NAME, keep=False)
+# allIndexes = indexDict.values()[0].index # Assumes all classes contain all images
+# compiledPositivesIndex = dutils.remove_duplicates(compiledPositivesIndex, commons.FRAME_HASH_COL_NAME)
+# negMask = set(compiledPositivesIndex.index) - set(allIndexes)
+# negativesIndex = 
 
-# Split compiled index in duplicated and non-duplicated entries
-duplicatesIndex = compiledIndex.loc[duplicatesMask, :]
-compiledIndex   = compiledIndex.loc[~duplicatesMask, :]
 
 def _translate_dup_label(label_list):
     for priority_label in commons.rede_3_multiclass_priority_table:
@@ -59,6 +57,22 @@ def _translate_dup_label(label_list):
             return priority_label
     return None
 
-groups = duplicatesIndex.groupby(by=commons.FRAME_HASH_COL_NAME)
-print(groups.groups)
+# Split compiled index in duplicated and non-duplicated entries
+duplicatesMask  = compiledPositivesIndex.duplicated(subset=commons.FRAME_HASH_COL_NAME, keep=False)
+duplicatesIndex = compiledPositivesIndex.loc[duplicatesMask, :]
+frameGroup = duplicatesIndex.groupby(commons.FRAME_HASH_COL_NAME)
+
+print("\nTranslating all duplicates...")
+compiledPositivesIndex = dutils.remove_duplicates(compiledPositivesIndex, commons.FRAME_HASH_COL_NAME)
+compiledPositivesIndex.set_index('FrameHash', drop=False, inplace=True)
+for frameHash, group in tqdm(frameGroup):
+    newLabel = _translate_dup_label(group['rede3'].values)
+    compiledPositivesIndex.loc[frameHash, 'rede3'] = newLabel
+
+compiledPositivesIndex.reset_index(drop=True, inplace=True)
+
+print(compiledPositivesIndex['rede3'][:30])
+
+# groups = duplicatesIndex.groupby(by=commons.FRAME_HASH_COL_NAME)
+# print(groups.groups)
 # for group in groups.groups.keys():
