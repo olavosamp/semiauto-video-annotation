@@ -6,6 +6,7 @@ import torch.nn             as nn
 import numpy                as np
 import pandas               as pd
 import shutil               as sh
+from glob                   import glob
 from PIL                    import Image
 from copy                   import copy
 from tqdm                   import tqdm
@@ -495,8 +496,58 @@ def df_to_csv(dataframe, save_path, verbose=True):
         print("Saved DataFrame to ", save_path)
 
 
+def get_ref_dataset_val_video_list(folder_path, verbose=False):
+    '''
+        Get a list of video hashes from a dataset folder with a specific file tree.
+        folder_path/
+            xxx/hash1/
+            yyy/hash2/
+            ...
+        
+        Returns non-duplicated list of found hashes.
+    '''
+    globString = str(folder_path)+"/**"
+    folderList = glob(globString, recursive=True)
+    videoList = []
+    for pathEntry in folderList:
+        relString = Path(pathEntry).relative_to(folder_path)
+        if len(relString.parts) == 2:
+            videoHash = relString.parts[-1]
+            videoList.append(videoHash)
+    videoList = list(set(videoList))
+
+    return videoList
+
+
 def split_validation_set_from_video_list(df_path, index_list, key_column="HashMD5", verbose=False):
+    '''
+        Split a DataFrame given by df_path in two, according to index_list. The DataFrame is split in
+        two other: one containing only entries with indexes in index_list; the other is the converse,
+        containing none of the given indexes.
+
+        Arguments:
+        df_path: str filepath
+            Filepath to target DataFrame saved in csv format.
+
+        index_list: list
+            List of indices to guide the split. One split set will contain only entries with indexes
+            in this list and the other set will contain the remaining entries.
+
+        key_column: str
+            Name of the DataFrame column where the indexes of index_list will be searched.
+
+        Returns:
+        trainIndex: DataFrame
+            DataFrame subset from input DataFrame. Contains only entries with indexes not present in 
+            index_list.
+
+        valIndex: DataFrame
+            DataFrame subset from input DataFrame. Contains only entries with indexes present in 
+            index_list.
+    '''
     index = pd.read_csv(df_path)
+    index.dropna(axis=0, subset=[key_column], inplace=True)
+
     valHash   = index_list
     trainHash = set(index[key_column]) - set(valHash)
     # valHash = utils.compute_file_hash_list(index_list)
@@ -689,7 +740,7 @@ def load_outputs_df(outputPath, remove_duplicates=False, softmax=True):
     return outputs.numpy(), imgHashes, labels
 
 
-def move_dataset_to_train(index_path, dest_folder, path_column="FramePath", verbose=True):
+def move_dataset_to_folder(index_path, dest_folder, path_column="FramePath", verbose=True):
     ''' 
         Move files to dest_folder. File paths are given in the path_column of a DataFrame
         saved to index_path.
@@ -709,11 +760,10 @@ def move_dataset_to_train(index_path, dest_folder, path_column="FramePath", verb
     def _add_folder_and_copy(x):
         return utils.copy_files(Path(x), dest_folder / Path(x).name)
     dirs.create_folder(dest_folder)
-    
     index = pd.read_csv(index_path)
-    
+
     if verbose:
-        print("\nMoving files from dataset folder to sampled images folder...")
+        print("\nMoving {} files from dataset folder to sampled images folder...").format(len(index))
     
     successes = np.sum(index[path_column].map(_add_folder_and_copy))
     if verbose:
@@ -780,41 +830,67 @@ def remove_duplicates(target_df, index_column, verbose=False):
     return target_df.copy()
 
 
-def move_to_class_folders(indexPath, imageFolderPath, target_net="rede1", target_class=None, verbose=True):
+def move_to_class_folders(index_path, image_folder_path, target_net="rede1", target_class=None, move=True,
+                             verbose=False):
     '''
         Sort labeled images in class folders according to index file with labels and filepaths.
+
+        Arguments:
+        index_path: str filepath
+
+        image_folder_path: str folder path
+
+        target_net: str
+
+        target_class: str or None
+
+        move: bool
+            If True, move images from source to new folder. If False, just copy and don't move them.
     '''
-    indexPath     = Path(indexPath)
-    assert imageFolderPath.is_dir(), "Folder argument must be a valid image folder."
-    if target_net == commons.net_target_column[3]:
+    index_path     = Path(index_path)
+    dirs.create_folder(image_folder_path)
+    # assert image_folder_path.is_dir(), "Folder argument must be a valid image folder."
+    
+    # If target net is rede3, check if target_class is valid, if provided
+    if (target_net == commons.net_target_column[3]) and (target_class is not None):
         assert target_class in commons.rede3_classes.values(), "Invalid target class for rede3."
 
-    imageIndex = pd.read_csv(indexPath)
-    numImages     = len(imageIndex)
+    imageIndex = pd.read_csv(index_path)
+    numImages  = len(imageIndex)
 
     # Get unique tags and create the respective folders
     tags = set(imageIndex[target_net])# - set("-")
-    
+
     print("Found tags ", tags)
     for tag in tags:
         tag = translate_labels(tag, target_net, target_class=target_class)
-        dirs.create_folder(imageFolderPath / tag)
+        dirs.create_folder(image_folder_path / tag)
         if verbose:
-            print("Created folder ", (imageFolderPath / tag))
+            print("Created folder ", (image_folder_path / tag))
+
+    if move:
+        print("Moving files to class folders...")
+    else:
+        print("Copying files to class folders...")
 
     destList = []
-    print("Moving files to class folders...")
     for i in tqdm(range(numImages)):
-        imageName  = str(imageIndex.loc[i, 'FrameName'])
-        source   = imageFolderPath / imageName
-        
         tag      = translate_labels(imageIndex.loc[i, target_net], target_net, target_class=target_class)
+        
+        # Get source path
+        imageName  = str(imageIndex.loc[i, 'FrameName'])
+        source   = image_folder_path / imageName
+        # Get dest path
         destName = Path(tag) / imageName
-        dest     = imageFolderPath / destName
+        dest     = image_folder_path / destName
 
-        # print("Moving\n{}\nto\n{}".format(source, dest))
+        if verbose:
+            print("Moving\n{}\nto\n{}".format(source, dest))
 
-        sh.move(source, dest)
+        if move:
+            sh.move(source, dest)
+        else:
+            utils.copy_files(source, dest)
         destList.append(dest)
     imageIndex["TrainPath"] = destList
     return imageIndex
@@ -1089,19 +1165,25 @@ class Rede3Translator:
             translatedLabel = "Nao"+self.target_class
         return translatedLabel
 
-    # def __getitem__(self, label_name):
-    #     return self._translate_label(label_name)
-
 
 def translate_labels(labels, target_net, target_class=None, verbose=False):
     '''
         Translate interface-generated labels to the index standard, following commons.classes
-        class list.
+        class list. Performs label normalization on input labels. If target_net is rede3, can
+        also perform translation to binary labels.
 
         Argument:
             label: string or list of strings
                 A string or list of strings representing one or more classes, following
                 the pattern of interface-generated labels.
+            
+            target_net: str
+                Must one of the set ('rede1', 'rede2', 'rede3').
+
+            target_class: str
+                Valid only for target_net == 'rede3'. Must be a class defined in commons.rede3_classes.
+                If None is passed, the function will skip translation to binary labels and will only
+                perform label normalization.
 
         Returns:
             translation: string or list of strings
@@ -1123,7 +1205,7 @@ def translate_labels(labels, target_net, target_class=None, verbose=False):
             innerTranslation = commons.no_translation
 
         # If target net is rede3, translate normalized labels to binary labels
-        if target_net == commons.net_target_column[3]:
+        if (target_net == commons.net_target_column[3]) and (target_class is not None):
             rede3Translator = Rede3Translator(target_class)
             return rede3Translator.translate_label(innerTranslation)
         else:

@@ -17,7 +17,7 @@ seed = 42
 splitPercentages = [0.8, 0.2]
 
 # Move images from dataset folder to sampled images
-dutils.move_dataset_to_train(indexPath, datasetFolder, path_column="FramePath")
+dutils.move_dataset_to_folder(indexPath, datasetFolder, path_column="FramePath")
 
 # Sort images in sampled_images folder to separate class folders
 imageIndex = dutils.move_to_class_folders(indexPath, imageFolderPath, target_net="rede1")

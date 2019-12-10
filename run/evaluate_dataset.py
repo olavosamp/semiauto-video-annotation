@@ -14,26 +14,18 @@ import libs.dataset_utils   as dutils
 # /home/common/flexiveis/datasets/events_191016/val/**
 # /home/common/flexiveis/datasets/events_191016/val/
 
-remoteDatasetPath = Path("/home/common/flexiveis/datasets/events_191016/val/")
-datasetIndexPath  = Path(dirs.iter_folder) / "dataset_rede_3_positives_binary.csv"
+'''
+    Script to set up rede3 dataset for training and evaluation.
+'''
+remoteDatasetPath   = Path("/home/common/flexiveis/datasets/events_191016/val/")
+datasetImagePath    = Path(dirs.dataset) / "new_dataset"
+datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_3_positives_binary.csv"
+trainPath           = Path(dirs.iter_folder) / "train_dataset.csv"
+valPath             = Path(dirs.iter_folder) / "val_dataset.csv"
 
-
-def get_ref_dataset_val_video_list(folder_path, verbose=False):
-    globString = str(folder_path)+"/**"
-    folderList = glob(globString, recursive=True)
-    videoList = []
-    for pathEntry in folderList:
-        relString = Path(pathEntry).relative_to(folder_path)
-        if len(relString.parts) == 2:
-            videoHash = relString.parts[-1]
-            videoList.append(videoHash)
-    videoList = list(set(videoList))
-
-    return videoList
-
-videoList = get_ref_dataset_val_video_list(remoteDatasetPath)
-print(videoList)
-print(len(videoList))
+videoList = dutils.get_ref_dataset_val_video_list(remoteDatasetPath)
+# print(videoList)
+# print(len(videoList))
 
 trainIndex, valIndex = dutils.split_validation_set_from_video_list(datasetIndexPath,
                                                                    videoList, key_column="HashMD5")
@@ -54,6 +46,22 @@ for i in range(len(valIndex)):
 
 print("\nErrors:")
 print("Train: {}\nVal:\t{}".format(trainErrors, valErrors))
+print("\nNaNs:")
+print("Train: {}\nVal:\t{}".format(np.sum(trainIndex['rede3'].isna()), np.sum(valIndex['rede3'].isna())))
 
-trainIndex.to_csv(Path(dirs.iter_folder) / "train_dataset.csv")
-valIndex.to_csv(Path(dirs.iter_folder) / "val_dataset.csv")
+trainIndex.dropna(axis=0, subset=["HashMD5"], inplace=True)
+valIndex.dropna(axis=0, subset=["HashMD5"], inplace=True)
+
+print("\nNaNs:")
+print("Train: {}\nVal:\t{}".format(np.sum(trainIndex['rede3'].isna()), np.sum(valIndex['rede3'].isna())))
+
+dutils.df_to_csv(trainIndex, trainPath)
+dutils.df_to_csv(valIndex, valPath)
+
+dutils.move_dataset_to_folder(trainPath, datasetImagePath / "train", path_column="FramePath")
+dutils.move_to_class_folders(trainPath, datasetImagePath / "train", target_net="rede3",
+                                    target_class=None, move=True)
+
+dutils.move_dataset_to_folder(valPath, datasetImagePath / "val", path_column="FramePath")
+dutils.move_to_class_folders(valPath, datasetImagePath / "val", target_net="rede3",
+                                    target_class=None, move=True)

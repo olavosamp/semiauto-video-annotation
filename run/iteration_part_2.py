@@ -93,7 +93,7 @@ if __name__ == "__main__":
     print("\nSTEP: Split train and val sets.")
     splitPercentages = [0.8, 0.2]
     
-    dutils.move_dataset_to_train(manualIndexPath, sampledImageFolder, path_column="FramePath")
+    dutils.move_dataset_to_folder(manualIndexPath, sampledImageFolder, path_column="FramePath")
     
     imageIndex = dutils.move_to_class_folders(manualIndexPath, sampledImageFolder,
                                         target_net=commons.net_target_column[rede], target_class=target_class)
