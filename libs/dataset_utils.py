@@ -486,8 +486,30 @@ def find_ideal_upper_thresh(outputs, labels, threshold_list=None, ratio=0.95, re
             return idealThresh
 
 
-
 ## Dataset files manipulation
+def df_to_csv(dataframe, save_path, verbose=True):
+    dirs.create_folder(Path(save_path).parent)
+    dataframe.to_csv(save_path, index=False)
+
+    if verbose:
+        print("Saved DataFrame to ", save_path)
+
+
+def split_validation_set_from_video_list(df_path, index_list, key_column="HashMD5", verbose=False):
+    index = pd.read_csv(df_path)
+    valHash   = index_list
+    trainHash = set(index[key_column]) - set(valHash)
+    # valHash = utils.compute_file_hash_list(index_list)
+
+    index.set_index(key_column, drop=False, inplace=True)
+    trainIndex = index.loc[trainHash, :].copy()
+    valIndex = index.loc[valHash, :].copy()
+    trainIndex.reset_index(inplace=True, drop=True)
+    valIndex.reset_index(inplace=True, drop=True)
+    
+    return trainIndex, valIndex
+
+
 def merge_indexes(index_path_list, key_column):
     '''
         Read a list of DataFrame paths, concatenates them and remove duplicated elements from resulting DF.
@@ -668,9 +690,26 @@ def load_outputs_df(outputPath, remove_duplicates=False, softmax=True):
 
 
 def move_dataset_to_train(index_path, dest_folder, path_column="FramePath", verbose=True):
-    ''' Move images from dataset folder to sampled images'''
+    ''' 
+        Move files to dest_folder. File paths are given in the path_column of a DataFrame
+        saved to index_path.
+
+        Files are read from source path and copied to dest_folder keeping the original filenames.
+
+        index_path: str filepath
+            Filepath of a DataFrame saved in csv format. DataFrame path_column field must contain 
+            the valid filepaths.
+        
+        dest_folder: str folder path
+            Path to destination folder.
+        
+        path_column: str
+            Name of DataFrame field containing the source filepaths.
+    '''
     def _add_folder_and_copy(x):
         return utils.copy_files(Path(x), dest_folder / Path(x).name)
+    dirs.create_folder(dest_folder)
+    
     index = pd.read_csv(index_path)
     
     if verbose:
@@ -1057,7 +1096,7 @@ class Rede3Translator:
 def translate_labels(labels, target_net, target_class=None, verbose=False):
     '''
         Translate interface-generated labels to the index standard, following commons.classes
-         class list.
+        class list.
 
         Argument:
             label: string or list of strings

@@ -14,17 +14,24 @@ import libs.commons         as commons
 rede = 3
 classList = commons.rede3_classes
 
+compiledPositivesPath = Path(dirs.iter_folder) / "dataset_rede_3_positives_binary.csv"
+
 # Get final annotation indexes of all classes
+# Arrange them in a dictionary with class names as keys and index DataFrames as values
 indexDict = {}
 for classLabel in classList.values():
     indexPath  = str(Path(dirs.iter_folder) / "full_dataset_rede_3_{}".format(classLabel.lower()) /\
         "final_annotated_images_full_dataset_rede_3_{}.csv".format(classLabel.lower()))
     indexDict[classLabel] = pd.read_csv(indexPath, low_memory=False)
 
+# Get only rede2 positive entries (Eventos)
+# PositivesList dict values are the DataFrames indexes of each class;
+# each DF contains only rede2 positive entries and have binary-translated rede3 labels
 positivesList = {}
 for key in indexDict.keys():
     indexLen = len(indexDict[key])
-    labelList = indexDict[key]['rede3'].copy().map(str)
+    labelList = indexDict[key]['rede3'].copy().map(str) # Get a copy of rede3 elements and typecast to string
+    # Translate rede3 labels to binary labels
     indexDict[key]['rede3'] = dutils.translate_labels(labelList,
                                                       'rede3',
                                                       target_class=key)
@@ -72,6 +79,8 @@ for frameHash, group in tqdm(frameGroup):
 compiledPositivesIndex.reset_index(drop=True, inplace=True)
 
 print(compiledPositivesIndex['rede3'][:30])
+
+compiledPositivesIndex.to_csv(compiledPositivesPath, index=False)
 
 # groups = duplicatesIndex.groupby(by=commons.FRAME_HASH_COL_NAME)
 # print(groups.groups)

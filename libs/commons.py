@@ -88,9 +88,9 @@ net_class_translation_table = {
             'Evento':           ["evnt", "evento"],
             'NaoEvento':        ["nevt", "Nao_Evento"],
 
-            'Anodo':            ["anodo", "anoto"],
+            'Anodo':            ["anodo", "anoto", "anôdo"],
             'NaoAnodo':         ["NaoAnodo"],
-            'Flutuadores':      ["boia", "flutuadores"], 
+            'Flutuadores':      ["boia", "flutuadores", "flut"], 
             'NaoFlutuadores':   ["NaoFlutuadores"],
             'Reparo':           ["repr", "reparo"],
             'NaoReparo':        ["NaoReparo"],
@@ -127,7 +127,7 @@ net_binary_table = { # Dict to translate standard class tags into binary problem
                             'NaoEvento':    'NaoEvento',
                             'Duvida':       'Duvida',
                         },
-                        'rede3':{ # TODO: This multiclass problem will require a more involved translation
+                        'rede3':{
                             'Anodo':          rede3_classes[0],
                             'NaoAnodo':       'NaoAnodo',
                             'anod':           rede3_classes[0],
@@ -177,11 +177,18 @@ net_binary_table = { # Dict to translate standard class tags into binary problem
 }
 
 # Priority table for multilabel conflict desambiguation
-rede_3_multiclass_priority_table = [rede3_classes[2],
-                                    rede3_classes[4],
-                                    rede3_classes[0],
-                                    rede3_classes[1],
-                                    rede3_classes[3],
+# rede_3_multiclass_priority_table = [rede3_classes[2], # Dano
+#                                     rede3_classes[4], # Reparo
+#                                     rede3_classes[0], # Anodo
+#                                     rede3_classes[1], # Cruzamento
+#                                     rede3_classes[3], # Flange
+# ]
+# Temporary priority table to test fusion function
+rede_3_multiclass_priority_table = [rede3_classes[2], # Dano
+                                    rede3_classes[0], # Anodo
+                                    rede3_classes[1], # Cruzamento
+                                    rede3_classes[3], # Flange
+                                    rede3_classes[4], # Reparo
 ]
 
 # Defines
