@@ -21,6 +21,25 @@ def func_make_path(x):   return Path(x)
 def func_strip(x):       return Path(str(x).strip())
 
 ## File and os manipulation
+def copy_folder_tree(source_folder, dest_folder, verbose=True):
+    '''
+        Copies recursively all files inside source_folder to dest_folder using shutil.copytree.
+        Keeps file structure intact. If dest_folder exists, user will be prompted to confirm
+        its deletion.
+    '''
+    if os.path.isdir(dest_folder):
+        input("Destination directory already exists, delete and overwrite?\n{}\
+\nPress Enter to continue or Ctrl+C to abort.\n".format(dest_folder))
+        if verbose:
+            print("\nRemoving existing dataset folder...")
+        shutil.rmtree(dest_folder)
+    
+    if verbose:
+        print("\nCopying reference dataset\nfrom: {}\nto: {}".format(source_folder, dest_folder))
+        print("\nCopying...")
+    shutil.copytree(source_folder, dest_folder)
+
+
 def write_string(string, save_path, mode='a'):
     ''' Write input string to file '''
     if os.path.isfile(save_path):

@@ -740,7 +740,7 @@ def load_outputs_df(outputPath, remove_duplicates=False, softmax=True):
     return outputs.numpy(), imgHashes, labels
 
 
-def move_dataset_to_folder(index_path, dest_folder, path_column="FramePath", verbose=True):
+def copy_dataset_to_folder(index_path, dest_folder, path_column="FramePath", verbose=True):
     ''' 
         Move files to dest_folder. File paths are given in the path_column of a DataFrame
         saved to index_path.
@@ -767,7 +767,7 @@ def move_dataset_to_folder(index_path, dest_folder, path_column="FramePath", ver
     
     successes = np.sum(index[path_column].map(_add_folder_and_copy))
     if verbose:
-        print("{}/{} files moved.".format(successes, len(index[path_column])))
+        print("{}/{} files copied.".format(successes, len(index[path_column])))
     return successes
 
 
