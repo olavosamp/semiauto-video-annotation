@@ -132,10 +132,14 @@ def add_folder_path(path, folder):
 def compute_file_hash_list(file_list, folder=None):
     '''
         Argument:
-           file_list: list of strings
+            file_list: list of strings
                 List of valid file paths.
+            
+            folder: string or None
+                Path to a folder. If given, file_list paths will be prepended with the folder path
+                before computing hash.
         Returns:
-            : list of strings
+            :list of strings
                 List of MD5 hashes.
     '''
     if folder is not None:

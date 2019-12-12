@@ -18,7 +18,7 @@ import libs.dataset_utils   as dutils
     Script to set up rede3 dataset for training and evaluation.
 '''
 remoteDatasetPath   = Path("/home/common/flexiveis/datasets/events_191016/")
-semiautoDatasetPath = Path(dirs.dataset) / "semiauto_dataset_v1"
+semiautoDatasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_3"
 refDatasetPath      = Path(dirs.dataset) / "reference_dataset_191016"
 datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_3_positives_binary.csv"
 trainPath           = Path(dirs.iter_folder) / "train_dataset.csv"

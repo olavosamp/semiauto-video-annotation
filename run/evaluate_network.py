@@ -15,7 +15,7 @@ from libs.vis_functions     import plot_model_history
 # /home/common/flexiveis/datasets/events_191016/val/
 
 '''
-    Script to set up rede3 dataset for training and evaluation.
+    
 '''
 remoteDatasetPath   = Path("/home/common/flexiveis/datasets/events_191016/val/")
 datasetImagePath    = Path(dirs.dataset) / "semiauto_dataset_v1"
