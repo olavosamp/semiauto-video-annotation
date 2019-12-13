@@ -9,7 +9,7 @@ import libs.dirs            as dirs
 import libs.utils           as utils
 import libs.commons         as commons
 import libs.dataset_utils   as dutils
-# # from libs.index             import IndexManager
+
 '''
 /home/olavosamp/projetos/projeto_final/semiauto-video-annotation/run/
 /home/common/flexiveis/datasets/handpicked/
@@ -17,97 +17,117 @@ import libs.dataset_utils   as dutils
 '''
     Script to set up rede1 dataset for training and evaluation.
 '''
+rede = 'rede1'
+
 referenceIndexPath  = Path(dirs.index) / "main_index_2019-7-1_18-22-41.csv"
 remoteDatasetPath   = Path("/home/common/flexiveis/datasets/handpicked/")
 semiautoDatasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_1"
 refDatasetPath      = Path(dirs.dataset) / "reference_dataset_rede_1"
 datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_3_positives_binary.csv"
-trainPath           = Path(dirs.iter_folder) / "train_dataset.csv"
-valPath             = Path(dirs.iter_folder) / "val_dataset.csv"
+trainPath           = Path(dirs.iter_folder) / "rede_1_train_dataset.csv"
+valPath             = Path(dirs.iter_folder) / "rede_1_val_dataset.csv"
 
 def _discard_middle_folders(path):
     path = Path(path).relative_to(remoteDatasetPath)
-    tailPath = list(path.parts[:1])
-    tailPath.append(path.name)
+    image_set   = path.parts[0]
+    image_class = path.parts[1]
+    image_name  = path.name
+
+    # Merge confusion to not_duct
+    if image_class == "confusion":
+        image_class = "not_duct"
+    tailPath = [image_set, image_class, image_name]
+
     return refDatasetPath / "/".join(tailPath)
 
-referenceIndex = pd.read_csv(referenceIndexPath)
+referenceIndex = pd.read_csv(referenceIndexPath, low_memory=False)
 
-# Move images to new dataset location and discard middle folders
-# dataset should look like this "...dataset/set/class/img.jpg"
-if refDatasetPath.is_dir():
-    input("\nDataset dest path already exists. Delete and overwrite?\n")
-    sh.rmtree(refDatasetPath)
+# # Move images to new dataset location and discard middle folders
+# # dataset should look like this "...dataset/set/class/img.jpg"
+# if refDatasetPath.is_dir():
+#     input("\nDataset dest path already exists. Delete and overwrite?\n")
+#     sh.rmtree(refDatasetPath)
+# else:
+#     dirs.create_folder(refDatasetPath)
 
-globString = str(remoteDatasetPath)+"/**/*jpg"
-sourceList = glob(globString, recursive=True)
-destList   = list(map(_discard_middle_folders, sourceList))
+# globString = str(remoteDatasetPath)+"/**/*jpg"
+# sourceList = glob(globString, recursive=True)
+# destList   = list(map(_discard_middle_folders, sourceList))
 
-# Move images
-map(utils.copy_files, sourceList, destList)
-exit()
-globStringVal   = str(remoteDatasetPath)+"/val/**/*jpg"
-globStringTrain = str(remoteDatasetPath)+"/train/**/*jpg"
+# # Copy reference dataset and merge class confusion to not-duct
+# success = sum(list(map(utils.copy_files, sourceList, destList)))
+# print("\nMoved {}/{} files.\n".format(success, len(sourceList)))
 
-imageListVal   = glob(globStringVal, recursive=True)
-imageListTrain = glob(globStringTrain, recursive=True)
-print("Val images found: ", len(imageListVal))
-print("Train images found: ", len(imageListTrain))
+# globStringVal   = str(remoteDatasetPath)+"/val/**/*jpg"
+# globStringTrain = str(remoteDatasetPath)+"/train/**/*jpg"
 
-hashListVal     = utils.compute_file_hash_list(imageListVal)
-hashListTrain   = utils.compute_file_hash_list(imageListTrain)
+# imageListVal   = glob(globStringVal, recursive=True)
+# imageListTrain = glob(globStringTrain, recursive=True)
+# print("\nTrain set: {} images.".format(len(imageListTrain)))
+# print("Val set:   {} images.".format(len(imageListVal)))
 
-referenceIndex.set_index(commons.FRAME_HASH_COL_NAME, drop=False, inplace=True)
-indexVal        = referenceIndex.reindex(labels=hashListVal, axis=0)
-indexTrain      = referenceIndex.reindex(labels=hashListTrain, axis=0)
+# Get reference dataset validation video list
+videoList = commons.val_videos_reference_dataset_rede_1
+hashList = []
+for videoTuple in videoList:
+    part1 = str(videoTuple[0])
+    part3 = str(videoTuple[2])
+    
+    if videoTuple[1] is not None:
+        part2     = "DVD-"+str(videoTuple[1])
+        videoPath = "/".join([part1, part2, part3])
+    else:
+        videoPath = "/".join([part1, part3])
+    
+    videoHash = utils.compute_file_hash_list(videoPath, folder=dirs.base_videos)
+    print("\n", videoPath)
+    print(videoHash)
+    hashList.extend(videoHash)
 
-# # Copy reference dataset
-# utils.copy_folder_tree(remoteDatasetPath, refDatasetPath)
+print("")
+for videoHash in hashList:
+    print(videoHash)
+
+# Split dataset in val and train following reference dataset
+trainIndex, valIndex = dutils.split_validation_set_from_video_list(datasetIndexPath,
+                                                                   hashList, key_column="HashMD5")
+
+# Count errors
+trainErrors = 0
+for i in range(len(trainIndex)):
+    video = trainIndex.loc[i, "HashMD5"]
+    if video in hashList:
+        print(i, ": ", video)
+        trainErrors += 1
+
+valErrors = 0
+for i in range(len(valIndex)):
+    video = valIndex.loc[i, "HashMD5"]
+    if video not in hashList:
+        print(i, ": ", video)
+        valErrors += 1
+
+print("\nErrors:")
+print("Train: {}\nVal:\t{}".format(trainErrors, valErrors))
+print("\nNaNs:")
+print("Train: {}\nVal:\t{}".format(np.sum(trainIndex[rede].isna()), np.sum(valIndex[rede].isna())))
+
+trainIndex.dropna(axis=0, subset=["HashMD5"], inplace=True)
+valIndex.dropna(axis=0, subset=["HashMD5"], inplace=True)
+
+print("\nNaNs:")
+print("Train: {}\nVal:\t{}".format(np.sum(trainIndex[rede].isna()), np.sum(valIndex[rede].isna())))
 
 
-
-# # Get reference dataset validation video list
-# videoList = dutils.get_ref_dataset_val_video_list(refDatasetPath / "val")
-
-# # Split dataset in val and train following reference dataset
-# trainIndex, valIndex = dutils.split_validation_set_from_video_list(datasetIndexPath,
-#                                                                    videoList, key_column="HashMD5")
-
-# # Count errors
-# trainErrors = 0
-# for i in range(len(trainIndex)):
-#     video = trainIndex.loc[i, "HashMD5"]
-#     if video in videoList:
-#         print(i, ": ", video)
-#         trainErrors += 1
-
-# valErrors = 0
-# for i in range(len(valIndex)):
-#     video = valIndex.loc[i, "HashMD5"]
-#     if video not in videoList:
-#         print(i, ": ", video)
-#         valErrors += 1
-
-# print("\nErrors:")
-# print("Train: {}\nVal:\t{}".format(trainErrors, valErrors))
-# print("\nNaNs:")
-# print("Train: {}\nVal:\t{}".format(np.sum(trainIndex['rede3'].isna()), np.sum(valIndex['rede3'].isna())))
-
-# trainIndex.dropna(axis=0, subset=["HashMD5"], inplace=True)
-# valIndex.dropna(axis=0, subset=["HashMD5"], inplace=True)
-
-# print("\nNaNs:")
-# print("Train: {}\nVal:\t{}".format(np.sum(trainIndex['rede3'].isna()), np.sum(valIndex['rede3'].isna())))
-
-# dutils.df_to_csv(trainIndex, trainPath)
-# dutils.df_to_csv(valIndex, valPath)
+dutils.df_to_csv(trainIndex, trainPath)
+dutils.df_to_csv(valIndex, valPath)
 
 # input("\nMoving datasets to train folder.\nPress enter to continue.\n")
 # # Move dataset to training folder, split in train/val folders
 # dutils.copy_dataset_to_folder(trainPath, semiautoDatasetPath / "train", path_column="FramePath")
-# dutils.move_to_class_folders(trainPath, semiautoDatasetPath / "train", target_net="rede3",
+# dutils.move_to_class_folders(trainPath, semiautoDatasetPath / "train", target_net=rede,
 #                                     target_class=None, move=True)
 
 # dutils.copy_dataset_to_folder(valPath, semiautoDatasetPath / "val", path_column="FramePath")
-# dutils.move_to_class_folders(valPath, semiautoDatasetPath / "val", target_net="rede3",
+# dutils.move_to_class_folders(valPath, semiautoDatasetPath / "val", target_net=rede,
 #                                     target_class=None, move=True)

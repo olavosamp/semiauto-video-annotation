@@ -142,6 +142,9 @@ def compute_file_hash_list(file_list, folder=None):
             :list of strings
                 List of MD5 hashes.
     '''
+    if isinstance( file_list, str):
+        file_list = [file_list]
+
     if folder is not None:
         fileLen = len(file_list)
         file_list = list(map(add_folder_path, file_list, [folder]*fileLen))

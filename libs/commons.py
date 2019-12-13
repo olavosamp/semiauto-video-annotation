@@ -191,10 +191,33 @@ rede_3_multiclass_priority_table = [rede3_classes[2], # Dano
                                     rede3_classes[4], # Reparo
 ]
 
-# Defines
+## Defines
 IMAGENET_MEAN       = [0.485, 0.456, 0.406]
 IMAGENET_STD        = [0.229, 0.224, 0.225]
 MPL_FIG_SIZE        = (18, 9)
 MPL_FIG_SIZE_SMALL  = (8, 4)
 
 FRAME_HASH_COL_NAME = 'FrameHash'
+
+## Ad-hoc information
+# Roberto dataset info
+val_videos_reference_dataset_rede_1 =[ # 3-ple of (report, DVD number, video name)
+                                        ("GHmls16-263_OK", "1", "20161101212059250@DVR-SPARE_Ch1.wmv"),
+                                        ("CIMRL10-676_OK", None, "PIDF-1 PO MRL-021_parte1.mpg"),
+                                        ("CIMRL10-676_OK", None, "PIDF-1 PO MRL-021_parte2.mpg"),
+                                        ("TCOpm16-140_OK", "6", "VTS_01_1.VOB"),
+                                        ("TCOpm16-140_OK", "2", "VTS_01_2.VOB"),
+                                        ("TCOpm16-140_OK", "2", "VTS_01_3.VOB"),
+                                        ("TCOpm16-140_OK", "2", "VTS_01_4.VOB"),
+                                        ("TCOpm16-140_OK", "2", "VTS_01_5.VOB"),
+]
+val_videos_reference_dataset_rede_1_hashes = [
+                                        'c2ceb075adf095c97fe8944f7aa321c2',
+                                        '304248734049c5da816e12c3bcecbb76',
+                                        'b40c46629f8630e1ccfc57ddf105e1f8',
+                                        '02307d50a3d2c94a2427083bb0491bff',
+                                        'ddd7dc17eee8665db5be7fa324177c37',
+                                        '37c0ab0aef7840dcd33a4e43494c413f',
+                                        '58717dc038f96fca74e5939f85db509f',
+                                        '6a6fcd20e5728b2a129f6e5cfcf39d5e',
+]

@@ -64,6 +64,7 @@ dutils.df_to_csv(trainIndex, trainPath)
 dutils.df_to_csv(valIndex, valPath)
 
 input("\nMoving datasets to train folder.\nPress enter to continue.\n")
+
 # Move dataset to training folder, split in train/val folders
 dutils.copy_dataset_to_folder(trainPath, semiautoDatasetPath / "train", path_column="FramePath")
 dutils.move_to_class_folders(trainPath, semiautoDatasetPath / "train", target_net="rede3",
