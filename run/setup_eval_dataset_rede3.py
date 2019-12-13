@@ -20,7 +20,7 @@ import libs.dataset_utils   as dutils
 remoteDatasetPath   = Path("/home/common/flexiveis/datasets/events_191016/")
 semiautoDatasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_3"
 refDatasetPath      = Path(dirs.dataset) / "reference_dataset_191016"
-datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_3_positives_binary.csv"
+datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_3_eval_setup.csv"
 trainPath           = Path(dirs.iter_folder) / "train_dataset.csv"
 valPath             = Path(dirs.iter_folder) / "val_dataset.csv"
 

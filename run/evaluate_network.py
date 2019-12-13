@@ -19,7 +19,7 @@ from libs.vis_functions     import plot_model_history
 '''
 remoteDatasetPath   = Path("/home/common/flexiveis/datasets/events_191016/val/")
 datasetImagePath    = Path(dirs.dataset) / "semiauto_dataset_v1"
-datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_3_positives_binary.csv"
+datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_3_eval_setup.csv"
 trainPath           = Path(dirs.iter_folder) / "train_dataset.csv"
 valPath             = Path(dirs.iter_folder) / "val_dataset.csv"
 

@@ -23,7 +23,7 @@ referenceIndexPath  = Path(dirs.index) / "main_index_2019-7-1_18-22-41.csv"
 remoteDatasetPath   = Path("/home/common/flexiveis/datasets/handpicked/")
 semiautoDatasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_1"
 refDatasetPath      = Path(dirs.dataset) / "reference_dataset_rede_1"
-datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_3_positives_binary.csv"
+datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_1_eval_setup.csv"
 trainPath           = Path(dirs.iter_folder) / "rede_1_train_dataset.csv"
 valPath             = Path(dirs.iter_folder) / "rede_1_val_dataset.csv"
 

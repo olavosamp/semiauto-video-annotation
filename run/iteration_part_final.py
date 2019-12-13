@@ -30,6 +30,7 @@ autoIndexFullPath       = loopFolder / "final_automatic_images_{}.csv".format(da
 manualIndexFullPath     = loopFolder / "final_manual_images_{}.csv".format(datasetName)
 annotatedIndexFullPath  = loopFolder / "final_annotated_images_{}.csv".format(datasetName)
 reportPath              = loopFolder / "annotation_report.txt"
+binaryDatasetPath       = Path(dirs.iter_folder) / "dataset_rede_{}_eval_setup.csv".format(rede)
 
 referenceIndex     = pd.read_csv(referenceIndexPath, low_memory=False)
 referenceIndex     = dutils.remove_duplicates(referenceIndex, "FrameHash")
@@ -109,6 +110,7 @@ annotatedIndexFull = dutils.remove_duplicates(annotatedIndexFull, "FrameHash")
 annotatedIndexFull.to_csv(annotatedIndexFullPath, index=False)
 
 # Assemble, print and save report
+# TODO: Encapsulate report function and overhaul dutils.make_report
 if rede == 1:
     previousManualLen = 0
 else:
@@ -155,4 +157,21 @@ print(strManual)
 print(strTotal)
 utils.write_string(strAuto+strManual+strTotal, reportPath, mode='w')
 
-# Convert final_annotated_images to binary class and copy to dirs.iter_folder
+# Convert final_annotated_images to a net evaluation setup and copy to dirs.iter_folder
+# Translate rede1 3 classes to 2 for binary classification
+# Get only past level positive examples for rede2
+# Get only positive class examples for rede3 (in other script)
+netName = "rede"+str(rede)
+if rede == 3:
+    print("\nPlease run script \'run/fuse_binary_datasets.py\' to generate evaluation dataset.")
+    exit()
+elif rede == 2:
+    # Get only positive examples from previous level
+    mask = (annotatedIndexFull[netName] == commons.rede1_positive)
+    evalDataset = annotatedIndexFull.loc[mask, :]
+elif rede == 1:
+    evalDataset = annotatedIndexFull.copy()
+
+# Translate to binary classes
+evalDataset[netName] = dutils.translate_labels(evalDataset[netName], netName)
+dutils.df_to_csv(evalDataset, binaryDatasetPath)

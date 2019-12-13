@@ -840,7 +840,7 @@ def remove_duplicates(target_df, index_column, verbose=False):
 
 
 def move_to_class_folders(index_path, image_folder_path, target_net="rede1", target_class=None, move=True,
-                             verbose=False):
+                             skip_untranslated=True, verbose=False):
     '''
         Sort labeled images in class folders according to index file with labels and filepaths.
 
@@ -855,6 +855,9 @@ def move_to_class_folders(index_path, image_folder_path, target_net="rede1", tar
 
         move: bool
             If True, move images from source to new folder. If False, just copy and don't move them.
+
+        skip_untranslated: bool
+            If True, ignore images translated to commons.no_translation.
     '''
     index_path     = Path(index_path)
     dirs.create_folder(image_folder_path)
@@ -873,6 +876,10 @@ def move_to_class_folders(index_path, image_folder_path, target_net="rede1", tar
     print("Found tags ", tags)
     for tag in tags:
         tag = translate_labels(tag, target_net, target_class=target_class)
+        
+        if skip_untranslated and tag == commons.no_translation:
+            continue
+        
         dirs.create_folder(image_folder_path / tag)
         if verbose:
             print("Created folder ", (image_folder_path / tag))
@@ -885,6 +892,9 @@ def move_to_class_folders(index_path, image_folder_path, target_net="rede1", tar
     destList = []
     for i in tqdm(range(numImages)):
         tag      = translate_labels(imageIndex.loc[i, target_net], target_net, target_class=target_class)
+        
+        if skip_untranslated and tag == commons.no_translation:
+            continue
         
         # Get source path
         imageName  = str(imageIndex.loc[i, 'FrameName'])
