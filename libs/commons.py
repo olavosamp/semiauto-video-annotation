@@ -80,9 +80,9 @@ net_class_translation_table = {
             # Dict to normalize class annotations into standard class tags
             # This translation table follows the non-standard format described below.
             # Standard class name:  [ list of words equivalent to the standard name]
-            'Duto':             ["tubo", "duto"],
-            'Nada':             ["nada"],
-            'Confuso':          ["conf", "confuso"],
+            'Duto':             ["tubo", "duto", "duct"],
+            'Nada':             ["nada", "not-duct", "notduct", "not_duct"],
+            'Confuso':          ["conf", "confuso", "confusion"],
             'NaoDuto':          ["NaoDuto", "NãoDuto", "Nao-Duto", "Não-Duto", "Nao_Duto", "Não_Duto"],
 
             'Evento':           ["evnt", "evento"],
@@ -116,9 +116,11 @@ net_class_translation_table = {
 no_translation = 'UNTRANSLATED'
 
 net_binary_table = { # Dict to translate standard class tags into binary problem tags
+                     # Values should be only keys of net_class_translation_table
                         'rede1':{
                             'Duto':         'Duto',
                             'Nada':         'NaoDuto',
+
                             'Confuso':      'NaoDuto',
                             'NaoDuto':      'NaoDuto',
                         },

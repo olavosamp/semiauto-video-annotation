@@ -760,10 +760,10 @@ def copy_dataset_to_folder(index_path, dest_folder, path_column="FramePath", ver
     def _add_folder_and_copy(x):
         return utils.copy_files(Path(x), dest_folder / Path(x).name)
     dirs.create_folder(dest_folder)
-    index = pd.read_csv(index_path)
+    index = pd.read_csv(index_path, low_memory=False)
 
     if verbose:
-        print("\nMoving {} files from dataset folder to sampled images folder...").format(len(index))
+        print("\nMoving {} files from dataset folder to sampled images folder...".format(len(index)))
     
     successes = np.sum(index[path_column].map(_add_folder_and_copy))
     if verbose:

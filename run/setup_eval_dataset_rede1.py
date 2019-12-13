@@ -42,21 +42,21 @@ def _discard_middle_folders(path):
 
 referenceIndex = pd.read_csv(referenceIndexPath, low_memory=False)
 
-# # Move images to new dataset location and discard middle folders
-# # dataset should look like this "...dataset/set/class/img.jpg"
-# if refDatasetPath.is_dir():
-#     input("\nDataset dest path already exists. Delete and overwrite?\n")
-#     sh.rmtree(refDatasetPath)
-# else:
-#     dirs.create_folder(refDatasetPath)
+# Move images to new dataset location and discard middle folders
+# dataset should look like this "...dataset/set/class/img.jpg"
+if refDatasetPath.is_dir():
+    input("\nDataset dest path already exists. Delete and overwrite?\n")
+    sh.rmtree(refDatasetPath)
+else:
+    dirs.create_folder(refDatasetPath)
 
-# globString = str(remoteDatasetPath)+"/**/*jpg"
-# sourceList = glob(globString, recursive=True)
-# destList   = list(map(_discard_middle_folders, sourceList))
+globString = str(remoteDatasetPath)+"/**/*jpg"
+sourceList = glob(globString, recursive=True)
+destList   = list(map(_discard_middle_folders, sourceList))
 
-# # Copy reference dataset and merge class confusion to not-duct
-# success = sum(list(map(utils.copy_files, sourceList, destList)))
-# print("\nMoved {}/{} files.\n".format(success, len(sourceList)))
+# Copy reference dataset and merge class confusion to not-duct
+success = sum(list(map(utils.copy_files, sourceList, destList)))
+print("\nMoved {}/{} files.\n".format(success, len(sourceList)))
 
 # globStringVal   = str(remoteDatasetPath)+"/val/**/*jpg"
 # globStringTrain = str(remoteDatasetPath)+"/train/**/*jpg"
@@ -67,26 +67,27 @@ referenceIndex = pd.read_csv(referenceIndexPath, low_memory=False)
 # print("Val set:   {} images.".format(len(imageListVal)))
 
 # Get reference dataset validation video list
-videoList = commons.val_videos_reference_dataset_rede_1
-hashList = []
-for videoTuple in videoList:
-    part1 = str(videoTuple[0])
-    part3 = str(videoTuple[2])
+# videoList = commons.val_videos_reference_dataset_rede_1
+# hashList = []
+# for videoTuple in videoList:
+#     part1 = str(videoTuple[0])
+#     part3 = str(videoTuple[2])
     
-    if videoTuple[1] is not None:
-        part2     = "DVD-"+str(videoTuple[1])
-        videoPath = "/".join([part1, part2, part3])
-    else:
-        videoPath = "/".join([part1, part3])
+#     if videoTuple[1] is not None:
+#         part2     = "DVD-"+str(videoTuple[1])
+#         videoPath = "/".join([part1, part2, part3])
+#     else:
+#         videoPath = "/".join([part1, part3])
     
-    videoHash = utils.compute_file_hash_list(videoPath, folder=dirs.base_videos)
-    print("\n", videoPath)
-    print(videoHash)
-    hashList.extend(videoHash)
+#     videoHash = utils.compute_file_hash_list(videoPath, folder=dirs.base_videos)
+#     print("\n", videoPath)
+#     print(videoHash)
+#     hashList.extend(videoHash)
 
-print("")
-for videoHash in hashList:
-    print(videoHash)
+# print("")
+# for videoHash in hashList:
+#     print(videoHash)
+hashList = commons.val_videos_reference_dataset_rede_1_hashes
 
 # Split dataset in val and train following reference dataset
 trainIndex, valIndex = dutils.split_validation_set_from_video_list(datasetIndexPath,
@@ -107,6 +108,9 @@ for i in range(len(valIndex)):
         print(i, ": ", video)
         valErrors += 1
 
+print("\nSemiauto dataset split:")
+print("train set: {} images.".format(len(trainIndex)))
+print("val set: {} images.".format(len(valIndex)))
 print("\nErrors:")
 print("Train: {}\nVal:\t{}".format(trainErrors, valErrors))
 print("\nNaNs:")
@@ -122,12 +126,12 @@ print("Train: {}\nVal:\t{}".format(np.sum(trainIndex[rede].isna()), np.sum(valIn
 dutils.df_to_csv(trainIndex, trainPath)
 dutils.df_to_csv(valIndex, valPath)
 
-# input("\nMoving datasets to train folder.\nPress enter to continue.\n")
-# # Move dataset to training folder, split in train/val folders
-# dutils.copy_dataset_to_folder(trainPath, semiautoDatasetPath / "train", path_column="FramePath")
-# dutils.move_to_class_folders(trainPath, semiautoDatasetPath / "train", target_net=rede,
-#                                     target_class=None, move=True)
+input("\nMoving datasets to train folder.\nPress enter to continue.\n")
+# Move dataset to training folder, split in train/val folders
+dutils.copy_dataset_to_folder(trainPath, semiautoDatasetPath / "train", path_column="FramePath")
+dutils.move_to_class_folders(trainPath, semiautoDatasetPath / "train", target_net=rede,
+                                    target_class=None, move=True)
 
-# dutils.copy_dataset_to_folder(valPath, semiautoDatasetPath / "val", path_column="FramePath")
-# dutils.move_to_class_folders(valPath, semiautoDatasetPath / "val", target_net=rede,
-#                                     target_class=None, move=True)
+dutils.copy_dataset_to_folder(valPath, semiautoDatasetPath / "val", path_column="FramePath")
+dutils.move_to_class_folders(valPath, semiautoDatasetPath / "val", target_net=rede,
+                                    target_class=None, move=True)
