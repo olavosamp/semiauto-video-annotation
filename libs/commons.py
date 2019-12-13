@@ -126,7 +126,8 @@ net_binary_table = { # Dict to translate standard class tags into binary problem
                         },
                         'rede2':{ # No translation needed
                             'Evento':       'Evento',
-                            'NaoEvento':    'NaoEvento',
+                            'NaoEvento':    'Nao_Evento',
+                            'Nao_Evento':   'Nao_Evento',
                             'Duvida':       'Duvida',
                         },
                         'rede3':{

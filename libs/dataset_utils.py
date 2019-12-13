@@ -94,18 +94,27 @@ def get_net_class_counts(index_path, net, target_class=None):
         classColumn = "rede1"
         posLabel = commons.rede1_positive
         negLabel = commons.rede1_negative
+        
+        mask = None
     elif net ==2:
         classColumn = "rede2"
         posLabel = commons.rede2_positive
         negLabel = commons.rede2_negative
+
+        mask = (index["rede1"] == commons.rede1_positive)
     elif net == 3:
         classColumn = "rede3"
         posLabel = target_class
         negLabel = None
 
-        # Pass only relevant fraction of index to get_class_counts
         mask = (index["rede2"] == commons.rede2_positive)
+    
+    if mask is not None:
+        # Pass only relevant fraction of index to get_class_counts
         index = index.loc[mask, :]
+
+    # Translate to binary classes
+    index[classColumn] = translate_labels(index[classColumn], classColumn)
     
     return get_class_counts(index, classColumn, posLabel, negLabel)
 

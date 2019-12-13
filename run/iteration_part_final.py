@@ -19,6 +19,7 @@ if rede == 3:
     target_class = dutils.get_input_target_class(commons.rede3_classes)
     datasetName  = "full_dataset_rede_{}_{}".format(rede, target_class.lower())
 else:
+    target_class = None
     datasetName  = "full_dataset_rede_{}".format(rede)
 
 sampledImagesPath       = Path(dirs.images) / "{}_results_samples".format(datasetName)
@@ -153,3 +154,5 @@ print(strAuto)
 print(strManual)
 print(strTotal)
 utils.write_string(strAuto+strManual+strTotal, reportPath, mode='w')
+
+# Convert final_annotated_images to binary class and copy to dirs.iter_folder
