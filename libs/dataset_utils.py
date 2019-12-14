@@ -871,7 +871,7 @@ def move_to_class_folders(index_path, image_folder_path, target_net="rede1", tar
     numImages  = len(imageIndex)
 
     # Get unique tags and create the respective folders
-    tags = set(imageIndex[target_net])# - set("-")
+    tags = set(imageIndex[target_net]) - set("-")
 
     print("Found tags ", tags)
     for tag in tags:
@@ -890,10 +890,12 @@ def move_to_class_folders(index_path, image_folder_path, target_net="rede1", tar
         print("Copying files to class folders...")
 
     destList = []
+    indexesToDrop = []
     for i in tqdm(range(numImages)):
         tag      = translate_labels(imageIndex.loc[i, target_net], target_net, target_class=target_class)
         
         if skip_untranslated and tag == commons.no_translation:
+            indexesToDrop.append(imageIndex.loc[i].index)
             continue
         
         # Get source path
@@ -911,6 +913,9 @@ def move_to_class_folders(index_path, image_folder_path, target_net="rede1", tar
         else:
             utils.copy_files(source, dest)
         destList.append(dest)
+    
+    # Drop ignored entries
+    imageIndex.drop(labels=indexesToDrop, axis=0, inplace=True)
     imageIndex["TrainPath"] = destList
     return imageIndex
 
