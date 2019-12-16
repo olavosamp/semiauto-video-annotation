@@ -224,3 +224,39 @@ val_videos_reference_dataset_rede_1_hashes = [
                                         '58717dc038f96fca74e5939f85db509f',
                                         '6a6fcd20e5728b2a129f6e5cfcf39d5e',
 ]
+
+val_videos_reference_dataset_rede_2 = [
+                                        ("GHmls16-263_OK", "1", "20161102000728984@DVR-SPARE_Ch1.wmv"),
+                                        ("GHmls16-263_OK", "1", "20161101232103406@DVR-SPARE_Ch1.wmv"),
+                                        ("GHmls16-263_OK", "1", "20161102035345781@DVR-SPARE_Ch1.wmv"),
+                                        ("GHmls16-263_OK", "2", "20161102045347140@DVR-SPARE_Ch1.wmv"),
+                                        ("GHmls16-263_OK", "2", "20161102052348359@DVR-SPARE_Ch1.wmv"),
+                                        ("GHmls16-263_OK", "2", "20161102061422703@DVR-SPARE_Ch1.wmv"),
+                                        ("TVILL16-054_OK", "2", "Dive 420 16-02-25 02.02.35_C1.wmv"),
+                                        ("TVILL16-054_OK", "1", "Dive 420 16-02-24 22.32.35_C1.wmv"),
+                                        ("ROBI12-417_OK",  None, "VTS_01_1.VOB"),
+                                        ("TCOmll15-017_OK",None, "VTS_01_4.VOB"),
+                                        ("TCOpm16-140_OK", "6", "VTS_01_1.VOB"),
+                                        ("TCOpm16-140_OK", "2", "VTS_01_2.VOB"),
+                                        ("TCOpm16-140_OK", "2", "VTS_01_3.VOB"),
+                                        ("TCOpm16-140_OK", "2", "VTS_01_4.VOB"),
+                                        ("TCOpm16-140_OK", "2", "VTS_01_5.VOB"),
+]
+
+val_videos_reference_dataset_rede_2_hashes = [
+                                        '5b4cc3a4e6edd056c291c1d400f6b055',
+                                        '3697c4f9c46f4e70da116c33b192c56e',
+                                        'a27999b1090869aea3160b07a8de0725',
+                                        '7eb76aae22d0418ac5656b2f8c337745',
+                                        '1271a2887cd0f36ee62d5a4110c1105b',
+                                        'd3ce43843869c75dea1c2186a5482b8e',
+                                        '44987d6c0104bcfcf6a980fdb86796ba',
+                                        'ff8cbd4c263e0c9d953ebf1010e9068a',
+                                        'd667b5ef76513dd53925e1b8ba0341ee',
+                                        '8a31a6b4995ef9b9d019951cc9f53e19',
+                                        '02307d50a3d2c94a2427083bb0491bff',
+                                        'ddd7dc17eee8665db5be7fa324177c37',
+                                        '37c0ab0aef7840dcd33a4e43494c413f',
+                                        '58717dc038f96fca74e5939f85db509f',
+                                        '6a6fcd20e5728b2a129f6e5cfcf39d5e',
+]
