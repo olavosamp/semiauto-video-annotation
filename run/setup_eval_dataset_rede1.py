@@ -1,3 +1,4 @@
+import os
 import numpy                as np
 import pandas               as pd
 import shutil               as sh
@@ -17,15 +18,17 @@ import libs.dataset_utils   as dutils
 '''
     Script to set up rede1 dataset for training and evaluation.
 '''
-rede = 'rede1'
+rede = 1
+netName = 'rede'+str(rede)
 
 referenceIndexPath  = Path(dirs.index) / "main_index_2019-7-1_18-22-41.csv"
 remoteDatasetPath   = Path("/home/common/flexiveis/datasets/handpicked/")
-semiautoDatasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_1"
-refDatasetPath      = Path(dirs.dataset) / "reference_dataset_rede_1"
-datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_1_eval_setup.csv"
-trainPath           = Path(dirs.iter_folder) / "rede_1_train_dataset.csv"
-valPath             = Path(dirs.iter_folder) / "rede_1_val_dataset.csv"
+semiautoDatasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_{}".format(rede)
+semiautoIndexPath   = Path(dirs.dataset) / "semiauto_dataset_v1_rede_{}.csv".format(rede)
+refDatasetPath      = Path(dirs.dataset) / "reference_dataset_rede_{}".format(rede)
+datasetIndexPath    = Path(dirs.iter_folder) / "dataset_rede_{}_eval_setup.csv".format(rede)
+trainTempPath       = Path(dirs.iter_folder) / "rede_{}_train_dataset.csv".format(rede)
+valTempPath         = Path(dirs.iter_folder) / "rede_{}_val_dataset.csv".format(rede)
 
 def _discard_middle_folders(path):
     path = Path(path).relative_to(remoteDatasetPath)
@@ -114,24 +117,37 @@ print("val set: {} images.".format(len(valIndex)))
 print("\nErrors:")
 print("Train: {}\nVal:\t{}".format(trainErrors, valErrors))
 print("\nNaNs:")
-print("Train: {}\nVal:\t{}".format(np.sum(trainIndex[rede].isna()), np.sum(valIndex[rede].isna())))
+print("Train: {}\nVal:\t{}".format(np.sum(trainIndex[netName].isna()), np.sum(valIndex[netName].isna())))
 
 trainIndex.dropna(axis=0, subset=["HashMD5"], inplace=True)
 valIndex.dropna(axis=0, subset=["HashMD5"], inplace=True)
 
 print("\nNaNs:")
-print("Train: {}\nVal:\t{}".format(np.sum(trainIndex[rede].isna()), np.sum(valIndex[rede].isna())))
+print("Train: {}\nVal:\t{}".format(np.sum(trainIndex[netName].isna()), np.sum(valIndex[netName].isna())))
 
 
-dutils.df_to_csv(trainIndex, trainPath)
-dutils.df_to_csv(valIndex, valPath)
+dutils.df_to_csv(trainIndex, trainTempPath)
+dutils.df_to_csv(valIndex, valTempPath)
 
 input("\nMoving datasets to train folder.\nPress enter to continue.\n")
 # Move dataset to training folder, split in train/val folders
-dutils.copy_dataset_to_folder(trainPath, semiautoDatasetPath / "train", path_column="FramePath")
-dutils.move_to_class_folders(trainPath, semiautoDatasetPath / "train", target_net=rede,
+dutils.copy_dataset_to_folder(trainTempPath, semiautoDatasetPath / "train", path_column="FramePath")
+dutils.move_to_class_folders(trainTempPath, semiautoDatasetPath / "train", target_net=netName,
                                     target_class=None, move=True)
 
-dutils.copy_dataset_to_folder(valPath, semiautoDatasetPath / "val", path_column="FramePath")
-dutils.move_to_class_folders(valPath, semiautoDatasetPath / "val", target_net=rede,
+dutils.copy_dataset_to_folder(valTempPath, semiautoDatasetPath / "val", path_column="FramePath")
+dutils.move_to_class_folders(valTempPath, semiautoDatasetPath / "val", target_net=netName,
                                     target_class=None, move=True)
+
+# Save complete dataset index and delete temporary train and val indexes
+trainIndex['set'] = ['train']*len(trainIndex)
+valIndex['set']   = ['val']*len(valIndex)
+
+evalDatasetIndex = pd.concat([trainIndex, valIndex], axis=0)
+
+# Delete temporary files
+os.remove(trainTempPath)
+os.remove(valTempPath)
+
+# Write dataset index to file
+dutils.df_to_csv(evalDatasetIndex, semiautoIndexPath)

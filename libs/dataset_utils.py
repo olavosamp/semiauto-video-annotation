@@ -895,7 +895,7 @@ def move_to_class_folders(index_path, image_folder_path, target_net="rede1", tar
         tag      = translate_labels(imageIndex.loc[i, target_net], target_net, target_class=target_class)
         
         if skip_untranslated and tag == commons.no_translation:
-            indexesToDrop.append(imageIndex.loc[i].index)
+            indexesToDrop.append(imageIndex.index[i])
             continue
         
         # Get source path
