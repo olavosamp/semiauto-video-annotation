@@ -16,13 +16,14 @@ from torchsummary           import summary
 import libs.dirs            as dirs
 import libs.utils           as utils
 import libs.dataset_utils   as dutils
+import models.utils         as mutils
 
 
 class TrainModel:
     def __init__(self, model_path=None, seed=None):
         self.seed = seed
         if self.seed:
-            dutils.set_torch_random_seeds(self.seed)
+            mutils.set_torch_random_seeds(self.seed)
 
         self.model                  = None
         self.criterion              = None

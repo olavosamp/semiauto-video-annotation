@@ -8,7 +8,6 @@ from torch.utils.data       import random_split
 from pathlib                import Path
 
 import libs.dirs            as dirs
-# from libs.utils             import *
 from models.trainer_class   import MnistTrainer
 
 
