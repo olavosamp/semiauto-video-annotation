@@ -167,7 +167,7 @@ if rede == 3:
     exit()
 elif rede == 2:
     # Get only positive examples from previous level
-    mask = (annotatedIndexFull[netName] == commons.rede1_positive)
+    mask = (annotatedIndexFull['rede1'] == commons.rede1_positive)
     evalDataset = annotatedIndexFull.loc[mask, :]
 elif rede == 1:
     evalDataset = annotatedIndexFull.copy()
