@@ -20,7 +20,7 @@ import models.utils         as mutils
 
 
 class TrainModel:
-    def __init__(self, model_path=None, seed=None):
+    def __init__(self, model_path=None, seed=None, device_id=None, verbose=True):
         self.seed = seed
         if self.seed:
             mutils.set_torch_random_seeds(self.seed)
@@ -33,15 +33,31 @@ class TrainModel:
         self.num_examples_per_batch = None
         self.bestModelWeights       = None
         self.model_path             = model_path
+        self.verbose                = verbose
+        self.device_id              = device_id
 
         self.phases = ['train', 'val']
 
         # Select device
+        self.set_device()
+
+
+    def set_device(self):
         if torch.cuda.is_available():
-            self.device = torch.device('cuda:0')
+            # Defaults to cuda:0
+            deviceName = 'cuda:0'
+
+            if self.device_id is not None:
+                if isinstance(self.device_id, str) or isinstance(self.device_id, int):
+                    # Set specified device number
+                    deviceName = 'cuda:'+str(self.device_id)
         else:
-            self.device = torch.device('cpu')
-        
+            deviceName = 'cpu'
+
+        if self.verbose:
+            print("\nUsing device ", deviceName)
+        self.device = torch.device(deviceName)
+
 
     def load_data(self, dataset, num_examples_per_batch=4,):
         '''
@@ -205,7 +221,8 @@ class TrainModel:
                 self.lossHist[phase].append(self.epochLoss)
                 self.accHist[phase].append(self.epochAcc)
 
-                print("{} Phase\n\
+                if self.verbose:
+                    print("{} Phase\n\
                 Loss: {:.4f}\n\
                 Acc : {:.4f}\n\
                 F1  : {}".format(phase, self.epochLoss, self.epochAcc,

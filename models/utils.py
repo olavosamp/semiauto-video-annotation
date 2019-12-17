@@ -25,7 +25,7 @@ def set_torch_random_seeds(seed):
 
 
 ## Model training and inference
-def get_loss_weights(dataset, loss_function):
+def get_loss_weights(dataset):
     '''
         Compute weights for class size unbalance compensation.
 
@@ -50,32 +50,37 @@ def get_loss_weights(dataset, loss_function):
         Returns:
             Returns the loss_function input instantiated with class_weights.
     '''
-    class_weights = []
-    # TODO: Check class weight formula
-    imgListTrain = np.stack(dataset['train'].imgs, axis=1)
-    imgListVal   = np.stack(dataset['val'].imgs, axis=1)
+    imgListTrain = np.stack(dataset['train'].imgs, axis=1).T
+    imgListVal   = np.stack(dataset['val'].imgs, axis=1).T
+
     imgList = np.concatenate([imgListTrain, imgListVal], axis=0)
+    datasetLen = len(imgList)
 
-    print(imgListTrain.shape)
-    print(imgListVal.shape)
-    print(imgList.shape)
-    input()
-
+    # Get class counts
     class_sizes = {}
     for class_index in dataset['train'].class_to_idx.values():
-        class_sizes[class_index] = np.sum(np.equal(imgList[:, 1], class_index))
+        class_sizes[class_index] = np.sum(imgList[:, 1] == [str(class_index)]*datasetLen)
+    
+    # Compute class weights
+    # TODO: Check class weight formula
+    class_weights = []
+    for class_index in class_sizes.keys():
+        weight = datasetLen/class_sizes[class_index]
+        class_weights.append(weight)
+    
+    class_weights = torch.Tensor(class_weights)
+    return class_weights
 
-    print(class_sizes)
-    input()
-    return loss_function(weight=class_weights)
 
 def train_network(dataset_path, data_transforms, epochs=25, batch_size=64,
                   model_path="./model_weights.pt",
                   history_path="./train_history.pickle",
                   weighted_loss=True,
-                  seed=None):
+                  seed=None,
+                  device_id=None):
     if seed:
         set_torch_random_seeds(seed)
+
 
     # Load Dataset objects for train and val sets from folder
     sets = ['train', 'val']
@@ -89,20 +94,21 @@ def train_network(dataset_path, data_transforms, epochs=25, batch_size=64,
     # datasetLen = len(imageDataset['train']) + len(imageDataset['val'])
 
     # Instantiate trainer object
-    trainer = TrainModel()
+    trainer = TrainModel(seed=seed, verbose=True, device_id=device_id)
 
-    # Perform training
+    # Load data and define model
     trainer.load_data(imageDataset, num_examples_per_batch=batch_size)
-
     modelFineTune = trainer.define_model_resnet18(finetune=False)
 
     # Set optimizer and Loss criterion
-    if weighted_loss:
-        loss = nn.CrossEntropyLoss()
-    else:
-        loss = get_loss_weights(imageDataset, nn.CrossEntropyLoss)
-
     optimizer = optim.Adam(modelFineTune.parameters())
+    if weighted_loss:
+        weights = torch.Tensor(get_loss_weights(imageDataset)).to(trainer.device)
+        loss    = nn.CrossEntropyLoss(weight=weights)
+    else:
+        loss = nn.CrossEntropyLoss()
+
+    # Train model
     modelFineTune = trainer.train(modelFineTune,
                                   loss,
                                   optimizer,

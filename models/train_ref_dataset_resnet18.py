@@ -14,7 +14,7 @@ from models.trainer_class   import TrainModel
 
 
 if __name__ == "__main__":
-    seed = 42
+    seed = None
     rede = int(input("\nEnter net number.\n"))
     numImgBatch = 256
     numEpochs   = 25
@@ -41,24 +41,10 @@ if __name__ == "__main__":
 
     datasetLen = len(imageDataset['train']) + len(imageDataset['val'])
 
-    # Instantiate trainer object
-    trainer = TrainModel(seed=seed)
-
-    # Perform training
-    trainer.load_data(imageDataset, num_examples_per_batch=numImgBatch)
-
-    modelFineTune = trainer.define_model_resnet18(finetune=False)
-
-    # Set optimizer and Loss criterion
-    criterion = nn.CrossEntropyLoss()
-    optimizerFineTune = optim.Adam(modelFineTune.parameters())
-
-    # # Scheduler for learning rate decay
-    # expLrScheduler = optim.lr_scheduler.StepLR(optimizerFineTune, step_size=7, gamma=0.1)
-
-    modelFineTune = trainer.train(modelFineTune, criterion, optimizerFineTune,
-                                scheduler=None, num_epochs=numEpochs)#, weighted_loss=True)
-    history = trainer.save_history(historyPath)
-
-    # Save model
-    torch.save(modelFineTune.state_dict(), modelPath)
+    history, modelFineTune = mutils.train_network(datasetPath, dataTransforms, epochs=numEpochs,
+                                        batch_size=numImgBatch,
+                                        model_path=modelPath,
+                                        history_path=historyPath,
+                                        seed=seed,
+                                        weighted_loss=True,
+                                        device_id=1)
