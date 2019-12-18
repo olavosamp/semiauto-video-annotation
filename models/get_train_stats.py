@@ -16,6 +16,7 @@ from models.trainer_class   import TrainModel
 def wrapper_train(epochs, model_path, history_path, dataset_path):
     seed = None
     numImgBatch = 256
+    use_weights = True
 
     # ImageNet statistics
     dataTransforms = mutils.resnet_transforms(commons.IMAGENET_MEAN, commons.IMAGENET_STD)
@@ -36,11 +37,11 @@ def wrapper_train(epochs, model_path, history_path, dataset_path):
                                         model_path=model_path,
                                         history_path=history_path,
                                         seed=seed,
-                                        weighted_loss=False,
+                                        weighted_loss=use_weights,
                                         device_id=1)
     
     # Get best epoch results
-    bestValIndex = np.argmax(history['loss-val'])
+    bestValIndex = np.argmin(history['loss-val'])
     bestValLoss  = history['loss-val'][bestValIndex]
     bestValAcc   = history['acc-val'][bestValIndex]
     return bestValLoss, bestValAcc
@@ -63,7 +64,7 @@ if __name__ == "__main__":
     valAcc  = []
     # Run function many times and save best results
     for i in range(numEvals):
-        print("\nStarting run number {}/{}.\n".format(i+1, numEvals+1))
+        print("\nStarting run number {}/{}.\n".format(i+1, numEvals))
         modelPath   = modelFolder / "model_run_{}.pt".format(i)
         historyPath = historyFolder / "history_run_{}.pickle".format(i)
 
@@ -72,6 +73,9 @@ if __name__ == "__main__":
         valLoss.append(bestValLoss)
         valAcc.append(bestValAcc)
 
+
+    # print(valLoss)
+    # print(valAcc)
     print("\nFinished training {} evaluation runs for dataset\n{}.".format(numEvals, datasetPath))
     print("\nResulting statistics:\n\
     Val Loss:\n\
