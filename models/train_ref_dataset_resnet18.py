@@ -39,7 +39,7 @@ if __name__ == "__main__":
                                                    transform=dataTransforms[phase],
                                                    is_valid_file=utils.check_empty_file)
 
-    datasetLen = len(imageDataset['train']) + len(imageDataset['val'])
+    # datasetLen = len(imageDataset['train']) + len(imageDataset['val'])
 
     history, modelFineTune = mutils.train_network(datasetPath, dataTransforms, epochs=numEpochs,
                                         batch_size=numImgBatch,

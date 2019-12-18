@@ -62,10 +62,10 @@ def get_loss_weights(dataset):
         class_sizes[class_index] = np.sum(imgList[:, 1] == [str(class_index)]*datasetLen)
     
     # Compute class weights
-    # TODO: Check class weight formula
+    # Using w_class = sqrt(Total_len/Class_len)
     class_weights = []
     for class_index in class_sizes.keys():
-        weight = datasetLen/class_sizes[class_index]
+        weight = np.sqrt(datasetLen/class_sizes[class_index])
         class_weights.append(weight)
     
     class_weights = torch.Tensor(class_weights)
