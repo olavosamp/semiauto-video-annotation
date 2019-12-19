@@ -111,7 +111,7 @@ net_class_translation_table = {
             'Flange':           ["flan", "flange"],
             'NaoFlange':        ["NaoFlange"],
 
-            'Duvida':       ['Duvida', 'Dúvida'],
+            'Duvida':           ['Duvida', 'Dúvida'],
 }
 no_translation = 'UNTRANSLATED'
 

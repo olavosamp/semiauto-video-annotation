@@ -269,7 +269,7 @@ Automatic Annotation:\n\
     # Write report
     # with open(report_path, 'w') as f:
     #     f.write(reportString)
-    utils.save_string(reportString, report_path, mode='w')
+    utils.write_string(reportString, report_path, mode='w')
     if show:
         print(reportString)
     return reportString
