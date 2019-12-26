@@ -172,6 +172,7 @@ elif rede == 2:
 elif rede == 1:
     evalDataset = annotatedIndexFull.copy()
 
+# evalDataset.dropna(subset=[netName], inplace=True)
 # Translate to binary classes
 evalDataset[netName] = dutils.translate_labels(evalDataset[netName], netName)
 dutils.df_to_csv(evalDataset, binaryDatasetPath)

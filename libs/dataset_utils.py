@@ -1218,7 +1218,7 @@ def translate_labels(labels, target_net, target_class=None, verbose=False):
         translatedLabel = None
         for tup in translationTable.items():
             for value in tup[1]:
-                if label.lower() == value.lower():
+                if str(label).lower() == str(value).lower():
                     translatedLabel = str(tup[0])
         if translatedLabel:
             # Translate class labels as task-relevant binary labels
