@@ -162,6 +162,7 @@ class TrainModel:
                                 'val':   []}
         self.lossHist        = {'train': [],
                                 'val':   []}
+        self.confMatHist = []
         for self.epoch in range(self.num_epochs):
             print("\n-----------------------")
             print("Epoch {}/{}".format(self.epoch+1, self.num_epochs))
@@ -178,7 +179,6 @@ class TrainModel:
                     self.model.eval()    # Set model to evaluate mode
 
                 self.runningLoss     = 0.
-                # self.runningCorrects = np.zeros(self.numClasses)
 
                 # Iterate over minibatches
                 for inputs, labels in tqdm(self.dataloaders[phase]):
@@ -206,16 +206,19 @@ class TrainModel:
                     # Get statistics
                     self.totalPreds[phase].extend(self.predictions.cpu().numpy())
                     self.totalLabels[phase].extend(self.labels.cpu().numpy())
-                    # self.runningCorrects += torch.sum(self.predictions == self.labels.data)
 
                     self.runningLoss += self.loss.item() * self.inputs.size(0)
 
                 # Get epoch metrics
-                # self.epochAcc = self.runningCorrects.double() / self.datasetSizes[phase]
                 self.epochAcc  = skm.accuracy_score(self.totalLabels[phase], self.totalPreds[phase])
                 self.epochLoss = self.runningLoss / self.datasetSizes[phase]
                 _, _, self.epochF1, _ = skm.precision_recall_fscore_support(
                                             self.totalLabels[phase], self.totalPreds[phase])
+
+                # Compute confusion matrix
+                if phase == 'val':
+                    self.confMat   = skm.confusion_matrix(self.totalLabels[phase], self.totalPreds[phase])
+                    self.confMatHist.append(self.confMat)
 
                 self.f1ScoreHist[phase].append(self.epochF1)
                 self.lossHist[phase].append(self.epochLoss)
@@ -229,7 +232,6 @@ class TrainModel:
                                 self.epochF1))
 
                 # Save model if there is an improvement in evaluation metric
-                # if phase == 'val' and self.epochAcc > self.bestAcc:
                 if phase == 'val' and self.epochLoss < self.bestLoss:
                     self.bestLoss = self.epochLoss
                     self.bestAcc  = self.epochAcc
@@ -256,7 +258,8 @@ class TrainModel:
                     'f1-train':     self.f1ScoreHist['train'],
                     'f1-val':       self.f1ScoreHist['val'],
                     'acc-train':    self.accHist['train'],
-                    'acc-val':      self.accHist['val']
+                    'acc-val':      self.accHist['val'],
+                    'conf-val':     self.confMatHist
         }
 
         utils.save_pickle(self.history, self.histPath)
