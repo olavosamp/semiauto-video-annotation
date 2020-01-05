@@ -1,16 +1,11 @@
-import torch
 import numpy                as np
-import torch.nn             as nn
-import torch.optim          as optim
 import torchvision.datasets as datasets
 from pathlib                import Path
-from torchvision            import transforms
 
 import libs.dirs            as dirs
 import libs.utils           as utils
 import models.utils         as mutils
 import libs.commons         as commons
-from models.trainer_class   import TrainModel
 
 
 def wrapper_train(epochs, model_path, history_path, dataset_path):
@@ -33,7 +28,7 @@ def wrapper_train(epochs, model_path, history_path, dataset_path):
 
     # datasetLen = len(imageDataset['train']) + len(imageDataset['val'])
 
-    history, modelFineTune = mutils.train_network(dataset_path, dataTransforms, epochs=epochs,
+    history, _ = mutils.train_network(dataset_path, dataTransforms, epochs=epochs,
                                         batch_size=numImgBatch,
                                         model_path=model_path,
                                         history_path=history_path,
@@ -48,23 +43,6 @@ def wrapper_train(epochs, model_path, history_path, dataset_path):
     confMat      = history['conf-val'][bestValIndex]
     return bestValLoss, bestValAcc, confMat
 
-def compute_class_acc(confusion_matrix):
-    '''
-        confusion_matrix: array of floats
-        Square array of floats of side n >= 2. Columns are assumed to contain true labels and rows,
-        predicted labels, such as the sum of elements in of column i will be the number of true members
-        of class i.
-    '''
-    assert np.shape(confusion_matrix)[0] == np.shape(confusion_matrix)[1] \
-           and len(np.shape(confusion_matrix)) == 2, "Input must be a square matrix."
-    
-    numClasses = np.shape(confusion_matrix)[0]
-    accList = []
-    for i in range(numClasses):
-        classAcc = confusion_matrix[i, i]/np.sum(confusion_matrix[i, :])
-        accList.append(classAcc)
-    
-    return accList
 
 if __name__ == "__main__":
     rede = int(input("\nEnter net number.\n"))
@@ -94,14 +72,11 @@ if __name__ == "__main__":
 
         valLoss.append(roundValLoss)
 
-        if rede == 3:
-            classAcc = compute_class_acc(confMat)
-            avgAcc = np.mean(classAcc)
-            valAcc.append(avgAcc)
-            # print("Debug\nAvg acc: {:.3f}".format(avgAcc))
-            # print("skm acc: {:.3f}\n".format(roundValAcc))
-        else:
-            valAcc.append(roundValAcc)
+        classAcc = mutils.compute_class_acc(confMat)
+        avgAcc = np.mean(classAcc)
+        valAcc.append(roundValAcc)
+        print("Debug\nAvg acc: {:.3f}".format(avgAcc))
+        print("other acc: {:.3f}\n".format(roundValAcc))
 
     printString = ""
     printString += "\nFinished training {} evaluation runs for dataset\n{}\n.".format(numEvals, datasetPath)
@@ -109,7 +84,7 @@ if __name__ == "__main__":
     Val Loss:\n\
         Mean: {:.3f}\n\
         Std : {:.3f}\n\
-    Val Acc:\n\
+    Val Avg Acc:\n\
         Mean: {:.3f}\n\
         Std   {:.3f}\n".format(np.mean(valLoss), np.std(valLoss),
                                 np.mean(valAcc), np.std(valAcc))

@@ -24,6 +24,26 @@ def set_torch_random_seeds(seed):
     torch.cuda.manual_seed_all(seed)
 
 
+## Metrics
+def compute_class_acc(confusion_matrix):
+    '''
+        confusion_matrix: array of floats
+        Square array of floats of side n >= 2. Columns are assumed to contain true labels and rows,
+        predicted labels, such as the sum of elements in of column i will be the number of true members
+        of class i.
+    '''
+    assert np.shape(confusion_matrix)[0] == np.shape(confusion_matrix)[1] \
+           and len(np.shape(confusion_matrix)) == 2, "Input must be a square matrix."
+    
+    numClasses = np.shape(confusion_matrix)[0]
+    accList = []
+    for i in range(numClasses):
+        classAcc = confusion_matrix[i, i]/np.sum(confusion_matrix[i, :])
+        accList.append(classAcc)
+    
+    return accList
+
+
 ## Model training and inference
 def get_loss_weights(dataset):
     '''

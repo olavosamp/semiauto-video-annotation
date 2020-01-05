@@ -210,14 +210,15 @@ class TrainModel:
                     self.runningLoss += self.loss.item() * self.inputs.size(0)
 
                 # Get epoch metrics
-                self.epochAcc  = skm.accuracy_score(self.totalLabels[phase], self.totalPreds[phase])
+                self.confMat   = skm.confusion_matrix(self.totalLabels[phase], self.totalPreds[phase])
+                # self.epochAcc  = skm.accuracy_score(self.totalLabels[phase], self.totalPreds[phase])
+                self.epochAcc = np.mean(mutils.compute_class_acc(self.confMat)) # Average of class accuracies
                 self.epochLoss = self.runningLoss / self.datasetSizes[phase]
                 _, _, self.epochF1, _ = skm.precision_recall_fscore_support(
                                             self.totalLabels[phase], self.totalPreds[phase])
 
                 # Compute confusion matrix
                 if phase == 'val':
-                    self.confMat   = skm.confusion_matrix(self.totalLabels[phase], self.totalPreds[phase])
                     self.confMatHist.append(self.confMat)
 
                 self.f1ScoreHist[phase].append(self.epochF1)
@@ -226,9 +227,9 @@ class TrainModel:
 
                 if self.verbose:
                     print("{} Phase\n\
-                Loss: {:.4f}\n\
-                Acc : {:.4f}\n\
-                F1  : {}".format(phase, self.epochLoss, self.epochAcc,
+                Loss    : {:.4f}\n\
+                Avg Acc : {:.4f}\n\
+                F1      : {}".format(phase, self.epochLoss, self.epochAcc,
                                 self.epochF1))
 
                 # Save model if there is an improvement in evaluation metric
