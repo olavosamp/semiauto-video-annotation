@@ -85,8 +85,8 @@ if __name__ == "__main__":
         Mean: {:.3f}\n\
         Std : {:.3f}\n\
     Val Avg Acc:\n\
-        Mean: {:.3f}\n\
-        Std   {:.3f}\n".format(np.mean(valLoss), np.std(valLoss),
+        Mean: {:.5f}\n\
+        Std   {:.5f}\n".format(np.mean(valLoss), np.std(valLoss),
                                 np.mean(valAcc), np.std(valAcc))
     print(printString)
     with open(filePath, mode='w') as f:
