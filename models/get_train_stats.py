@@ -6,6 +6,7 @@ import libs.dirs            as dirs
 import libs.utils           as utils
 import models.utils         as mutils
 import libs.commons         as commons
+from libs.vis_functions     import plot_confusion_matrix
 
 
 def wrapper_train(epochs, model_path, history_path, dataset_path):
@@ -25,8 +26,6 @@ def wrapper_train(epochs, model_path, history_path, dataset_path):
         imageDataset[phase] = datasets.ImageFolder(str(f),
                                                    transform=dataTransforms[phase],
                                                    is_valid_file=utils.check_empty_file)
-
-    # datasetLen = len(imageDataset['train']) + len(imageDataset['val'])
 
     history, _ = mutils.train_network(dataset_path, dataTransforms, epochs=epochs,
                                         batch_size=numImgBatch,
@@ -59,6 +58,8 @@ if __name__ == "__main__":
             "history_{}_{}_epochs".format(datasetPath.stem, numEpochs)
     filePath = Path(dirs.results) / \
             "log_evaluation_{}_{}_epochs.txt".format(datasetPath.stem, numEpochs)
+    confMatPath = Path(dirs.results) / \
+            "confusion_matrix_{}.pdf".format(datasetPath.stem)
 
     valLoss = []
     valAcc  = []
@@ -78,6 +79,10 @@ if __name__ == "__main__":
         print("Debug\nAvg acc: {:.3f}".format(avgAcc))
         print("other acc: {:.3f}\n".format(roundValAcc))
 
+        # Save best confusion matrix
+        if np.argmin(valLoss) == i:
+            bestConfMat = confMat
+
     printString = ""
     printString += "\nFinished training {} evaluation runs for dataset\n{}\n.".format(numEvals, datasetPath)
     printString += "\nResulting statistics:\n\
@@ -91,6 +96,8 @@ if __name__ == "__main__":
     print(printString)
     with open(filePath, mode='w') as f:
         f.write(printString)
+
+    plot_confusion_matrix(confMat, show=False, save_path=confMatPath)
 
     # print("Conf matrix:")
     # print(confMat)

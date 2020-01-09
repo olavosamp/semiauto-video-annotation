@@ -11,5 +11,6 @@ python=3.7
 pytorch
 rope
 scikit-learn
+seaborn
 torchvision
 tqdm

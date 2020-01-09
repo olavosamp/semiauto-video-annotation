@@ -6,10 +6,32 @@ if os.name != "nt":
 
 import numpy                    as np
 import matplotlib.pyplot        as plt
+import seaborn                  as sns
 from pathlib                    import Path
 
 import libs.dirs                as dirs
 import libs.commons             as commons
+
+
+def plot_confusion_matrix(conf_mat, show=True, save_path="./confusion_matrix.jpg"):
+    fig = plt.figure(figsize=commons.MPL_FIG_SIZE_SMALL)
+
+    sns.heatmap(conf_mat, annot=True, cbar=True)
+
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.title("Confusion Matrix")
+
+    if save_path is not None:
+        save_path = Path(save_path)
+        dirs.create_folder(save_path.parent)
+
+        # Save with desired format, and additional formats specified in save_formats
+        plt.savefig(save_path)
+    
+    if show:
+        plt.show()
+
 
 def plot_model_history(data, data_labels=[], xlabel="", ylabel="", title="Model History",
                        save_path=None, show=False):
