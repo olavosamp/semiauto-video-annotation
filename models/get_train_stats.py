@@ -45,12 +45,12 @@ def wrapper_train(epochs, model_path, history_path, dataset_path):
 
 if __name__ == "__main__":
     rede = int(input("\nEnter net number.\n"))
-    numEvals    = 10
+    numEvals    = 5
     numEpochs   = 25
 
     # Dataset root folder
-    datasetPath = Path(dirs.dataset) / "reference_dataset_rede_{}".format(rede)
-    # datasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_{}".format(rede)
+#     datasetPath = Path(dirs.dataset) / "reference_dataset_rede_{}".format(rede)
+    datasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_{}".format(rede)
 
     modelFolder = Path(dirs.saved_models) / \
             "{}_{}_epochs".format(datasetPath.stem, numEpochs)

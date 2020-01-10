@@ -62,7 +62,8 @@ rede2_positive = "Evento"
 rede2_negative = "Nao_Evento"
 
 rede3_classes = {0: 'Anodo',
-                 1: 'Cruzamento',
+                #  1: 'Cruzamento',
+                 1: 'Enterramento',
                  2: 'Dano',
                  3: 'Flange',
                  4: 'Reparo',
