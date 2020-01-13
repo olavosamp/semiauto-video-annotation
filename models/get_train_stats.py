@@ -84,7 +84,7 @@ if __name__ == "__main__":
             bestConfMat = confMat
 
     printString = ""
-    printString += "\nFinished training {} evaluation runs for dataset\n{}\n.".format(numEvals, datasetPath)
+    printString += "\nFinished training {} evaluation runs for dataset\n{}\n".format(numEvals, datasetPath)
     printString += "\nResulting statistics:\n\
     Val Loss:\n\
         Mean: {:.3f}\n\
