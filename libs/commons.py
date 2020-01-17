@@ -190,7 +190,7 @@ net_binary_table = { # Dict to translate standard class tags into binary problem
 # Temporary priority table to test fusion function
 rede_3_multiclass_priority_table = [rede3_classes[2], # Dano
                                     rede3_classes[0], # Anodo
-                                    rede3_classes[1], # Cruzamento
+                                    rede3_classes[1], # Enterramento
                                     rede3_classes[3], # Flange
                                     rede3_classes[4], # Reparo
 ]

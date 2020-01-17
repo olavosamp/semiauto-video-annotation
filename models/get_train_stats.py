@@ -51,15 +51,16 @@ if __name__ == "__main__":
     # Dataset root folder
 #     datasetPath = Path(dirs.dataset) / "reference_dataset_rede_{}".format(rede)
     datasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_{}".format(rede)
+    datasetName = datasetPath.stem
 
     modelFolder = Path(dirs.saved_models) / \
-            "{}_{}_epochs".format(datasetPath.stem, numEpochs)
+            "{}_{}_epochs".format(datasetName, numEpochs)
     historyFolder = Path(dirs.saved_models) / \
-            "history_{}_{}_epochs".format(datasetPath.stem, numEpochs)
+            "history_{}_{}_epochs".format(datasetName, numEpochs)
     filePath = Path(dirs.results) / \
-            "log_evaluation_{}_{}_epochs.txt".format(datasetPath.stem, numEpochs)
+            "log_evaluation_{}_{}_epochs.txt".format(datasetName, numEpochs)
     confMatPath = Path(dirs.results) / \
-            "confusion_matrix_{}.pdf".format(datasetPath.stem)
+            "confusion_matrix_{}.pdf".format(datasetName)
 
     valLoss = []
     valAcc  = []
@@ -97,7 +98,8 @@ if __name__ == "__main__":
     with open(filePath, mode='w') as f:
         f.write(printString)
 
-    plot_confusion_matrix(confMat, show=False, save_path=confMatPath)
+    title = "Confusion Matrix "+str(datasetName)
+    plot_confusion_matrix(confMat, title=title, normalize=True, show=False, save_path=confMatPath)
 
     # print("Conf matrix:")
     # print(confMat)

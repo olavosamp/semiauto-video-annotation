@@ -13,20 +13,50 @@ import libs.dirs                as dirs
 import libs.commons             as commons
 
 
-def plot_confusion_matrix(conf_mat, show=True, save_path="./confusion_matrix.jpg"):
-    fig = plt.figure(figsize=commons.MPL_FIG_SIZE_SMALL)
+def plot_confusion_matrix(conf_mat, labels=[], title=None, normalize=True,
+                         show=True, save_path="./confusion_matrix.jpg"):
+    '''
+        conf_mat: array of floats or ints
+        Square array that configures a confusion matrix. The true labels are assumed to be on the lines axis
+        and the predicted labels, on the columns axis.
 
-    sns.heatmap(conf_mat, annot=True, cbar=True)
+        labels: list
+        List of class labels. Label list must be of lenght equal to the number of classes of the confusion
+        matrix. Element i of list is the label of class in line i of the confusion matrix.
+
+    '''
+    fig = plt.figure(figsize=commons.MPL_FIG_SIZE_SMALL)
+    numClasses = np.shape(conf_mat)[0]
+
+    if normalize:
+        # Normalize confusion matrix line-wise
+        for line in range(numClasses):
+            classSum = np.sum(conf_mat[line, :])
+            conf_mat[line, :] = conf_mat[line, :]/classSum
+
+    # If labels list match number of classes, use it as class labels
+    if len(labels) == numClasses:
+        xLabels = labels
+        yLabels = labels
+    else:
+        xLabels = False
+        yLabels = False
+
+    sns.heatmap(conf_mat, annot=True, cbar=True, xticklabels=xLabels, yticklabels=yLabels)
 
     plt.xlabel("Predicted Label")
     plt.ylabel("True Label")
-    plt.title("Confusion Matrix")
+    
+    if title is not None:
+        plt.title(title)
+    else:
+        plt.title("Confusion Matrix")
 
     if save_path is not None:
+        # Save figure to given path
         save_path = Path(save_path)
         dirs.create_folder(save_path.parent)
 
-        # Save with desired format, and additional formats specified in save_formats
         plt.savefig(save_path)
     
     if show:
