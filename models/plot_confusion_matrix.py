@@ -4,35 +4,49 @@ from pathlib                import Path
 
 import libs.dirs            as dirs
 import libs.utils           as utils
+import libs.dataset_utils   as dutils
 import models.utils         as mutils
 import libs.commons         as commons
 from libs.vis_functions     import plot_confusion_matrix
 
 
-# # Get best epoch results
-# bestValIndex = np.argmin(history['loss-val'])
-# bestValLoss  = history['loss-val'][bestValIndex]
-# bestValAcc   = history['acc-val'][bestValIndex]
-# confMat      = history['conf-val'][bestValIndex]
 
 # TODO:Create function to get user input on reference or semiauto dataset selection
 
 if __name__ == "__main__":
+    net_type = dutils.get_input_network_type(commons.network_types)
     rede = int(input("\nEnter net number.\n"))
     numEpochs   = 25
 
     # Dataset root folder
-#     datasetPath = Path(dirs.dataset) / "reference_dataset_rede_{}".format(rede)
-    datasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_{}".format(rede)
+    datasetPath = Path(dirs.dataset) / "{}_dataset_rede_{}".format(net_type, rede)
+    # datasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_{}".format(rede)
     datasetName = datasetPath.stem
+    confMatPath = dirs.results+ "/confusion_matrix/" + "confusion_matrix_" + str(datasetName) + ".jpg"
 
     modelFolder = Path(dirs.saved_models) / \
             "{}_{}_epochs".format(datasetName, numEpochs)
     historyFolder = Path(dirs.saved_models) / \
             "history_{}_{}_epochs".format(datasetName, numEpochs)
 
-    globString = str(historyFolder)+"history_run*pickle"
+    # Load history files
+    globString = str(historyFolder / "history_run*pickle")
     histFiles  = glob(globString)
 
-    # history = utils.load_pickle(historyFolder)
-    # historyPath = historyFolder / "history_run_{}.pickle".format(i)
+    bestValLoss = np.inf
+    bestConfMat = None
+    for hist in histFiles:
+        history = utils.load_pickle(hist)
+
+        # Get best epoch results
+        bestValIndex = np.argmin(history['loss-val'])
+        valLoss  = history['loss-val'][bestValIndex]
+        if valLoss < bestValLoss:
+            bestValLoss = valLoss
+            bestValAcc   = history['acc-val'][bestValIndex]
+            bestConfMat      = history['conf-val'][bestValIndex]
+    
+    print(bestConfMat)
+    assert bestConfMat is not None, "No history file found."
+    title = "Confusion Matrix "+str(datasetName)
+    plot_confusion_matrix(bestConfMat, title=title, normalize=True, show=False, save_path=confMatPath)

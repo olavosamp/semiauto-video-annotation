@@ -20,6 +20,35 @@ from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
 # User Input
+def get_input_network_type(net_type_dict):
+    '''
+        Select bewteen reference or semiauto network/dataset
+    '''
+    dictLen = len(net_type_dict)
+
+    print("\nEnter network type code from list:\n")
+    print("Code\tNet name")
+    for i in range(dictLen):
+        print("{}:\t{}".format(i, net_type_dict[i]))
+
+    input_code = int(input())
+    if input_code < dictLen:
+        target_net = net_type_dict[input_code]
+    else:
+        target_net = "UNKNOWN"
+
+    while target_net not in net_type_dict.values():
+        input_code = input("Unknown network. Please select a network from the list.\n")
+        try:
+            input_code = int(input_code)
+        except ValueError:
+            continue
+
+        if input_code < dictLen:
+            target_net = net_type_dict[input_code]
+    return target_net
+
+
 def get_input_target_class(net_class_dict):
     '''
         Get user input of net target class. Applicable to rede3 only.

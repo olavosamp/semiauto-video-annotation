@@ -73,6 +73,9 @@ net_target_column = {1:'rede1',
                      2:'rede2',
                      3:'rede3'}
 
+network_types = {0: 'reference',
+                 1: 'semiauto'}
+
 # Annotation type names
 manual_annotation = "manual"
 auto_annotation   = "auto"

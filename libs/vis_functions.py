@@ -27,12 +27,13 @@ def plot_confusion_matrix(conf_mat, labels=[], title=None, normalize=True,
     '''
     fig = plt.figure(figsize=commons.MPL_FIG_SIZE_SMALL)
     numClasses = np.shape(conf_mat)[0]
+    conf_mat = np.array(conf_mat, dtype=np.float32)
 
     if normalize:
         # Normalize confusion matrix line-wise
         for line in range(numClasses):
             classSum = np.sum(conf_mat[line, :])
-            conf_mat[line, :] = conf_mat[line, :]/classSum
+            conf_mat[line, :] = np.divide( conf_mat[line, :], classSum)
 
     # If labels list match number of classes, use it as class labels
     if len(labels) == numClasses:
@@ -42,11 +43,12 @@ def plot_confusion_matrix(conf_mat, labels=[], title=None, normalize=True,
         xLabels = False
         yLabels = False
 
-    sns.heatmap(conf_mat, annot=True, cbar=True, xticklabels=xLabels, yticklabels=yLabels)
+    sns.heatmap(conf_mat, annot=True, cbar=True, square=True, vmin=0., vmax=1.,
+                xticklabels=xLabels, yticklabels=yLabels)
 
     plt.xlabel("Predicted Label")
     plt.ylabel("True Label")
-    
+
     if title is not None:
         plt.title(title)
     else:
