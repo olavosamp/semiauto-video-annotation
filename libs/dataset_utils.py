@@ -385,6 +385,7 @@ def get_classified_index(index, pos_hashes, neg_hashes, rede, target_class=None,
 
     newLabeledIndex = pd.concat([newPositives, newNegatives], axis=0, sort=False)
 
+    # Pra que isso de novo?
     if rede == 2:
         newPositives["rede1"] = [positiveLabel1]*lenPositives
 

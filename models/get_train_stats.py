@@ -4,6 +4,7 @@ from pathlib                import Path
 
 import libs.dirs            as dirs
 import libs.utils           as utils
+import libs.dataset_utils   as dutils
 import models.utils         as mutils
 import libs.commons         as commons
 from libs.vis_functions     import plot_confusion_matrix
@@ -44,13 +45,14 @@ def wrapper_train(epochs, model_path, history_path, dataset_path):
 
 
 if __name__ == "__main__":
-    rede = int(input("\nEnter net number.\n"))
     numEvals    = 5
+
+    net_type = dutils.get_input_network_type(commons.network_types)
+    rede = int(input("\nEnter net number.\n"))
     numEpochs   = 25
 
     # Dataset root folder
-#     datasetPath = Path(dirs.dataset) / "reference_dataset_rede_{}".format(rede)
-    datasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_{}".format(rede)
+    datasetPath = Path(dirs.dataset) / "{}_dataset_rede_{}".format(net_type, rede)
     datasetName = datasetPath.stem
 
     modelFolder = Path(dirs.saved_models) / \
