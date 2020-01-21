@@ -20,14 +20,14 @@ from libs.index             import IndexManager
 from libs.get_frames_class  import GetFramesFull
 
 # User Input
-def get_input_network_type(net_type_dict):
+def get_input_network_type(net_type_dict, message="network"):
     '''
         Select bewteen reference or semiauto network/dataset
     '''
     dictLen = len(net_type_dict)
 
-    print("\nEnter network type code from list:\n")
-    print("Code\tNet name")
+    print("\nEnter {} type code from list:\n".format(message))
+    print("Code\tName")
     for i in range(dictLen):
         print("{}:\t{}".format(i, net_type_dict[i]))
 

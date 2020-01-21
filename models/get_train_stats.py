@@ -48,11 +48,12 @@ if __name__ == "__main__":
     numEvals    = 5
 
     net_type = dutils.get_input_network_type(commons.network_types)
+    val_type = dutils.get_input_network_type(commons.val_types)
     rede = int(input("\nEnter net number.\n"))
     numEpochs   = 25
 
     # Dataset root folder
-    datasetPath = Path(dirs.dataset) / "{}_dataset_rede_{}".format(net_type, rede)
+    datasetPath = Path(dirs.dataset) / "{}_dataset_rede_{}_val_{}".format(net_type, rede, val_type)
     datasetName = datasetPath.stem
 
     modelFolder = Path(dirs.saved_models) / \
