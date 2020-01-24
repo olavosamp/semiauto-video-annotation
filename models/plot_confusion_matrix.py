@@ -15,11 +15,12 @@ from libs.vis_functions     import plot_confusion_matrix
 
 if __name__ == "__main__":
     net_type = dutils.get_input_network_type(commons.network_types)
+    val_type = dutils.get_input_network_type(commons.val_types)
     rede = int(input("\nEnter net number.\n"))
     numEpochs   = 25
 
     # Dataset root folder
-    datasetPath = Path(dirs.dataset) / "{}_dataset_rede_{}".format(net_type, rede)
+    datasetPath = Path(dirs.dataset) / "{}_dataset_rede_{}_val_{}".format(net_type, rede, val_type)
     # datasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_{}".format(rede)
     datasetName = datasetPath.stem
     confMatPath = dirs.results+ "/confusion_matrix/" + "confusion_matrix_" + str(datasetName) + ".jpg"
@@ -49,4 +50,8 @@ if __name__ == "__main__":
     print(bestConfMat)
     assert bestConfMat is not None, "No history file found."
     title = "Confusion Matrix "+str(datasetName)
-    plot_confusion_matrix(bestConfMat, title=title, normalize=True, show=False, save_path=confMatPath)
+    rede_3_labels=['Anodo', 'Dano', 'Enterramento', 'Flange', 'Reparo']
+    if rede == 3:
+        labels = rede_3_labels
+
+    plot_confusion_matrix(bestConfMat, title=title, labels=labels, normalize=True, show=False, save_path=confMatPath)

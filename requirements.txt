@@ -5,6 +5,7 @@ cudatoolkit
 matplotlib
 numpy
 opencv=3.4.2
+openpyxl
 pandas
 pillow
 python=3.7
