@@ -395,24 +395,27 @@ def color_filter(image, filter='r', filter_strenght=1.5):
     return image
 
 
-def image_grid(path, targetPath="image_grid.jpg", prediction_index=None, upperCrop=0, lowerCrop=0,
+def image_grid(folder_path, save_path="image_grid.jpg", prediction_index=None, upperCrop=0, lowerCrop=0,
                size_limit=None, show=False, save=True):
     '''
         Creates a square grid of images randomly samples from available files on path.
 
-        path:
+
+        folder_path:
             Target images folder path;
 
-        targetPath:
+
+        save_path:
             Path where resulting grid will be saved;
+
 
         upperCrop and lowerCrop:
             Number of pixels to be cropped from each composing image. The crops executed
         are horizontal crops and are measured from top to center and bottom to center,
         respectively.
     '''
-    targetPath = Path(targetPath)
-    files = glob(str(path)+'**'+dirs.sep+'*.jpg', recursive=True)
+    save_path = Path(save_path)
+    files = glob(str(folder_path)+'**'+dirs.sep+'*.jpg', recursive=True)
     numImages         = len(files)
     if size_limit is not None:
         numImages = np.clip(numImages, None, size_limit)
@@ -458,10 +461,10 @@ def image_grid(path, targetPath="image_grid.jpg", prediction_index=None, upperCr
             index += 1
 
     if save is True:
-        dirs.create_folder(targetPath.parent)
+        dirs.create_folder(save_path.parent)
 
-        im_grid.save(targetPath)
-        print("\nYour image grid is ready. It was saved at {}\n".format(targetPath))
+        im_grid.save(save_path)
+        print("\nYour image grid is ready. It was saved at {}\n".format(save_path))
     if show is True:
         im_grid.show()
     return 0
