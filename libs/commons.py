@@ -242,7 +242,6 @@ val_videos_reference_dataset_rede_1_hashes = [
                                         '58717dc038f96fca74e5939f85db509f',
                                         '6a6fcd20e5728b2a129f6e5cfcf39d5e',
 ]
-
 val_videos_reference_dataset_rede_2 = [
                                         ("GHmls16-263_OK", "1", "20161102000728984@DVR-SPARE_Ch1.wmv"),
                                         ("GHmls16-263_OK", "1", "20161101232103406@DVR-SPARE_Ch1.wmv"),
