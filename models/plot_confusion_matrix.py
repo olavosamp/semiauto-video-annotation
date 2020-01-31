@@ -9,8 +9,6 @@ import models.utils         as mutils
 import libs.commons         as commons
 from libs.vis_functions     import plot_confusion_matrix
 
-
-
 # TODO:Create function to get user input on reference or semiauto dataset selection
 
 if __name__ == "__main__":
@@ -50,8 +48,8 @@ if __name__ == "__main__":
     print(bestConfMat)
     assert bestConfMat is not None, "No history file found."
     title = "Confusion Matrix "+str(datasetName)
-    rede_3_labels=['Anodo', 'Dano', 'Enterramento', 'Flange', 'Reparo']
-    if rede == 3:
-        labels = rede_3_labels
+    
+    labels = commons.net_labels[rede]
 
-    plot_confusion_matrix(bestConfMat, title=title, labels=labels, normalize=True, show=False, save_path=confMatPath)
+    plot_confusion_matrix(bestConfMat, title=title, labels=labels, normalize=True, show=False,
+                            save_path=confMatPath)

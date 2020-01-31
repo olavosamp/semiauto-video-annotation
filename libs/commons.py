@@ -208,6 +208,10 @@ rede_3_multiclass_priority_table = [rede3_classes[2], # Dano
                                     rede3_classes[4], # Reparo
 ]
 
+net_labels = {1: ['Duct', 'Not Duct'],
+              2: ['Event', 'Not Event'],
+              3: ['Anode', 'Damage', 'Buried', 'Flange', 'Repair']}
+
 ## Defines
 IMAGENET_MEAN       = [0.485, 0.456, 0.406]
 IMAGENET_STD        = [0.229, 0.224, 0.225]
