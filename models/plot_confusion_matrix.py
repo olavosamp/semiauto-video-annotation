@@ -13,7 +13,7 @@ from libs.vis_functions     import plot_confusion_matrix
 
 if __name__ == "__main__":
     net_type = dutils.get_input_network_type(commons.network_types)
-    val_type = dutils.get_input_network_type(commons.val_types)
+    val_type = dutils.get_input_network_type(commons.val_types, message='validation set')
     rede = int(input("\nEnter net number.\n"))
     numEpochs   = 25
 
@@ -42,13 +42,13 @@ if __name__ == "__main__":
         valLoss  = history['loss-val'][bestValIndex]
         if valLoss < bestValLoss:
             bestValLoss = valLoss
-            bestValAcc   = history['acc-val'][bestValIndex]
-            bestConfMat      = history['conf-val'][bestValIndex]
+            bestValAcc  = history['acc-val'][bestValIndex]
+            bestConfMat = history['conf-val'][bestValIndex]
     
     print(bestConfMat)
     assert bestConfMat is not None, "No history file found."
     title = "Confusion Matrix "+str(datasetName)
-    
+
     labels = commons.net_labels[rede]
 
     plot_confusion_matrix(bestConfMat, title=title, labels=labels, normalize=True, show=False,
