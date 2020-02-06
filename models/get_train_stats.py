@@ -48,7 +48,7 @@ if __name__ == "__main__":
     numEvals    = 5
 
     net_type = dutils.get_input_network_type(commons.network_types)
-    val_type = dutils.get_input_network_type(commons.val_types)
+    val_type = dutils.get_input_network_type(commons.val_types, message="validation set")
     rede = int(input("\nEnter net number.\n"))
     numEpochs   = 25
 
@@ -67,6 +67,7 @@ if __name__ == "__main__":
 
     valLoss = []
     valAcc  = []
+    print()
     # Run function many times and save best results
     for i in range(numEvals):
         print("\nStarting run number {}/{}.\n".format(i+1, numEvals))

@@ -12,6 +12,9 @@ from pathlib                    import Path
 import libs.dirs                as dirs
 import libs.commons             as commons
 
+def set_mpl_fig_options(figsize=commons.MPL_FIG_SIZE_SMALL):
+    return plt.figure(figsize=figsize, tight_layout=True)
+
 
 def plot_confusion_matrix(conf_mat, labels=[], title=None, normalize=True,
                          show=True, save_path="./confusion_matrix.jpg"):
@@ -25,7 +28,8 @@ def plot_confusion_matrix(conf_mat, labels=[], title=None, normalize=True,
         matrix. Element i of list is the label of class in line i of the confusion matrix.
 
     '''
-    fig = plt.figure(figsize=commons.MPL_FIG_SIZE_SMALL)
+    fig = set_mpl_fig_options(commons.MPL_FIG_SIZE_SMALL)
+
     numClasses = np.shape(conf_mat)[0]
     conf_mat = np.array(conf_mat, dtype=np.float32)
 
@@ -43,8 +47,11 @@ def plot_confusion_matrix(conf_mat, labels=[], title=None, normalize=True,
         xLabels = False
         yLabels = False
 
-    sns.heatmap(conf_mat, annot=True, cbar=True, square=True, vmin=0., vmax=1.,
-                xticklabels=xLabels, yticklabels=yLabels)
+    sns.heatmap(conf_mat, annot=True, cbar=True, square=True, vmin=0., vmax=1., fmt='.2f',
+                xticklabels=xLabels, yticklabels=yLabels, cmap='cividis')
+
+    ax = plt.gca()
+    plt.setp(ax.get_yticklabels(), va="center")
 
     plt.xlabel("Predicted Label")
     plt.ylabel("True Label")
@@ -59,7 +66,7 @@ def plot_confusion_matrix(conf_mat, labels=[], title=None, normalize=True,
         save_path = Path(save_path)
         dirs.create_folder(save_path.parent)
 
-        plt.savefig(save_path)
+        plt.savefig(save_path, bbox_inches='tight')
     
     if show:
         plt.show()
