@@ -1,0 +1,13 @@
+Video,Inicio,Término,TempoAnotacao,TempoVideo
+TCOpm16-140_OK/DVD-2/VTS_01_5.VOB,14:47,14:57,0:10,0:54:12
+FAmls16-119_OK/VTS_07_1,15:24,15:29,0:05,0:24:22
+
+Video
+GHmls16-263_OK\DVD-1\20161102023734109@DVR-SPARE_Ch1.wmv
+Duração  30min
+Anotação 22h30 - 22h44: 14min
+
+FSll16-224_OK\DVD-2\VTS_01_4.VOB
+Duração	 24min45s
+Anotação 22h47 - 22h51: 4min
+Obs: Vídeo tipo VOB é muito mais rápido de extrair durante o uso da interface do que wmv.
