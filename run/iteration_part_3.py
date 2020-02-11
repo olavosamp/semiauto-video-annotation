@@ -26,6 +26,7 @@ if __name__ == "__main__":
         target_class = dutils.get_input_target_class(commons.rede3_classes)
         datasetName  = "full_dataset_rede_{}_{}".format(rede, target_class.lower())
     else:
+        target_class = None
         datasetName  = "full_dataset_rede_{}".format(rede)
 
     def get_iter_folder(iteration):

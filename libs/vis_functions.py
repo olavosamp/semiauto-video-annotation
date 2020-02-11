@@ -140,7 +140,7 @@ def plot_outputs_histogram(normalized_outputs,
         plt.hist(posOutputs, bins=100, label="Positive Examples", log=log)
         plt.hist(negOutputs, bins=100, label="Negative Examples", log=log)
     else:
-        plt.hist(normalized_outputs, bins=100, label="Positive Examples", log=log)
+        plt.hist(normalized_outputs, bins=100, label="Examples", log=log)
     
     if lower_thresh is not None and upper_thresh is not None:
         plt.gca().axvline(lower_thresh, 0., 1., color='b', label="Lower Thresh")
@@ -150,8 +150,12 @@ def plot_outputs_histogram(normalized_outputs,
     plt.xlim(0., 1.)
     plt.title(title)
     plt.legend()
+
     plt.xlabel("Normalized Score")
-    plt.ylabel("Number of Examples")
+    yLabel = "Number of Examples"
+    if log:
+        yLabel += " (log)"
+    plt.ylabel(yLabel)
     
     if save_path is not None:
         save_path = Path(save_path)
