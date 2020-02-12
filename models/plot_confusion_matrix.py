@@ -14,19 +14,21 @@ from libs.vis_functions     import plot_confusion_matrix
 results/history_<dataset>_rede_<net_number>_val_<val_type>/'''
 
 if __name__ == "__main__":
+    numEpochs = 25
+    normalize = True
     # net_type = dutils.get_input_network_type(commons.network_types)
     # val_type = dutils.get_input_network_type(commons.val_types, message='validation set')
     # rede = int(input("\nEnter net number.\n"))
-    numEpochs   = 25
 
     for net_type in commons.network_types.values():
         for val_type in commons.val_types.values():
             for rede in commons.net_target_column.keys():
                 # Dataset root folder
-                datasetPath = Path(dirs.dataset) / "{}_dataset_rede_{}_val_{}".format(net_type, rede, val_type)
-                # datasetPath = Path(dirs.dataset) / "semiauto_dataset_v1_rede_{}".format(rede)
+                datasetPath = Path(dirs.dataset) / \
+                    "{}_dataset_rede_{}_val_{}".format(net_type, rede, val_type)
                 datasetName = datasetPath.stem
-                confMatPath = dirs.results+ "/confusion_matrix/" + "confusion_matrix_" + str(datasetName) + ".jpg"
+                confMatPath = dirs.results + "/confusion_matrix/" + \
+                    "confusion_matrix_" + str(datasetName) + ".pdf"
 
                 modelFolder = Path(dirs.saved_models) / \
                         "{}_{}_epochs".format(datasetName, numEpochs)
@@ -54,9 +56,14 @@ if __name__ == "__main__":
                     print("No history file found in folder{}.".format(historyFolder))
                     continue
                 print(bestConfMat)
-                title = "Confusion Matrix "+str(datasetName)
+                if val_type == 'ref':
+                    valName = 'Reference'
+                elif val_type == 'semiauto':
+                    valName = 'Semiauto'
+                netName = net_type[0].upper() + net_type[1:]
+                title = "Level {} | Dataset {} | Val {}".format(rede, netName, valName)
 
                 labels = commons.net_labels[rede]
 
-                plot_confusion_matrix(bestConfMat, title=title, labels=labels, normalize=False, show=False,
+                plot_confusion_matrix(bestConfMat, title=title, labels=labels, normalize=normalize, show=False,
                                         save_path=confMatPath)
