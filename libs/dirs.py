@@ -14,6 +14,7 @@ iter_folder         = root+".."+sep+"annotation_loop"+sep
 iter_info           = iter_folder+"iter_info.txt"
 saved_models        = root+".."+sep+"saved_models"+sep
 results             = root+".."+sep+"results"+sep
+error_check         = root+sep+"error_check_annotations"+sep
 
 test                = root+sep+".."+sep+"test"+sep
 test_assets         = test+"test_assets"+sep
