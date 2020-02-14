@@ -21,9 +21,10 @@ if __name__ == "__main__":
     # val_type = dutils.get_input_network_type(commons.val_types, message='validation set')
     # rede = int(input("\nEnter net number.\n"))
     confMatFolder = Path(dirs.results) / "confusion_matrix"
-    dfPath = confMatFolder / "stats_table.xlsx"
+    dfPath = confMatFolder / "stats_table"
 
-    seriesList = []
+    rede3List = []
+    otherList = []
     for net_type in commons.network_types.values():
         for val_type in commons.val_types.values():
             for rede in commons.net_target_column.keys():
@@ -89,9 +90,23 @@ if __name__ == "__main__":
                                              'f1_flange': bestValF1[3],
                                              'f1_repair': bestValF1[4]
                                              })
-                    seriesList.append(entrySeries)
+                    rede3List.append(entrySeries)
+                else:
+                    entrySeries = pd.Series({'rede': rede,
+                                             'dataset': net_type,
+                                             'validation': val_type,
+                                             'mean_acc': np.mean(acc),
+                                             'std_acc':  np.std(acc),
+                                             'f1_positive':  bestValF1[0],
+                                             'f1_negative': bestValF1[1],
+                                             })
+                    otherList.append(entrySeries)
 
                 plot_confusion_matrix(bestConfMat, title=title, labels=labels, normalize=normalize, show=False,
                                       save_path=confMatPath)
-    statsDf = pd.DataFrame(seriesList)
-    statsDf.to_excel(dfPath)
+    statsDf = pd.DataFrame(rede3List)
+    statsDf.to_excel(str(dfPath)+"_rede_3.xlsx")
+
+    statsDf = pd.DataFrame(otherList)
+    statsDf.to_excel(str(dfPath)+"_outros.xlsx")
+
