@@ -414,9 +414,12 @@ def image_grid(folder_path, save_path="image_grid.jpg", prediction_index=None, u
         are horizontal crops and are measured from top to center and bottom to center,
         respectively.
     '''
-    save_path = Path(save_path)
-    files = glob(str(folder_path)+'**'+dirs.sep+'*.jpg', recursive=True)
-    numImages         = len(files)
+    save_path  = Path(save_path)
+    globString = str(folder_path)+'**'+dirs.sep+'*.jpg'
+    files      = glob(globString, recursive=True)
+    numImages  = len(files)
+    
+    assert numImages > 0, "No jpg files found on destination."
     if size_limit is not None:
         numImages = np.clip(numImages, None, size_limit)
     squareNumImages = get_perfect_square(numImages)

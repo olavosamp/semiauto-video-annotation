@@ -29,7 +29,8 @@ utils.copy_folder_tree(remoteDatasetPath, refDatasetPath)
 
 # Get reference dataset validation video list
 videoList = dutils.get_ref_dataset_val_video_list(refDatasetPath / "val")
-
+print(len(videoList))
+input()
 # Split dataset in val and train following reference dataset
 trainIndex, valIndex = dutils.split_validation_set_from_video_list(datasetIndexPath,
                                                                    videoList, key_column="HashMD5")

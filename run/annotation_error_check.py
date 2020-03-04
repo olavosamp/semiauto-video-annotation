@@ -1,4 +1,3 @@
-# Plot all confusion matrixes
 import pandas as pd
 import numpy as np
 from glob import glob
@@ -13,7 +12,7 @@ import libs.commons as commons
 from libs.vis_functions import plot_confusion_matrix
 
 ''' Compares automatic annotations and error check annotations to obtain
-a annotation error measure'''
+a labeling error measure'''
 
 def check_labeling_error(label1, label2, target_label):
     if (label1 == target_label) and (label1 == label2):
@@ -24,7 +23,7 @@ def check_labeling_error(label1, label2, target_label):
         errorCheck = True
     return errorCheck
 
-annotationFolder = (Path(dirs.images) / "samples_error_check")
+annotationFolder = (Path(dirs.images) / "samples_error_check_felipe")
 foldersRede3 = glob(str(annotationFolder)+"/*rede_3*/")
 foldersResto = [str(annotationFolder / "full_dataset_rede_1"),
                 str(annotationFolder / "full_dataset_rede_2")
@@ -39,7 +38,7 @@ netClass.extend([commons.rede1_positive.lower(),
 
 for elem in foldersRede3:
     netFolders.append(elem)
-    netClass.append(str(elem.name).split("_")[-1])
+    netClass.append(str(Path(elem).name).split("_")[-1])
 
 for classFolder, targetClass in zip(netFolders, netClass):
     rede = classFolder[str(classFolder).find('rede_')+5]
