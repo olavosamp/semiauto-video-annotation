@@ -396,7 +396,7 @@ def color_filter(image, filter='r', filter_strenght=1.5):
 
 
 def image_grid(folder_path, save_path="image_grid.jpg", prediction_index=None, upperCrop=0, lowerCrop=0,
-               size_limit=None, show=False, save=True):
+               size_limit=None, shuffle=False, show=False, save=True):
     '''
         Creates a square grid of images randomly samples from available files on path.
 
@@ -424,7 +424,10 @@ def image_grid(folder_path, save_path="image_grid.jpg", prediction_index=None, u
         numImages = np.clip(numImages, None, size_limit)
     squareNumImages = get_perfect_square(numImages)
 
-    files = np.random.choice(files, size=squareNumImages, replace=False)
+    if shuffle:
+        files = np.random.choice(files, size=squareNumImages, replace=False)
+    else:
+        files = files[:squareNumImages]
 
     # TODO: This should be done in an external test file
     # # Create fake predictions DataFrame 
